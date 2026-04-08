@@ -17,9 +17,38 @@ API em Node.js com Fastify, TypeORM e PostgreSQL. O ambiente local sobe Postgres
 
 ## Equipe
 
-| Nome | GitHub |
-| :--- | :----: |
-| ... | [@usuario](https://github.com/usuario) |
+<center> 
+  
+<table style="width: 100%;">
+  <tr>
+    <td align="center">
+      <a href="https://github.com/artrsousa1">
+        <img style="border-radius: 50%;" src="https://github.com/artrsousa1.png" width="100px;" alt="Imagem de Arthur Ribeiro"/><br />
+        <sub><b>Arthur Ribeiro</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/cwtshh">
+        <img style="border-radius: 50%;" src="https://github.com/cwtshh.png" width="100px;" alt="Imagem de Gustavo Costa"/><br />
+        <sub><b>Gustavo Costa</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/Angelicahaas">
+        <img style="border-radius: 50%;" src="https://github.com/Angelicahaas.png" width="100px;" alt="Imagem de Harleny Angéllica"/><br />
+        <sub><b>Harleny Angéllica </b></sub>
+      </a>
+    </td>
+        <td align="center">
+      <a href="https://github.com/vnsrz">
+        <img style="border-radius: 50%;" src="https://github.com/vnsrz.png" width="100px;" alt="Imagem de Vinícius Roriz"/><br />
+        <sub><b>Vinícius Roriz</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
+
+</center>
 
 ## Início
 
