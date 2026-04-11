@@ -41,8 +41,12 @@ export async function buildApp() {
     routePrefix: "/docs",
   });
 
-  await app.register(cors, { origin: "*" });
-  await app.register(routes, { prefix: "/retina-scan" });
+  await app.register(cors, {
+    origin: "http://localhost:5173",
+    credentials: true,
+    methods: ["GET", "POST", "OPTIONS"],
+  });
+  await app.register(routes, { prefix: "/api" });
 
   app.setErrorHandler(errorHandler);
 

@@ -1,12 +1,11 @@
-import { FastifyInstance } from 'fastify';
-import healthRoute from './health';
-import { healthSchema } from '@/api/docs';
+import type { FastifyPluginAsync } from "fastify";
+import healthHandler from "./health";
+import { authRoutes } from "./auth";
 
-export default function registerRoutes(app: FastifyInstance, _options: object, done: () => void) {
-  app.get('/health', {
-    schema: healthSchema,
-    handler: healthRoute,
-  });
+const registerRoutes: FastifyPluginAsync = async (app) => {
+  app.get("/health", healthHandler);
 
-  done();
-}
+  await app.register(authRoutes);
+};
+
+export default registerRoutes;
