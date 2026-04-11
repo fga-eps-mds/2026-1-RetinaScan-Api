@@ -1,0 +1,11 @@
+FROM node:25-alpine3.22 
+
+WORKDIR /app
+
+COPY package*.json tsconfig.json tsconfig.build.json ./
+
+RUN npm install
+
+COPY . .
+
+CMD ["npm", "run", "dev"]
