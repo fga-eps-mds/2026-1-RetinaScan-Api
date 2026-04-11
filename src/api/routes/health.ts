@@ -1,5 +1,5 @@
-import { PostgresHealthCheck } from "@/infra/health";
-import { FastifyReply, FastifyRequest } from "fastify";
+import { PostgresHealthCheck } from '@/infra/health';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 
 export default async function (request: FastifyRequest, reply: FastifyReply) {
   const postgresHealthCheck = new PostgresHealthCheck();
@@ -8,7 +8,7 @@ export default async function (request: FastifyRequest, reply: FastifyReply) {
   const isHealthy = [postgresStatus].every((check) => check.ok);
 
   reply.code(isHealthy ? 200 : 500).send({
-    status: isHealthy ? "healthy" : "unhealthy",
+    status: isHealthy ? 'healthy' : 'unhealthy',
     services: {
       database: postgresStatus,
     },

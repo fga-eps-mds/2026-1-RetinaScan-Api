@@ -1,8 +1,8 @@
-import { db } from "@/infra/database/drizzle/connection";
-import { user } from "@/infra/database/drizzle/schema";
-import { eq } from "drizzle-orm";
+import { db } from '@/infra/database/drizzle/connection';
+import { user } from '@/infra/database/drizzle/schema';
+import { eq } from 'drizzle-orm';
 
-export type UserRole = "ADMIN" | "MEDICO";
+export type UserRole = 'ADMIN' | 'MEDICO';
 
 export class UsersRepository {
   async findByEmail(email: string) {

@@ -1,11 +1,7 @@
 import { env } from '@/env';
 import pino, { type Logger as PinoLogger } from 'pino';
 
-export type CategoryLogger = 
-  | 'HTTP'
-  | 'DB'
-  | 'SYS'
-  | 'CRIT';
+export type CategoryLogger = 'HTTP' | 'DB' | 'SYS' | 'CRIT';
 
 type CategoryLoggers = Record<CategoryLogger, PinoLogger>;
 
@@ -31,10 +27,10 @@ export class Logger {
             translateTime: 'yyyy-mm-dd HH:MM:ss',
           },
         },
-      })
+      }),
     });
 
-    this.child = this.createChildren()
+    this.child = this.createChildren();
   }
 
   public info(message: string, payload?: object): void {
@@ -44,7 +40,7 @@ export class Logger {
     }
 
     this.root.info(message);
-  } 
+  }
 
   public debug(message: string, payload?: object): void {
     if (payload) {
@@ -84,10 +80,10 @@ export class Logger {
 
   private createChildren(): CategoryLoggers {
     return {
-      HTTP:  this.root.child({ category: 'HTTP' }),
-      DB:    this.root.child({ category: 'DB' }),
-      SYS:   this.root.child({ category: 'SYS' }),
-      CRIT:  this.root.child({ category: 'CRIT' }),
+      HTTP: this.root.child({ category: 'HTTP' }),
+      DB: this.root.child({ category: 'DB' }),
+      SYS: this.root.child({ category: 'SYS' }),
+      CRIT: this.root.child({ category: 'CRIT' }),
     };
   }
 }

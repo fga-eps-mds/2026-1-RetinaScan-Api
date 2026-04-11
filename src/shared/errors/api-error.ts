@@ -1,6 +1,6 @@
 export class ApiError extends Error {
-  public readonly statusCode: number
-  public readonly metadata?: Record<string, unknown>
+  public readonly statusCode: number;
+  public readonly metadata?: Record<string, unknown>;
 
   constructor(
     message: string,
@@ -8,9 +8,9 @@ export class ApiError extends Error {
     statusCode: number,
     metadata?: Record<string, unknown>,
   ) {
-    super(message)
-    this.name = name
-    this.statusCode = statusCode
-    this.metadata = metadata
+    super(message);
+    this.name = name;
+    this.statusCode = statusCode;
+    this.metadata = metadata;
   }
 }
