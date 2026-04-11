@@ -2,10 +2,11 @@ import { db } from '@/infra/database/drizzle/connection';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import * as schema from '@/infra/database/drizzle/schema';
+import { env } from '@/env';
 
 export const auth = betterAuth({
-  secret: process.env.BETTER_AUTH_SECRET!,
-  baseURL: process.env.BETTER_AUTH_URL || `http://localhost:${process.env.PORT || 3000}`,
+  secret: env.BETTER_AUTH_SECRET,
+  baseURL: env.BETTER_AUTH_URL || `http://localhost:${env.PORT || 3000}`,
   emailAndPassword: {
     enabled: true,
   },

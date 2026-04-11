@@ -1,10 +1,11 @@
-import { auth } from "@/lib/auth";
-import { FastifyRequest, FastifyReply, FastifyPluginAsync } from "fastify";
+import { auth } from '@/infra/auth/better-auth';
+import type { FastifyRequest, FastifyReply, FastifyPluginCallback } from 'fastify';
 
-export const authRoutes: FastifyPluginAsync = async (app) => {
+export const authRoutes: FastifyPluginCallback = (app, _opts, done) => {
   app.route({
-    method: ["GET", "POST"],
-    url: "/auth/*",
+    method: ['GET', 'POST'],
+    url: '/auth/*',
+
     async handler(request: FastifyRequest, reply: FastifyReply) {
       const url = new URL(request.url, `http://${request.headers.host}`);
 
@@ -16,10 +17,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       const req = new Request(url.toString(), {
         method: request.method,
         headers,
-        body:
-          request.method !== "GET" && request.body
-            ? JSON.stringify(request.body)
-            : undefined,
+        body: request.method !== 'GET' && request.body ? JSON.stringify(request.body) : undefined,
       });
 
       const response = await auth.handler(req);
@@ -34,4 +32,6 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       reply.send(body || null);
     },
   });
+
+  done();
 };

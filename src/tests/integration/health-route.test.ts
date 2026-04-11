@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from '@/api';
 
-describe('GET /retina-scan/health', () => {
+describe('GET /api/health', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
@@ -15,7 +15,7 @@ describe('GET /retina-scan/health', () => {
   });
 
   it('returns database health with flat timing (ms)', async () => {
-    const res = await app.inject({ method: 'GET', url: '/retina-scan/health' });
+    const res = await app.inject({ method: 'GET', url: '/api/health' });
 
     expect(res.statusCode).toBe(200);
     const body = JSON.parse(res.body) as {
