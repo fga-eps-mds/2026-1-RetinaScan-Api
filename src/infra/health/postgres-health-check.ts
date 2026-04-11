@@ -1,5 +1,6 @@
 import { performance } from 'node:perf_hooks';
-import { dataSource } from '@/infra/database/typeorm/datasource';
+import { sql } from 'drizzle-orm';
+import { db } from '@/infra/database/drizzle/connection';
 import type { HealthChecker, HealthCheckResult } from './health-check';
 import logger from '@/infra/logger';
 
@@ -8,7 +9,7 @@ export class PostgresHealthCheck implements HealthChecker {
     const start = performance.now();
 
     try {
-      await dataSource.query('SELECT 1 AS ping');
+      await db.execute(sql`SELECT 1 AS ping`);
       return {
         ok: true,
         ms: Math.round(performance.now() - start),

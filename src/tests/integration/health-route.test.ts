@@ -1,24 +1,17 @@
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from '@/api';
-import { dataSource } from '@/infra/database/typeorm/datasource';
 
 describe('GET /retina-scan/health', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    if (!dataSource.isInitialized) {
-      await dataSource.initialize();
-    }
     app = await buildApp();
     await app.ready();
   });
 
   afterAll(async () => {
     await app.close();
-    if (dataSource.isInitialized) {
-      await dataSource.destroy();
-    }
   });
 
   it('returns database health with flat timing (ms)', async () => {

@@ -1,23 +1,12 @@
 import logger from '@/infra/logger';
 import { buildApp } from '@/api';
 import { env } from '@/env';
-import { dataSource } from '@/infra/database/typeorm/datasource';
-
-export async function startDatabase(): Promise<void> {
-  logger.info('Starting PostgreSQL database');
-  try {
-    await dataSource.initialize();
-    logger.info('PostgreSQL database connected successfully');
-  } catch (error) {
-    logger.error('Error starting PostgreSQL database', { error });
-    throw error;
-  }
-}
+import { connectDatabase } from '@/infra/database/drizzle/connection';
 
 export async function server(): Promise<void> {
   logger.info('Setting up server');
-  
-  await startDatabase();
+
+  await connectDatabase();
   const app = await buildApp();
 
   await app.listen({
@@ -28,6 +17,6 @@ export async function server(): Promise<void> {
   logger.info('🍺 Server is already up');
 }
 
-server().catch(error => 
+server().catch(error =>
   logger.error('Error starting server', error),
 );

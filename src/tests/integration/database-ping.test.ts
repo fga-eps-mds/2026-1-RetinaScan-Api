@@ -1,21 +1,10 @@
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { dataSource } from '@/infra/database/typeorm/datasource';
+import { describe, expect, it } from 'vitest';
+import { sql } from 'drizzle-orm';
+import { db } from '@/infra/database/drizzle/connection';
 
 describe('database integration', () => {
-  beforeAll(async () => {
-    if (!dataSource.isInitialized) {
-      await dataSource.initialize();
-    }
-  });
-
-  afterAll(async () => {
-    if (dataSource.isInitialized) {
-      await dataSource.destroy();
-    }
-  });
-
   it('pings PostgreSQL with SELECT 1', async () => {
-    const rows = await dataSource.query<Array<{ ping: number }>>('SELECT 1 AS ping');
-    expect(rows[0]?.ping).toBe(1);
+    const rows = await db.execute(sql`SELECT 1 AS ping`);
+    expect(rows.rows[0]?.ping).toBe(1);
   });
 });
