@@ -17,7 +17,7 @@ ENV NODE_ENV=production
 
 WORKDIR /usr/src/app
 
-RUN apk add --no-cache bash
+RUN apk update && apk add --no-cache bash
 
 COPY package*.json ./
 
