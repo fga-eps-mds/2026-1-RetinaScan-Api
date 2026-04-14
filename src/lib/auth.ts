@@ -2,6 +2,7 @@ import { db } from '@/infra/database/drizzle/connection';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import * as schema from '@/infra/database/drizzle/schema';
+import { env } from '@/env';
 
 export const auth = betterAuth({
   secret: process.env.BETTER_AUTH_SECRET!,
@@ -9,7 +10,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  trustedOrigins: ['http://localhost:5173'],
+  trustedOrigins: env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim()),
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema,

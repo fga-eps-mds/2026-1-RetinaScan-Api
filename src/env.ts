@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  ALLOWED_ORIGINS: z.string().default('http://localhost:5173'),
   PORT: z.coerce.number().default(3000),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   BUCKET_NAME: z.string().min(1, 'BUCKET_NAME is required'),

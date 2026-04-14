@@ -45,7 +45,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   });
 
   await app.register(cors, {
-    origin: 'http://localhost:5173',
+    origin: env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim()),
     credentials: true,
     methods: ['GET', 'POST', 'OPTIONS'],
   });
