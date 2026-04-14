@@ -6,8 +6,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: retina-scan
-    ports:
-      - 5432:5432
     volumes:
       - postgres_data_prod:/var/lib/postgresql/data
     healthcheck:
@@ -18,20 +16,19 @@ services:
       start_period: 10s
     env_file:
       - env/.env.prod
+    expose:
+      - "5432"
     networks:
       - retina-scan-network
-    restart: unless-stopped  
+    restart: unless-stopped
 
   retina-scan-minio-prod:
-    image: minio/minio:latest 
+    image: minio/minio:latest
     container_name: retina-scan-minio-prod
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
-    ports:
-      - 9000:9000
-      - 9001:9001
     volumes:
       - minio_data_prod:/data
     healthcheck:
@@ -41,6 +38,9 @@ services:
       retries: 3
     env_file:
       - env/.env.prod
+    expose:
+      - "9000"
+      - "9001"
     networks:
       - retina-scan-network
     restart: unless-stopped
@@ -50,8 +50,6 @@ services:
       context: .
       dockerfile: Dockerfile.prod
     container_name: retina-scan-api-prod
-    ports:
-      - 3000:3000
     env_file:
       - env/.env.prod
     depends_on:
@@ -59,6 +57,8 @@ services:
         condition: service_healthy
       retina-scan-minio-prod:
         condition: service_healthy
+    expose:
+      - "3000"
     networks:
       - retina-scan-network
     restart: unless-stopped
@@ -70,4 +70,4 @@ volumes:
 networks:
   retina-scan-network:
     driver: bridge
-    name: retina-scan-prod-net 
+    name: retina-scan-prod-net
