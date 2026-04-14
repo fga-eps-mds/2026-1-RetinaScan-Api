@@ -6,23 +6,27 @@ import { env } from '@/env';
 import { errorHandler } from './middlewares/error-handler';
 import routes from './routes';
 
-const loggerEnv = {
-  development: {
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        translateTime: 'yyyy-mm-dd HH:MM:ss',
-      },
-    },
-  },
-  production: true,
-  test: false,
-};
-
 export async function buildApp(): Promise<FastifyInstance> {
+  const loggerConfig = (() => {
+    const nodeEnv = process.env.NODE_ENV ?? env.NODE_ENV;
+
+    if (nodeEnv === 'development') {
+      return {
+        transport: {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+            translateTime: 'yyyy-mm-dd HH:MM:ss',
+          },
+        },
+      };
+    }
+
+    return true;
+  })();
+
   const app = fastify({
-    logger: loggerEnv[env.NODE_ENV],
+    logger: loggerConfig,
   });
 
   await app.register(swagger, {
@@ -45,6 +49,7 @@ export async function buildApp(): Promise<FastifyInstance> {
     credentials: true,
     methods: ['GET', 'POST', 'OPTIONS'],
   });
+
   await app.register(routes, { prefix: '/api' });
 
   app.setErrorHandler(errorHandler);
