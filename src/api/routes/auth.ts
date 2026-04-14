@@ -1,10 +1,11 @@
-import { auth } from "@/lib/auth";
-import { FastifyRequest, FastifyReply, FastifyPluginAsync } from "fastify";
+import { auth } from '@/lib/auth';
+import type { FastifyRequest, FastifyReply, FastifyPluginAsync } from 'fastify';
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export const authRoutes: FastifyPluginAsync = async (app) => {
   app.route({
-    method: ["GET", "POST"],
-    url: "/auth/*",
+    method: ['GET', 'POST'],
+    url: '/auth/*',
     async handler(request: FastifyRequest, reply: FastifyReply) {
       const url = new URL(request.url, `http://${request.headers.host}`);
 
@@ -16,10 +17,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       const req = new Request(url.toString(), {
         method: request.method,
         headers,
-        body:
-          request.method !== "GET" && request.body
-            ? JSON.stringify(request.body)
-            : undefined,
+        body: request.method !== 'GET' && request.body ? JSON.stringify(request.body) : undefined,
       });
 
       const response = await auth.handler(req);
