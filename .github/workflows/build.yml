@@ -21,7 +21,7 @@ jobs:
           cache: npm
 
       - name: Instalar dependências
-        run: npm ci
+        run: npm i
 
       - name: Gerar build
         run: npm run build
