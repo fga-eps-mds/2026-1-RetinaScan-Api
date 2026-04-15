@@ -16,8 +16,6 @@ services:
       start_period: 10s
     env_file:
       - env/.env.prod
-    expose:
-      - "5432"
     networks:
       - retina-scan-network
     restart: unless-stopped
@@ -38,9 +36,6 @@ services:
       retries: 3
     env_file:
       - env/.env.prod
-    expose:
-      - "9000"
-      - "9001"
     networks:
       - retina-scan-network
     restart: unless-stopped
@@ -57,7 +52,7 @@ services:
         condition: service_healthy
       retina-scan-minio-prod:
         condition: service_healthy
-    expose:
+    ports:
       - "3000:3000"
     networks:
       - retina-scan-network
