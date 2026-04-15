@@ -58,7 +58,7 @@ services:
       retina-scan-minio-prod:
         condition: service_healthy
     expose:
-      - "3000"
+      - "3000:3000"
     networks:
       - retina-scan-network
     restart: unless-stopped
