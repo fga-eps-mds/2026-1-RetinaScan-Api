@@ -1,52 +1,18 @@
-# Pull Request – RetinaScan
+<!---Nomear PR-->
+<!---Adicionar revisor -->
 
 ## Descrição
+<!--- Descrição geral do que foi alterado neste PR -->
 
-Descreva brevemente as alterações feitas neste Pull Request.
+## Issue
+<!---#TAGdaIssue -->
 
----
+## Principais Implementações
+<!--- Se for de código, descreva alterações relevantes -->
+<!--- Se não for, apagar este tópico -->
 
-## Tipo de alteração
-
-Marque o tipo de mudança:
-
-- [ ] Bug fix
-- [ ] Nova funcionalidade
-- [ ] Melhoria de código (refactor)
-- [ ] Atualização de documentação
-- [ ] Outro
-
----
-
-## O que foi alterado
-
-Liste as principais mudanças realizadas:
-
--
--
-- ***
-
-## Como testar
-
-Passos para testar esta alteração:
-
-1.
-2.
-3.
-
----
-
-## Checklist
-
-Antes de enviar este PR, confirme:
-
-- [ ] O código compila corretamente
-- [ ] Não existem erros de lint
-- [ ] A funcionalidade foi testada
-- [ ] A documentação foi atualizada (se necessário)
-
----
-
-## Screenshots (se aplicável)
-
-Adicione imagens ou GIFs que mostrem as mudanças.
+## Tipos de Mudanças
+ - [ ] Bug fix (alteração que corrige uma issue e não altera funcionalidades já existentes);
+ - [ ] Nova feature (alteração que adiciona uma funcionalidade e não altera funcionalidades já existentes);
+ - [ ] Alteração disruptiva (Breaking change) (Correção ou funcionalidade que causa alteração nas funcionalidades existentes);
+ - [ ] Documentação
