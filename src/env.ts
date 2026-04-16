@@ -20,6 +20,11 @@ const envSchema = z.object({
   ADMIN_CRM: z.string().min(1, 'ADMIN_CRM is required'),
   ADMIN_CPF: z.string().min(1, 'ADMIN_CPF is required'),
   ADMIN_IDENTITY_NUMBER: z.string().min(1, 'ADMIN_IDENTITY_NUMBER is required'),
+  BETTER_AUTH_URL: z
+    .string()
+    .url('BETTER_AUTH_URL must be a valid URL')
+    .default('http://localhost:3000'),
+  BETTER_AUTH_SECRET: z.string().min(1, 'BETTER_AUTH_SECRET is required'),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

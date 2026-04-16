@@ -5,41 +5,78 @@ import * as schema from '@/infra/database/drizzle/schema';
 import { env } from '@/env';
 
 export const auth = betterAuth({
-  secret: process.env.BETTER_AUTH_SECRET!,
-  baseURL: process.env.BETTER_AUTH_URL || `http://localhost:${process.env.PORT || 3000}`,
+  secret: env.BETTER_AUTH_SECRET,
+  baseURL: env.BETTER_AUTH_URL || `http://localhost:${env.PORT}`,
+  trustedOrigins: env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim()),
+
   emailAndPassword: {
     enabled: true,
   },
-  trustedOrigins: env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim()),
+
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema,
   }),
+
   user: {
+    modelName: 'usuario',
+
+    fields: {
+      id: 'id_usuario',
+      name: 'nomeCompleto',
+      email: 'email',
+      emailVerified: 'emailVerified',
+      image: 'imagem',
+      createdAt: 'createdAt',
+      updatedAt: 'updatedAt',
+    },
+
     additionalFields: {
-      birthDate: {
-        type: 'date',
-        required: true,
-      },
-      crm: {
-        type: 'string',
-        required: true,
-      },
       cpf: {
         type: 'string',
+        databaseName: 'cpf',
         required: true,
+        returned: true,
       },
-      identityNumber: {
+
+      crm: {
         type: 'string',
+        databaseName: 'crm',
         required: true,
+        returned: true,
       },
-      role: {
+
+      dtNascimento: {
+        type: 'date',
+        databaseName: 'dt_nascimento',
+        returned: true,
+      },
+
+      tipoPerfil: {
         type: 'string',
-        required: false,
+        databaseName: 'tipo_perfil',
         defaultValue: 'MEDICO',
-        input: false,
+        returned: true,
+      },
+
+      status: {
+        type: 'string',
+        databaseName: 'status',
+        defaultValue: 'ATIVO',
         returned: true,
       },
     },
+  },
+
+  session: {
+    modelName: 'session',
+  },
+
+  account: {
+    modelName: 'account',
+  },
+
+  verification: {
+    modelName: 'verification',
   },
 });
