@@ -50,7 +50,7 @@ jobs:
         with:
           args: >
             -Dsonar.projectKey=fga-eps-mds_2026-1-RetinaScan-Api
-            -Dsonar.organization=fga-eps-mds
+            -Dsonar.organization=fga-eps-mds-1
             -Dsonar.sources=src
             -Dsonar.tests=src/tests
             -Dsonar.test.inclusions=**/*.test.ts
