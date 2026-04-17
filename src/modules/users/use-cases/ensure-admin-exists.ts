@@ -8,9 +8,6 @@ import { env } from '@/env';
 
 export async function ensureAdminUserExists(): Promise<void> {
   try {
-    /**
-     * VALIDACAO ENV
-     */
     if (
       !env.ADMIN_EMAIL ||
       !env.ADMIN_PASSWORD ||
@@ -50,7 +47,7 @@ export async function ensureAdminUserExists(): Promise<void> {
           password: env.ADMIN_PASSWORD,
           cpf: env.ADMIN_CPF,
           crm: env.ADMIN_CRM,
-          dtNascimento: new Date(env.ADMIN_BIRTH_DATE).toString(),
+          dtNascimento: new Date(env.ADMIN_BIRTH_DATE),
         },
       });
 
@@ -77,7 +74,6 @@ export async function ensureAdminUserExists(): Promise<void> {
     });
   } catch (error) {
     logger.error('Erro ao executar seed do administrador.', { error });
-    console.log(error);
     throw error;
   }
 }

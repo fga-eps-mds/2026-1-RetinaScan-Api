@@ -4,7 +4,13 @@ import path from 'node:path';
 const alias = { '@': path.resolve(import.meta.dirname, 'src') };
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      '@': path.resolve(import.meta.dirname, 'src'),
+    },
+  },
   test: {
+    globals: true,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
