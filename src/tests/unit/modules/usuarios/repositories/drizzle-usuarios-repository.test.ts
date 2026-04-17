@@ -23,9 +23,9 @@ selectMock.mockReturnValue({
   from: fromMock,
 });
 
-fromMock.mockReturnValue({
+fromMock.mockImplementation(() => ({
   where: whereMock,
-});
+}));
 
 whereMock.mockReturnValue({
   limit: limitMock,
@@ -97,5 +97,23 @@ describe('DrizzleUsuariosRepository', () => {
     const result = await repository.findByCrm('000');
 
     expect(result).toBeNull();
+  });
+
+  it('should return all users', async () => {
+    fromMock.mockResolvedValueOnce([
+      { id: '1', email: 'user1@mail.com' },
+      { id: '2', email: 'user2@mail.com' },
+    ]);
+
+    const mod = await import('@/modules/users/repositories/drizzle-usuarios-repository.js');
+
+    const repository = new mod.DrizzleUsuariosRepository();
+
+    const result = await repository.getAllUsers();
+
+    expect(result).toEqual([
+      { id: '1', email: 'user1@mail.com' },
+      { id: '2', email: 'user2@mail.com' },
+    ]);
   });
 });
