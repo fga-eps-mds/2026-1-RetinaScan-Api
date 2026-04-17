@@ -23,23 +23,30 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
 
     const bodySchema = z.object({
       nomeCompleto: z.string().min(3, 'Nome inválido.'),
-
       email: z.string().email('Email inválido.'),
-
       cpf: z.string().refine(isValidCpf, {
         message: 'CPF inválido.',
       }),
-
       crm: z.string().min(1, 'CRM obrigatório.'),
-
       dtNascimento: z.string().date().pipe(z.coerce.date()),
-
       senha: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres.'),
-
       tipoPerfil: z.enum(['ADMIN', 'MEDICO']),
     });
 
-    const body = bodySchema.parse(request.body);
+    const result = bodySchema.safeParse(request.body);
+
+    if (!result.success) {
+      const { fieldErrors } = result.error.flatten();
+
+      return reply.status(400).send({
+        statusCode: 400,
+        error: 'Bad Request',
+        message: 'Dados inválidos.',
+        errors: fieldErrors,
+      });
+    }
+
+    const body = result.data;
 
     const useCase = new CreateUserByAdmin(new DrizzleUsuariosRepository());
 
