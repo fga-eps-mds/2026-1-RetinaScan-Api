@@ -24,6 +24,7 @@ class FakeUsuariosRepository implements UsuariosRepository {
   findByEmail = vi.fn();
   findByCpf = vi.fn();
   findByCrm = vi.fn();
+  getAllUsers = vi.fn();
 }
 
 let repository: FakeUsuariosRepository;
