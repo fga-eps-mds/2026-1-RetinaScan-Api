@@ -1,8 +1,7 @@
 name: SonarCloud CI
-
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -19,7 +18,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run lint
-      - run: npm run test:sonar # ✅ Usa seu script com coverage
+      - run: npm run test:coverage
 
   sonarcloud:
     needs: test
@@ -36,7 +35,7 @@ jobs:
           node-version: 20
           cache: 'npm'
       - run: npm ci
-      - run: npm run test:sonar # ✅ Gera coverage/lcov.info
+      - run: npm run test:coverage
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v3
         env:
@@ -47,7 +46,7 @@ jobs:
             -Dsonar.projectKey=RetinaScan-Api
             -Dsonar.organization=gustavocosta
             -Dsonar.sources=src
-            -Dsonar.tests=tests
-            -Dsonar.test.inclusions=**/*.test.ts,**/*.test.ts
+            -Dsonar.tests=src/tests
+            -Dsonar.test.inclusions=**/*.test.ts
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info
