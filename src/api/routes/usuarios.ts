@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth';
 import { DrizzleUsuariosRepository } from '@/modules/users/repositories/drizzle-usuarios-repository';
 import { CreateUserByAdmin } from '@/modules/users/use-cases/create-user-by-admin';
+import { GetAllUsers } from '@/modules/users/use-cases/get-all-users';
 import { UnauthorizedError } from '@/shared/errors';
 import { isValidCpf } from '@/shared/validators/is-valid-cpf';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
@@ -53,5 +54,24 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
     await useCase.execute(body);
 
     return reply.status(201).send({ message: 'Usuário criado com sucesso.' });
+  });
+
+  app.get('/usuarios', async (request: FastifyRequest, reply: FastifyReply) => {
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (!session) {
+      throw new UnauthorizedError('Usuário não autenticado');
+    }
+
+    if (session.user.tipoPerfil !== 'ADMIN') {
+      throw new UnauthorizedError('Acesso negado: apenas administradores podem acessar esta rota');
+    }
+
+    const useCase = new GetAllUsers(new DrizzleUsuariosRepository());
+    const users = await useCase.execute();
+
+    return reply.status(200).send(users);
   });
 }
