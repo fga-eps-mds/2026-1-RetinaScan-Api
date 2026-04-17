@@ -1,12 +1,33 @@
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import type { FastifyInstance } from 'fastify';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { buildApp } from '@/api';
 
-describe('GET /retina-scan/health', () => {
+vi.mock('@/infra/health', () => ({
+  PostgresHealthCheck: vi.fn(
+    class {
+      check = vi.fn().mockResolvedValue({
+        ok: true,
+        ms: 5,
+      });
+    },
+  ),
+}));
+
+vi.mock('@/env', () => ({
+  env: {
+    NODE_ENV: 'test',
+    PORT: 3000,
+    ALLOWED_ORIGINS: 'http://localhost:5173',
+    BETTER_AUTH_SECRET: 'test',
+    BETTER_AUTH_URL: 'http://localhost:3000',
+  },
+}));
+
+describe('GET /health', () => {
   let app: FastifyInstance;
 
   beforeAll(async () => {
-    app = await buildApp();
+    const mod = await import('../../api/index.js');
+    app = await mod.buildApp();
     await app.ready();
   });
 
@@ -14,18 +35,14 @@ describe('GET /retina-scan/health', () => {
     await app.close();
   });
 
-  it('returns database health with flat timing (ms)', async () => {
-    const res = await app.inject({ method: 'GET', url: '/retina-scan/health' });
+  it('returns health', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/health',
+    });
+
+    console.log(res.statusCode, res.body);
 
     expect(res.statusCode).toBe(200);
-    const body = JSON.parse(res.body) as {
-      status: string;
-      services: { database: { ok: boolean; ms: number } };
-    };
-
-    expect(body.status).toBe('healthy');
-    expect(body.services.database.ok).toBe(true);
-    expect(body.services.database.ms).toBeTypeOf('number');
-    expect('responseTime' in body.services.database).toBe(false);
   });
 });

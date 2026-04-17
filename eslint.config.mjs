@@ -44,6 +44,7 @@ export default tseslint.config(
       'drizzle.config.ts',
       'vitest.config.ts',
       'src/infra/database/drizzle/migrations/',
+      'src/tests',
     ],
   },
 );

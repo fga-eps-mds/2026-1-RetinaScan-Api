@@ -1,5 +1,5 @@
 {
-  "id": "bdfbc03a-0094-4cbc-9a92-7fd7af5130c9",
+  "id": "26119f9b-d7b0-4507-81bb-b1eccd05e9fd",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -85,12 +85,13 @@
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {
-        "account_userId_idx": {
-          "name": "account_userId_idx",
+        "account_user_id_idx": {
+          "name": "account_user_id_idx",
           "columns": [
             {
               "expression": "user_id",
@@ -106,15 +107,15 @@
         }
       },
       "foreignKeys": {
-        "account_user_id_user_id_fk": {
-          "name": "account_user_id_user_id_fk",
+        "account_user_id_usuario_id_usuario_fk": {
+          "name": "account_user_id_usuario_id_usuario_fk",
           "tableFrom": "account",
-          "tableTo": "user",
+          "tableTo": "usuario",
           "columnsFrom": [
             "user_id"
           ],
           "columnsTo": [
-            "id"
+            "id_usuario"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -159,7 +160,8 @@
           "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "now()"
         },
         "ip_address": {
           "name": "ip_address",
@@ -181,8 +183,8 @@
         }
       },
       "indexes": {
-        "session_userId_idx": {
-          "name": "session_userId_idx",
+        "session_user_id_idx": {
+          "name": "session_user_id_idx",
           "columns": [
             {
               "expression": "user_id",
@@ -198,15 +200,15 @@
         }
       },
       "foreignKeys": {
-        "session_user_id_user_id_fk": {
-          "name": "session_user_id_user_id_fk",
+        "session_user_id_usuario_id_usuario_fk": {
+          "name": "session_user_id_usuario_id_usuario_fk",
           "tableFrom": "session",
-          "tableTo": "user",
+          "tableTo": "usuario",
           "columnsFrom": [
             "user_id"
           ],
           "columnsTo": [
-            "id"
+            "id_usuario"
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
@@ -226,18 +228,36 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.user": {
-      "name": "user",
+    "public.usuario": {
+      "name": "usuario",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
+        "id_usuario": {
+          "name": "id_usuario",
           "type": "text",
           "primaryKey": true,
           "notNull": true
         },
-        "name": {
-          "name": "name",
+        "nome_completo": {
+          "name": "nome_completo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cpf": {
+          "name": "cpf",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dt_nascimento": {
+          "name": "dt_nascimento",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "crm": {
+          "name": "crm",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -248,6 +268,22 @@
           "primaryKey": false,
           "notNull": true
         },
+        "tipo_perfil": {
+          "name": "tipo_perfil",
+          "type": "tipo_perfil",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'MEDICO'"
+        },
+        "status": {
+          "name": "status",
+          "type": "status_usuario",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'ATIVO'"
+        },
         "email_verified": {
           "name": "email_verified",
           "type": "boolean",
@@ -257,38 +293,6 @@
         },
         "image": {
           "name": "image",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "role": {
-          "name": "role",
-          "type": "user_role",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'MEDICO'"
-        },
-        "birth_date": {
-          "name": "birth_date",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "crm": {
-          "name": "crm",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "cpf": {
-          "name": "cpf",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "identity_number": {
-          "name": "identity_number",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -309,8 +313,23 @@
         }
       },
       "indexes": {
-        "user_cpf_unique": {
-          "name": "user_cpf_unique",
+        "usuario_email_unique": {
+          "name": "usuario_email_unique",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "usuario_cpf_unique": {
+          "name": "usuario_cpf_unique",
           "columns": [
             {
               "expression": "cpf",
@@ -324,8 +343,8 @@
           "method": "btree",
           "with": {}
         },
-        "user_crm_unique": {
-          "name": "user_crm_unique",
+        "usuario_crm_unique": {
+          "name": "usuario_crm_unique",
           "columns": [
             {
               "expression": "crm",
@@ -342,15 +361,7 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "user_email_unique": {
-          "name": "user_email_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -424,8 +435,17 @@
     }
   },
   "enums": {
-    "public.user_role": {
-      "name": "user_role",
+    "public.status_usuario": {
+      "name": "status_usuario",
+      "schema": "public",
+      "values": [
+        "ATIVO",
+        "INATIVO",
+        "BLOQUEADO"
+      ]
+    },
+    "public.tipo_perfil": {
+      "name": "tipo_perfil",
       "schema": "public",
       "values": [
         "ADMIN",

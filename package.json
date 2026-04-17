@@ -14,7 +14,9 @@
     "test:unit": "vitest run --project=unit",
     "test:integration": "dotenv -e env/.env.test -- vitest run --project=integration",
     "lint": "eslint src/",
-    "lint:fix": "eslint src/ --fix"
+    "lint:fix": "eslint src/ --fix",
+    "test:sonar": "npm run test:coverage",
+    "sonar:scan": "npm run test:sonar"
   },
   "keywords": [],
   "author": "",
