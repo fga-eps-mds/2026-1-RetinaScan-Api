@@ -7,6 +7,14 @@ const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   BUCKET_NAME: z.string().min(1, 'BUCKET_NAME is required'),
+  MINIO_ENDPOINT: z.string().min(1).default('localhost'),
+  MINIO_PORT: z.coerce.number().default(9000),
+  MINIO_USE_SSL: z
+    .string()
+    .default('false')
+    .transform((v) => v === 'true'),
+  MINIO_ACCESS_KEY: z.string().min(1).default('minioadmin'),
+  MINIO_SECRET_KEY: z.string().min(1).default('minioadmin'),
   ADMIN_NAME: z.string().min(1, 'ADMIN_NAME is required'),
   ADMIN_EMAIL: z
     .string()
