@@ -1,7 +1,7 @@
 import { auth } from '@/lib/auth';
 import { DrizzleUsuariosRepository } from '@/infra/database/drizzle/repositories';
 import { CreateUserByAdmin } from '@/modules/users/use-cases/create-user-by-admin';
-import { UnauthorizedError } from '@/shared/errors';
+import { AuthenticationError, UnauthorizedError } from '@/shared/errors';
 import { isValidCpf } from '@/shared/validators/is-valid-cpf';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import z from 'zod';
@@ -18,7 +18,7 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
     });
 
     if (!session) {
-      throw new UnauthorizedError('Usuário não autenticado');
+      throw new AuthenticationError('Usuário não autenticado');
     }
 
     if (session.user.tipoPerfil !== 'ADMIN') {

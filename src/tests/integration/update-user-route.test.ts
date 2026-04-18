@@ -39,7 +39,7 @@ describe('PUT /api/usuarios (integration)', () => {
     expect(res.statusCode).toBe(401);
   });
 
-  it('should return 401 when user is not authorized', async () => {
+  it('should return 403 when user is not authorized', async () => {
     const user = await UsuarioBuilder.anUser().withTipoPerfil('ADMIN').build();
     authSpies.authenticateAs(user);
 
@@ -49,7 +49,7 @@ describe('PUT /api/usuarios (integration)', () => {
       payload: { nomeCompleto: 'Novo Nome' },
     });
 
-    expect(res.statusCode).toBe(401);
+    expect(res.statusCode).toBe(403);
   });
 
   it('should update nomeCompleto and dtNascimento in the database', async () => {
