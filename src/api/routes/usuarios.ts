@@ -1,10 +1,14 @@
 import { auth } from '@/lib/auth';
-import { DrizzleUsuariosRepository } from '@/modules/users/repositories/drizzle-usuarios-repository';
+import { DrizzleUsuariosRepository } from '@/infra/database/drizzle/repositories';
 import { CreateUserByAdmin } from '@/modules/users/use-cases/create-user-by-admin';
 import { UnauthorizedError } from '@/shared/errors';
 import { isValidCpf } from '@/shared/validators/is-valid-cpf';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import z from 'zod';
+import { authenticationMiddleware, authorizationMiddleware } from '../middlewares';
+import { updateUserRoute } from './users/update-user-route';
+import { updateUserImageRoute } from './users/update-user-image-route';
+import { tiposPerfil } from '@/modules/users/domain';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
@@ -54,4 +58,20 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
 
     return reply.status(201).send({ message: 'Usuário criado com sucesso.' });
   });
+
+  app.put(
+    '/usuarios',
+    {
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
+    },
+    updateUserRoute,
+  );
+
+  app.patch(
+    '/usuarios/imagem',
+    {
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
+    },
+    updateUserImageRoute,
+  );
 }
