@@ -1,8 +1,8 @@
-import { db } from '@/infra/database/drizzle/connection';
+import { db } from '../infra/database/drizzle/connection.js';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import * as schema from '@/infra/database/drizzle/schema';
-import { env } from '@/env';
+import * as schema from '../infra/database/drizzle/schema/index.js';
+import { env } from '../env.js';
 
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
@@ -20,6 +20,11 @@ export const auth = betterAuth({
 
   user: {
     modelName: 'usuario',
+
+    changeEmail: {
+      enabled: true,
+      updateEmailWithoutVerification: true,
+    },
 
     fields: {
       id: 'id_usuario',
