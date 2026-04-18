@@ -153,4 +153,20 @@ describe('PUT /api/usuarios (integration)', () => {
 
     expect(res.statusCode).toBe(400);
   });
+
+  it('should return 400 when body has unknown fields', async () => {
+    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+    authSpies.authenticateAs(user);
+
+    const res = await app.inject({
+      method: 'PUT',
+      url: '/api/usuarios',
+      payload: {
+        nomeCompleto: 'Nome Novo',
+        campoInvalido: 'qualquer coisa',
+      },
+    });
+
+    expect(res.statusCode).toBe(400);
+  });
 });

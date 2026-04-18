@@ -12,6 +12,7 @@ const bodySchema = z
     senhaAtual: z.string().min(6, 'Senha atual deve ter no mínimo 6 caracteres.').optional(),
     novaSenha: z.string().min(6, 'Nova senha deve ter no mínimo 6 caracteres.').optional(),
   })
+  .strict({ message: 'Campos inválidos.' })
   .refine(({ senhaAtual, novaSenha }) => Boolean(senhaAtual) === Boolean(novaSenha), {
     message: 'senhaAtual e novaSenha devem ser enviadas juntas.',
     path: ['senhaAtual'],
