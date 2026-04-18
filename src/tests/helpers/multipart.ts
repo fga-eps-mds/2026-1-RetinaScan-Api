@@ -1,3 +1,5 @@
+import { randomBytes } from 'node:crypto';
+
 export interface MultipartPayload {
   body: Buffer;
   headers: {
@@ -22,7 +24,7 @@ export function buildMultipart(
   contentType: string,
   fileBuffer: Buffer,
 ): MultipartPayload {
-  const boundary = `----TestBoundary${Date.now()}${Math.floor(Math.random() * 1e6)}`;
+  const boundary = `----TestBoundary${Date.now()}${randomBytes(8).toString('hex')}`;
   const body = Buffer.concat([
     Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="${fieldName}"; filename="${filename}"\r\nContent-Type: ${contentType}\r\n\r\n`),
     fileBuffer,
