@@ -2,7 +2,7 @@ import { db } from '@/infra/database/drizzle/connection';
 import type { Usuario } from '../domain/usuario';
 import type { UsuariosRepository } from './users-repository';
 import { usuario } from '@/infra/database/drizzle/schema';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 export class DrizzleUsuariosRepository implements UsuariosRepository {
   async findByEmail(email: string): Promise<Usuario | null> {
@@ -24,8 +24,7 @@ export class DrizzleUsuariosRepository implements UsuariosRepository {
   }
 
   async getAllUsers(): Promise<Usuario[]> {
-    const result = await db.select().from(usuario);
-
+    const result = await db.select().from(usuario).orderBy(desc(usuario.createdAt));
     return result;
   }
 }
