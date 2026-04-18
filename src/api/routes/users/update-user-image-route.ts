@@ -2,7 +2,7 @@ import { container } from '@/infra/container';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { ValidationError } from '@/shared/errors';
 
-const ALLOWED_CONTENT_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+const ALLOWED_CONTENT_TYPES = new Set(['image/png', 'image/jpeg', 'image/jpg', 'image/webp']);
 
 export async function updateUserImageRoute(request: FastifyRequest, reply: FastifyReply) {
   const file = await request.file();
@@ -14,7 +14,7 @@ export async function updateUserImageRoute(request: FastifyRequest, reply: Fasti
     );
   }
 
-  if (!ALLOWED_CONTENT_TYPES.includes(file.mimetype)) {
+  if (!ALLOWED_CONTENT_TYPES.has(file.mimetype)) {
     throw new ValidationError([{ path: ['image'], message: 'Formato de imagem inválido.' }], true);
   }
 

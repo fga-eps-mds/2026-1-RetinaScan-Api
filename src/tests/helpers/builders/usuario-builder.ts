@@ -5,8 +5,8 @@ import { usuario } from '@/infra/database/drizzle/schema/user';
 import { StatusUsuario, statusUsuario, TipoPerfil, tiposPerfil, type Usuario } from '@/modules/users/domain';
 
 export class UsuarioBuilder {
-  private data: Usuario;
-  private database: typeof db;
+  private readonly data: Usuario;
+  private readonly database: typeof db;
 
   private constructor() {
     this.database = db;
