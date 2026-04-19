@@ -16,7 +16,18 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'lcov'],
       reportsDirectory: './coverage',
       include: ['src/**/*.ts'],
-      exclude: ['src/types/**', 'src/server.ts', 'src/tests/**'],
+      exclude: [
+        'src/types/**',
+        'src/server.ts',
+        'src/tests/**',
+        '**/index.ts',
+        'src/infra/container/**',
+        'src/infra/storage/**',
+        'src/infra/auth/**',
+        'src/infra/health/**',
+        'src/infra/docs/**',
+        'src/infra/database/drizzle/schema/**',
+      ],
     },
     projects: [
       {

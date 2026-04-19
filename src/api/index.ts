@@ -1,4 +1,5 @@
 import cors from '@fastify/cors';
+import multipart from '@fastify/multipart';
 import swagger from '@fastify/swagger';
 import swaggerUi from '@fastify/swagger-ui';
 import { type FastifyInstance, fastify } from 'fastify';
@@ -47,12 +48,16 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(cors, {
     origin: env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim()),
     credentials: true,
-    methods: ['GET', 'POST', 'OPTIONS'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 
-  await app.register(routes, { prefix: '/api' });
+  await app.register(multipart, {
+    limits: { fileSize: 5 * 1024 * 1024 },
+  });
 
   app.setErrorHandler(errorHandler);
+
+  await app.register(routes, { prefix: '/api' });
 
   return app;
 }
