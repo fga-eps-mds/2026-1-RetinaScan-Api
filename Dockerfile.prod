@@ -27,4 +27,4 @@ COPY --from=builder /usr/src/app/migrations ./dist/infra/database/drizzle/migrat
 
 USER node
 
-CMD ["node", "dist/server.js"]
+CMD ["sh", "-c", "node dist/infra/database/drizzle/migrate.js && node dist/server.js"]
