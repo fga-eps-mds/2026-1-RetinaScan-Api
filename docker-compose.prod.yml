@@ -21,14 +21,14 @@ services:
     restart: unless-stopped
 
   retina-scan-minio-prod:
-    image: minio/minio
-    container_name: retina-scan-minio
+    image: minio/minio:latest
+    container_name: retina-scan-minio-prod
     command: server /data --console-address ":9001"
-    ports:
-      - 9000:9000
-      - 9001:9001
     volumes:
-      - minio_data:/data
+      - minio_data_prod:/data
+    ports:
+      - "9000:9000"
+      - "9001:9001"
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
       interval: 10s
