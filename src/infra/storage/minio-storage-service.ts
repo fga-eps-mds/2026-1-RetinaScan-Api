@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { env } from '@/env';
 import type { BucketName, StorageService, UploadInput } from '@/shared/services/storage-service';
 import { minioClient } from './minio-client';

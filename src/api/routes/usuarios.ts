@@ -9,6 +9,7 @@ import { authenticationMiddleware, authorizationMiddleware } from '../middleware
 import { updateUserRoute } from './users/update-user-route';
 import { updateUserImageRoute } from './users/update-user-image-route';
 import { tiposPerfil } from '@/modules/users/domain';
+import { GetAllUsers } from '@/modules/users/use-cases/get-all-users';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
@@ -58,6 +59,18 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
 
     return reply.status(201).send({ message: 'Usuário criado com sucesso.' });
   });
+
+  app.get(
+    '/usuarios',
+    { preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const useCase = new GetAllUsers(new DrizzleUsuariosRepository());
+
+      const usuarios = await useCase.execute();
+
+      return reply.status(200).send(usuarios);
+    },
+  );
 
   app.put(
     '/usuarios',
