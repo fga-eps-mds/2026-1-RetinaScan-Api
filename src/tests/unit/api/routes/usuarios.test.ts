@@ -1,15 +1,22 @@
 import Fastify, { type FastifyInstance } from 'fastify';
-import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { usuarioRoutes } from '@/api/routes/usuarios';
 
-const { getSessionMock, executeMock, updateExecuteMock, repoCtorMock, storageCtorMock } =
-  vi.hoisted(() => ({
-    getSessionMock: vi.fn(),
-    executeMock: vi.fn(),
-    updateExecuteMock: vi.fn(),
-    repoCtorMock: vi.fn(),
-    storageCtorMock: vi.fn(),
-  }));
+const {
+  getSessionMock,
+  executeMock,
+  updateExecuteMock,
+  executeGetAllMock,
+  repoCtorMock,
+  storageCtorMock,
+} = vi.hoisted(() => ({
+  getSessionMock: vi.fn(),
+  executeMock: vi.fn(),
+  updateExecuteMock: vi.fn(),
+  executeGetAllMock: vi.fn(),
+  repoCtorMock: vi.fn(),
+  storageCtorMock: vi.fn(),
+}));
 
 vi.mock('@/lib/auth', () => ({
   auth: {
@@ -33,6 +40,15 @@ vi.mock('@/modules/users/use-cases/update-user-usecase', () => ({
     class {
       constructor() {}
       execute = updateExecuteMock;
+    },
+  ),
+}));
+
+vi.mock('@/modules/users/use-cases/get-all-users', () => ({
+  GetAllUsers: vi.fn(
+    class {
+      constructor() {}
+      execute = executeGetAllMock;
     },
   ),
 }));
@@ -86,7 +102,7 @@ describe('POST /usuarios', () => {
       expect(res.statusCode).toBe(401);
     });
 
-    it('should return 401 when user is not admin', async () => {
+    it('should return 403 when user is not admin', async () => {
       getSessionMock.mockResolvedValue({
         user: { tipoPerfil: 'MEDICO' },
       });
@@ -97,7 +113,7 @@ describe('POST /usuarios', () => {
         payload: {},
       });
 
-      expect(res.statusCode).toBe(401);
+      expect(res.statusCode).toBe(403);
     });
 
     it('should return 400 when body is invalid', async () => {
@@ -161,7 +177,7 @@ describe('POST /usuarios', () => {
       expect(res.statusCode).toBe(401);
     });
 
-    it('should return 401 when user is not admin', async () => {
+    it('should return 403 when user is not admin', async () => {
       getSessionMock.mockResolvedValue({
         user: { tipoPerfil: 'MEDICO' },
       });
@@ -171,7 +187,7 @@ describe('POST /usuarios', () => {
         url: '/usuarios',
       });
 
-      expect(res.statusCode).toBe(401);
+      expect(res.statusCode).toBe(403);
     });
 
     it('should return all users successfully', async () => {
