@@ -70,6 +70,12 @@ export const auth = betterAuth({
         defaultValue: 'ATIVO',
         returned: true,
       },
+
+      image: {
+        type: 'string',
+        databaseName: 'imagem',
+        returned: true,
+      },
     },
   },
 
