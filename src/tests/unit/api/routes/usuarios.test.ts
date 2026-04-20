@@ -2,12 +2,14 @@ import Fastify, { type FastifyInstance } from 'fastify';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import { usuarioRoutes } from '@/api/routes/usuarios';
 
-const { getSessionMock, executeMock, executeGetAllMock, repoCtorMock } = vi.hoisted(() => ({
-  getSessionMock: vi.fn(),
-  executeMock: vi.fn(),
-  executeGetAllMock: vi.fn(),
-  repoCtorMock: vi.fn(),
-}));
+const { getSessionMock, executeMock, updateExecuteMock, repoCtorMock, storageCtorMock } =
+  vi.hoisted(() => ({
+    getSessionMock: vi.fn(),
+    executeMock: vi.fn(),
+    updateExecuteMock: vi.fn(),
+    repoCtorMock: vi.fn(),
+    storageCtorMock: vi.fn(),
+  }));
 
 vi.mock('@/lib/auth', () => ({
   auth: {
@@ -26,16 +28,16 @@ vi.mock('@/modules/users/use-cases/create-user-by-admin', () => ({
   ),
 }));
 
-vi.mock('@/modules/users/use-cases/get-all-users', () => ({
-  GetAllUsers: vi.fn(
+vi.mock('@/modules/users/use-cases/update-user-usecase', () => ({
+  UpdateUserUsecase: vi.fn(
     class {
       constructor() {}
-      execute = executeGetAllMock;
+      execute = updateExecuteMock;
     },
   ),
 }));
 
-vi.mock('@/modules/users/repositories/drizzle-usuarios-repository', () => ({
+vi.mock('@/infra/database/drizzle/repositories/drizzle-usuario-repository', () => ({
   DrizzleUsuariosRepository: vi.fn(
     class {
       constructor() {
@@ -45,7 +47,17 @@ vi.mock('@/modules/users/repositories/drizzle-usuarios-repository', () => ({
   ),
 }));
 
-describe('usuarios routes', () => {
+vi.mock('@/infra/storage/minio-storage-service', () => ({
+  MinioStorageService: vi.fn(
+    class {
+      constructor() {
+        storageCtorMock();
+      }
+    },
+  ),
+}));
+
+describe('POST /usuarios', () => {
   let app: FastifyInstance;
 
   beforeEach(async () => {

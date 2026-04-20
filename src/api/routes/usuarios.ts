@@ -1,11 +1,14 @@
 import { auth } from '@/lib/auth';
-import { DrizzleUsuariosRepository } from '@/modules/users/repositories/drizzle-usuarios-repository';
+import { DrizzleUsuariosRepository } from '@/infra/database/drizzle/repositories';
 import { CreateUserByAdmin } from '@/modules/users/use-cases/create-user-by-admin';
-import { GetAllUsers } from '@/modules/users/use-cases/get-all-users';
-import { UnauthorizedError } from '@/shared/errors';
+import { AuthenticationError, UnauthorizedError } from '@/shared/errors';
 import { isValidCpf } from '@/shared/validators/is-valid-cpf';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import z from 'zod';
+import { authenticationMiddleware, authorizationMiddleware } from '../middlewares';
+import { updateUserRoute } from './users/update-user-route';
+import { updateUserImageRoute } from './users/update-user-image-route';
+import { tiposPerfil } from '@/modules/users/domain';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
@@ -15,7 +18,7 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
     });
 
     if (!session) {
-      throw new UnauthorizedError('Usuário não autenticado');
+      throw new AuthenticationError('Usuário não autenticado');
     }
 
     if (session.user.tipoPerfil !== 'ADMIN') {
@@ -56,22 +59,19 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
     return reply.status(201).send({ message: 'Usuário criado com sucesso.' });
   });
 
-  app.get('/usuarios', async (request: FastifyRequest, reply: FastifyReply) => {
-    const session = await auth.api.getSession({
-      headers: request.headers,
-    });
+  app.put(
+    '/usuarios',
+    {
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
+    },
+    updateUserRoute,
+  );
 
-    if (!session) {
-      throw new UnauthorizedError('Usuário não autenticado');
-    }
-
-    if (session.user.tipoPerfil !== 'ADMIN') {
-      throw new UnauthorizedError('Acesso negado: apenas administradores podem acessar esta rota');
-    }
-
-    const useCase = new GetAllUsers(new DrizzleUsuariosRepository());
-    const users = await useCase.execute();
-
-    return reply.status(200).send(users);
-  });
+  app.patch(
+    '/usuarios/imagem',
+    {
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
+    },
+    updateUserImageRoute,
+  );
 }

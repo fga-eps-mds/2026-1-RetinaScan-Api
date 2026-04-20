@@ -11,7 +11,7 @@ const migrationsFolder = path.resolve(__dirname, 'migrations');
 const config = {
   development: { migrationsRun: true, ssl: false },
   production: { migrationsRun: true, ssl: false },
-  test: { migrationsRun: false, ssl: false },
+  test: { migrationsRun: true, ssl: false },
 } as const;
 
 const options = config[env.NODE_ENV];
@@ -28,10 +28,8 @@ export async function connectDatabase(): Promise<void> {
   try {
     await pool.query('SELECT 1');
 
-    if (options.migrationsRun) {
-      await migrate(db, { migrationsFolder });
-      logger.info('Database migrations applied');
-    }
+    await migrate(db, { migrationsFolder });
+    logger.info('Database migrations applied');
 
     logger.info('PostgreSQL database connected successfully');
   } catch (error) {
