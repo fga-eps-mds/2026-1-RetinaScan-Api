@@ -36,6 +36,7 @@ export class CreateUserByAdmin {
         password: data.senha,
         cpf: data.cpf,
         crm: data.crm || '',
+        image: '',
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         dtNascimento: new Date(env.ADMIN_BIRTH_DATE ?? new Date()),
       },
