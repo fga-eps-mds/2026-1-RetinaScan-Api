@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+// IMPORTANTE: Ajuste este caminho se o teste não estiver na pasta src/tests/unit/modules/usuarios/
 import { GetAllUsers } from '../../../../modules/users/use-cases/get-all-users';
 import type { UsuariosRepository } from '../../../../modules/users/repositories/users-repository';
 import type { Usuario } from '../../../../modules/users/domain/usuario';
 
 describe('GetAllUsers Use Case', () => {
-  // SUT = System Under Test (O sistema que estamos testando)
   let sut: GetAllUsers;
   let usuariosRepositoryMock: UsuariosRepository;
 
@@ -27,7 +27,6 @@ describe('GetAllUsers Use Case', () => {
     const result = await sut.execute();
 
     expect(usuariosRepositoryMock.getAllUsers).toHaveBeenCalledTimes(1);
-
     expect(result).toEqual(mockUsers);
   });
 
@@ -40,7 +39,7 @@ describe('GetAllUsers Use Case', () => {
     expect(result).toEqual([]);
   });
 
-  it('deve repassar o erro caso o repositório falhe (ex: queda de banco de dados)', async () => {
+  it('deve repassar o erro caso o repositório falhe', async () => {
     const erroBanco = new Error('Conexão perdida');
     vi.mocked(usuariosRepositoryMock.getAllUsers).mockRejectedValueOnce(erroBanco);
 
