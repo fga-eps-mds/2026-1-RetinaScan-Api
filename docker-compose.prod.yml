@@ -58,6 +58,7 @@ services:
     networks:
       - retina-scan-network
     restart: unless-stopped
+    command: sh -c "npx drizzle-kit migrate && npm start"
 
 volumes:
   postgres_data_prod:
