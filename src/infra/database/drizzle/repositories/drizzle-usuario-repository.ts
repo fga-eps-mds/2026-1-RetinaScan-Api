@@ -53,4 +53,10 @@ export class DrizzleUsuariosRepository implements UsuariosRepository {
 
     return result[0] ?? null;
   }
+
+  async getAllUsers(): Promise<Usuario[]> {
+    const result = await db.select().from(usuario).orderBy(usuario.createdAt);
+
+    return result;
+  }
 }

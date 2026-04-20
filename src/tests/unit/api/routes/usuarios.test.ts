@@ -1,15 +1,22 @@
 import Fastify, { type FastifyInstance } from 'fastify';
-import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { usuarioRoutes } from '@/api/routes/usuarios';
 
-const { getSessionMock, executeMock, updateExecuteMock, repoCtorMock, storageCtorMock } =
-  vi.hoisted(() => ({
-    getSessionMock: vi.fn(),
-    executeMock: vi.fn(),
-    updateExecuteMock: vi.fn(),
-    repoCtorMock: vi.fn(),
-    storageCtorMock: vi.fn(),
-  }));
+const {
+  getSessionMock,
+  executeMock,
+  updateExecuteMock,
+  executeGetAllMock,
+  repoCtorMock,
+  storageCtorMock,
+} = vi.hoisted(() => ({
+  getSessionMock: vi.fn(),
+  executeMock: vi.fn(),
+  updateExecuteMock: vi.fn(),
+  executeGetAllMock: vi.fn(),
+  repoCtorMock: vi.fn(),
+  storageCtorMock: vi.fn(),
+}));
 
 vi.mock('@/lib/auth', () => ({
   auth: {
@@ -33,6 +40,15 @@ vi.mock('@/modules/users/use-cases/update-user-usecase', () => ({
     class {
       constructor() {}
       execute = updateExecuteMock;
+    },
+  ),
+}));
+
+vi.mock('@/modules/users/use-cases/get-all-users', () => ({
+  GetAllUsers: vi.fn(
+    class {
+      constructor() {}
+      execute = executeGetAllMock;
     },
   ),
 }));
@@ -73,63 +89,130 @@ describe('POST /usuarios', () => {
     await app.close();
   });
 
-  it('should return 401 when not authenticated', async () => {
-    getSessionMock.mockResolvedValue(null);
+  describe('POST /usuarios', () => {
+    it('should return 401 when not authenticated', async () => {
+      getSessionMock.mockResolvedValue(null);
 
-    const res = await app.inject({
-      method: 'POST',
-      url: '/usuarios',
-      payload: {},
+      const res = await app.inject({
+        method: 'POST',
+        url: '/usuarios',
+        payload: {},
+      });
+
+      expect(res.statusCode).toBe(401);
     });
 
-    expect(res.statusCode).toBe(401);
+    it('should return 403 when user is not admin', async () => {
+      getSessionMock.mockResolvedValue({
+        user: { tipoPerfil: 'MEDICO' },
+      });
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/usuarios',
+        payload: {},
+      });
+
+      expect(res.statusCode).toBe(403);
+    });
+
+    it('should return 400 when body is invalid', async () => {
+      getSessionMock.mockResolvedValue({
+        user: { tipoPerfil: 'ADMIN' },
+      });
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/usuarios',
+        payload: {
+          nomeCompleto: 'Gustavo Costa',
+          email: 'gustavo@email.com',
+          cpf: '12345',
+          crm: '12345',
+          dtNascimento: '2002-10-17',
+          senha: '123456',
+          tipoPerfil: 'MEDICO',
+        },
+      });
+
+      expect(res.statusCode).toBe(400);
+    });
+
+    it('should create user successfully', async () => {
+      getSessionMock.mockResolvedValue({
+        user: { tipoPerfil: 'ADMIN' },
+      });
+
+      executeMock.mockResolvedValue(undefined);
+
+      const res = await app.inject({
+        method: 'POST',
+        url: '/usuarios',
+        payload: {
+          nomeCompleto: 'Gustavo Costa',
+          email: 'gustavo@email.com',
+          cpf: '52998224725',
+          crm: '12345',
+          dtNascimento: '2002-10-17',
+          senha: '123456',
+          tipoPerfil: 'MEDICO',
+        },
+      });
+
+      expect(res.statusCode).toBe(201);
+      expect(repoCtorMock).toHaveBeenCalledTimes(1);
+      expect(executeMock).toHaveBeenCalledTimes(1);
+    });
   });
 
-  it('should return 500 when body is invalid', async () => {
-    getSessionMock.mockResolvedValue({
-      user: { tipoPerfil: 'ADMIN' },
+  describe('GET /usuarios', () => {
+    it('should return 401 when not authenticated', async () => {
+      getSessionMock.mockResolvedValue(null);
+
+      const res = await app.inject({
+        method: 'GET',
+        url: '/usuarios',
+      });
+
+      expect(res.statusCode).toBe(401);
     });
 
-    const res = await app.inject({
-      method: 'POST',
-      url: '/usuarios',
-      payload: {
-        nomeCompleto: 'Gustavo Costa',
-        email: 'gustavo@email.com',
-        cpf: '12345',
-        crm: '12345',
-        dtNascimento: '2002-10-17',
-        senha: '123456',
-        tipoPerfil: 'MEDICO',
-      },
+    it('should return 403 when user is not admin', async () => {
+      getSessionMock.mockResolvedValue({
+        user: { tipoPerfil: 'MEDICO' },
+      });
+
+      const res = await app.inject({
+        method: 'GET',
+        url: '/usuarios',
+      });
+
+      expect(res.statusCode).toBe(403);
     });
 
-    expect(res.statusCode).toBe(400);
-  });
+    it('should return all users successfully', async () => {
+      getSessionMock.mockResolvedValue({
+        user: { tipoPerfil: 'ADMIN' },
+      });
 
-  it('should create user successfully', async () => {
-    getSessionMock.mockResolvedValue({
-      user: { tipoPerfil: 'ADMIN' },
+      executeGetAllMock.mockResolvedValue([
+        { id: '1', nomeCompleto: 'Gustavo Costa' },
+        { id: '2', nomeCompleto: 'Maria Silva' },
+      ]);
+
+      const res = await app.inject({
+        method: 'GET',
+        url: '/usuarios',
+      });
+
+      expect(res.statusCode).toBe(200);
+      expect(JSON.parse(res.body)).toEqual([
+        { id: '1', nomeCompleto: 'Gustavo Costa' },
+        { id: '2', nomeCompleto: 'Maria Silva' },
+      ]);
+
+      expect(repoCtorMock).toHaveBeenCalledTimes(1);
+      expect(executeGetAllMock).toHaveBeenCalledTimes(1);
     });
-
-    executeMock.mockResolvedValue(undefined);
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/usuarios',
-      payload: {
-        nomeCompleto: 'Gustavo Costa',
-        email: 'gustavo@email.com',
-        cpf: '52998224725',
-        crm: '12345',
-        dtNascimento: '2002-10-17',
-        senha: '123456',
-        tipoPerfil: 'MEDICO',
-      },
-    });
-
-    expect(res.statusCode).toBe(201);
-    expect(repoCtorMock).toHaveBeenCalledTimes(1);
-    expect(executeMock).toHaveBeenCalledTimes(1);
   });
 });

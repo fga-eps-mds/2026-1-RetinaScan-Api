@@ -7,24 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
-
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run test:coverage
-
-  sonarcloud:
-    needs: test
+  build-test-sonar:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -36,10 +19,12 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: npm
+          node-version: 25
 
       - run: npm ci
+
+      - run: npm run lint
+
       - run: npm run test:coverage
 
       - name: SonarCloud Scan

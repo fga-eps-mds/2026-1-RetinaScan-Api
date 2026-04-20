@@ -22,5 +22,6 @@ export interface UsuariosRepository {
   findByCpf(cpf: string): Promise<Usuario | null>;
   findByCrm(crm: string): Promise<Usuario | null>;
   findBy(params: UsuarioFindByInput): Promise<UsuarioFindByOutput>;
+  getAllUsers(): Promise<Usuario[]>;
   update(id: string, params: UsuarioUpdateInput): Promise<UsuarioUpdateOutput>;
 }
