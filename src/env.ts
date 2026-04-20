@@ -15,6 +15,7 @@ const envSchema = z.object({
     .transform((v) => v === 'true'),
   MINIO_ACCESS_KEY: z.string().min(1).default('minioadmin'),
   MINIO_SECRET_KEY: z.string().min(1).default('minioadmin'),
+  MINIO_PUBLIC_URL: z.string().min(1).default('http://localhost:9000'),
   ADMIN_NAME: z.string().min(1, 'ADMIN_NAME is required'),
   ADMIN_EMAIL: z
     .string()
