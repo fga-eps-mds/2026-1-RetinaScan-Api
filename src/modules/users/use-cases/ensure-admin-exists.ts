@@ -45,6 +45,7 @@ export async function ensureAdminUserExists(): Promise<void> {
           name: env.ADMIN_NAME,
           email: env.ADMIN_EMAIL,
           password: env.ADMIN_PASSWORD,
+          image: '',
           cpf: env.ADMIN_CPF,
           crm: env.ADMIN_CRM,
           dtNascimento: new Date(env.ADMIN_BIRTH_DATE),
