@@ -14,6 +14,8 @@ export const tipoPerfilEnum = pgEnum('tipo_perfil', ['ADMIN', 'MEDICO']);
 
 export const statusUsuarioEnum = pgEnum('status_usuario', ['ATIVO', 'INATIVO', 'BLOQUEADO']);
 
+export const solicitacaoStatusEnum = pgEnum('solicitacao_status', ['PENDENTE', 'APROVADA', 'REJEITADA']);
+
 export const usuario = pgTable(
   'usuario',
   {
@@ -138,6 +140,45 @@ export const verification = pgTable(
       .notNull(),
   },
   (table) => [index('verification_identifier_idx').on(table.identifier)],
+);
+
+export const solicitacaoCpfCrm = pgTable(
+  'solicitacao_cpf_crm',
+  {
+    id: text('id').primaryKey(),
+
+    idUsuario: text('id_usuario')
+      .notNull()
+      .references(() => usuario.id, {
+        onDelete: 'cascade',
+      }),
+
+    cpfNovo: text('cpf_novo').notNull(),
+
+    crmNovo: text('crm_novo').notNull(),
+
+    status: solicitacaoStatusEnum('status').default('PENDENTE').notNull(),
+
+    motivoRejeicao: text('motivo_rejeicao'),
+
+    analisadoPor: text('analisado_por').references(() => usuario.id, {
+      onDelete: 'set null',
+    }),
+
+    analisadoEm: timestamp('analisado_em'),
+
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index('solicitacao_usuario_idx').on(table.idUsuario),
+    index('solicitacao_status_idx').on(table.status),
+    index('solicitacao_usuario_status_idx').on(table.idUsuario, table.status),
+  ],
 );
 
 export const usuarioRelations = relations(usuario, ({ many }) => ({
