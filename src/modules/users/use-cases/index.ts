@@ -3,3 +3,4 @@ export * from './update-user-usecase';
 export * from './create-user-by-admin';
 export * from './update-user-image-usecase';
 export * from './update-user-usecase';
+export * from './solicitar-alteracao-cpf-crm';
