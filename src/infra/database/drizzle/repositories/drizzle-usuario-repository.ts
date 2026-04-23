@@ -49,7 +49,20 @@ export class DrizzleUsuariosRepository implements UsuariosRepository {
   }
 
   async update(id: string, params: UsuarioUpdateInput): Promise<UsuarioUpdateOutput> {
-    const result = await db.update(usuario).set(params).where(eq(usuario.id, id)).returning();
+    const filteredParams = Object.fromEntries(
+      Object.entries(params as Record<string, unknown>).filter(([, value]) => value !== undefined),
+    ) as UsuarioUpdateInput;
+
+    if (Object.keys(filteredParams).length === 0) {
+      const currentUser = await this.findBy({ id });
+      return currentUser;
+    }
+
+    const result = await db
+      .update(usuario)
+      .set(filteredParams)
+      .where(eq(usuario.id, id))
+      .returning();
 
     return result[0] ?? null;
   }

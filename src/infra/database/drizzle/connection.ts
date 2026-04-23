@@ -10,7 +10,7 @@ const migrationsFolder = path.resolve(__dirname, 'migrations');
 
 const config = {
   development: { migrationsRun: true, ssl: false },
-  production: { migrationsRun: true, ssl: false },
+  production: { migrationsRun: false, ssl: false },
   test: { migrationsRun: true, ssl: false },
 } as const;
 
@@ -25,11 +25,16 @@ export const db = drizzle(pool, { schema });
 
 export async function connectDatabase(): Promise<void> {
   logger.info('Starting PostgreSQL database');
+
   try {
     await pool.query('SELECT 1');
 
-    await migrate(db, { migrationsFolder });
-    logger.info('Database migrations applied');
+    if (options.migrationsRun) {
+      await migrate(db, { migrationsFolder });
+      logger.info('Database migrations applied');
+    } else {
+      logger.info('Database migrations skipped');
+    }
 
     logger.info('PostgreSQL database connected successfully');
   } catch (error) {

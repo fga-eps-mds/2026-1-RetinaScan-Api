@@ -27,6 +27,7 @@ export default defineConfig({
         'src/infra/health/**',
         'src/infra/docs/**',
         'src/infra/database/drizzle/schema/**',
+        'src/infra/database/drizzle/migrate.ts',
       ],
     },
     projects: [

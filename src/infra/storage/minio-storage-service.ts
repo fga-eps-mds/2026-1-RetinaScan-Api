@@ -10,7 +10,7 @@ export class MinioStorageService implements StorageService {
       'Content-Type': input.contentType,
     });
 
-    const scheme = env.MINIO_USE_SSL ? 'https' : 'http';
-    return `${scheme}://${env.MINIO_ENDPOINT}:${env.MINIO_PORT}/${bucket}/${input.key}`;
+    const baseUrl = env.MINIO_PUBLIC_URL.replace(/\/$/, '');
+    return `${baseUrl}/${bucket}/${input.key}`;
   }
 }
