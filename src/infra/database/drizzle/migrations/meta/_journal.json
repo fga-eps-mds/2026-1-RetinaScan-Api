@@ -8,6 +8,13 @@
       "when": 1776379297986,
       "tag": "0000_create_usuario_table",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776983201309,
+      "tag": "0001_solicitacao-de-alteracao-crm-cpf",
+      "breakpoints": true
     }
   ]
 }
