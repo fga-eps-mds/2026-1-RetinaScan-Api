@@ -13,6 +13,8 @@ export type UsuarioUpdateInput = {
   email?: string;
   dtNascimento?: string;
   image?: string;
+  cpf?: string;
+  crm?: string;
 };
 
 export type UsuarioUpdateOutput = Usuario | null;
