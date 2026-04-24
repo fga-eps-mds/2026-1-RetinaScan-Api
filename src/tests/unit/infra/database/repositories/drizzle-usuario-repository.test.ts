@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DrizzleUsuariosRepository } from '../../../../../infra/database/drizzle/repositories/drizzle-usuario-repository';
-import { usuario } from '../../../../../infra/database/drizzle/schema/index';
+import { DrizzleUsuariosRepository } from '@/infra/database/drizzle/repositories/drizzle-usuario-repository';
+import { usuario } from '@/infra/database/drizzle/schema/index';
 
 const {
   mockSelect,
