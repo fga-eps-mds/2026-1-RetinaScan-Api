@@ -4,7 +4,7 @@
   "description": "RetinaScan REST API",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc && tsc-alias -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "start": "node dist/server.js",
     "dev": "nodemon --watch src -e ts --exec \"tsx --inspect --env-file=./env/.env.dev ./src/server.ts\"",
     "test": "dotenv -e env/.env.test -- vitest run",
