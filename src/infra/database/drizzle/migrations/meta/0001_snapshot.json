@@ -433,100 +433,6 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.paciente": {
-      "name": "paciente",
-      "schema": "",
-      "columns": {
-        "id_paciente": {
-          "name": "id_paciente",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "nome_completo": {
-          "name": "nome_completo",
-          "type": "varchar(150)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "cpf": {
-          "name": "cpf",
-          "type": "varchar(14)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "data_nascimento": {
-          "name": "data_nascimento",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "sexo": {
-          "name": "sexo",
-          "type": "varchar(20)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "num_prontuario": {
-          "name": "num_prontuario",
-          "type": "varchar(50)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "cpf_unique_index": {
-          "name": "cpf_unique_index",
-          "columns": [
-            {
-              "expression": "cpf",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "num_prontuario_unique_index": {
-          "name": "num_prontuario_unique_index",
-          "columns": [
-            {
-              "expression": "num_prontuario",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
     "public.exame": {
       "name": "exame",
       "schema": "",
@@ -543,9 +449,27 @@
           "primaryKey": false,
           "notNull": true
         },
-        "id_paciente": {
-          "name": "id_paciente",
+        "nome_completo": {
+          "name": "nome_completo",
+          "type": "varchar(150)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cpf": {
+          "name": "cpf",
+          "type": "varchar(14)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data_nascimento": {
+          "name": "data_nascimento",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sexo": {
+          "name": "sexo",
+          "type": "varchar(20)",
           "primaryKey": false,
           "notNull": true
         },
@@ -599,19 +523,6 @@
           ],
           "columnsTo": [
             "id_usuario"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "no action"
-        },
-        "exame_id_paciente_paciente_id_paciente_fk": {
-          "name": "exame_id_paciente_paciente_id_paciente_fk",
-          "tableFrom": "exame",
-          "tableTo": "paciente",
-          "columnsFrom": [
-            "id_paciente"
-          ],
-          "columnsTo": [
-            "id_paciente"
           ],
           "onDelete": "restrict",
           "onUpdate": "no action"

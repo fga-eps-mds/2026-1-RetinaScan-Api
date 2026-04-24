@@ -3,8 +3,9 @@ import { authenticationMiddleware, authorizationMiddleware } from '../middleware
 import { tiposPerfil } from '@/modules/users/domain';
 import { createExam } from './exams/create-exam';
 
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function examRoutes(app: FastifyInstance): Promise<void> {
-    app.post(
+  app.post(
     '/exams',
     { preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])] },
     createExam,
