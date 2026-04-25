@@ -8,7 +8,8 @@ import { getAllUsers } from './users/get-all-users';
 import { solicitarAlteracaoCpfCrmRoute } from './users/solicitar-alteracao-cpf-crm';
 import { aprovarSolicitacaoCpfCrmRoute } from './users/aprovar-solicitacao-cpf-crm';
 import { rejeitarSolicitacaoCpfCrmRoute } from './users/rejeitar-solicitacao-cpf-crm';
-import { listarSolicitacoesCpfCrmRoute } from './users/listar-solicitacoes-cpf-crm';
+import { listarSolicitacoesCpfCrmAdminRoute } from './users/listar-solicitacoes-cpf-crm-admin';
+import { listarMinhasSolicitacoesCpfCrmRoute } from './users/listar-minhas-solicitacoes-cpf-crm';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
@@ -67,8 +68,16 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
   app.get(
     '/usuarios/solicitacoes-cpf-crm',
     {
-      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN, tiposPerfil.MEDICO])],
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
     },
-    listarSolicitacoesCpfCrmRoute,
+    listarSolicitacoesCpfCrmAdminRoute,
+  );
+
+  app.get(
+    '/usuarios/minhas-solicitacoes-cpf-crm',
+    {
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
+    },
+    listarMinhasSolicitacoesCpfCrmRoute,
   );
 }

@@ -9,8 +9,8 @@ export type SolicitacaoStatus = keyof typeof solicitacaoStatus;
 export type SolicitacaoCpfCrm = {
   id: string;
   idUsuario: string;
-  cpfNovo: string;
-  crmNovo: string;
+  cpfNovo: string | null;
+  crmNovo: string | null;
   status: SolicitacaoStatus;
   motivoRejeicao: string | null;
   analisadoPor: string | null;

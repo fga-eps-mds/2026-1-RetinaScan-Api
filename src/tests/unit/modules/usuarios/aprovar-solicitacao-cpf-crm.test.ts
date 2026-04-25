@@ -83,6 +83,32 @@ describe('AprovarSolicitacaoCpfCrmUsecase', () => {
     expect(result.notificacaoEnviada).toBe(true);
   });
 
+  it('deve aplicar apenas cpf quando solicitacao nao tiver crmNovo', async () => {
+    const solicitacaoSoCpf = { ...solicitacao, crmNovo: null };
+    usuariosRepository.findBy.mockResolvedValueOnce(admin);
+    solicitacaoRepository.aprovar.mockResolvedValueOnce(solicitacaoSoCpf);
+    usuariosRepository.update.mockResolvedValueOnce({ id: solicitacaoSoCpf.idUsuario });
+
+    await usecase.execute({ idSolicitacao: solicitacaoSoCpf.id, idAdmin: admin.id });
+
+    expect(usuariosRepository.update).toHaveBeenCalledWith(solicitacaoSoCpf.idUsuario, {
+      cpf: solicitacaoSoCpf.cpfNovo,
+    });
+  });
+
+  it('deve aplicar apenas crm quando solicitacao nao tiver cpfNovo', async () => {
+    const solicitacaoSoCrm = { ...solicitacao, cpfNovo: null };
+    usuariosRepository.findBy.mockResolvedValueOnce(admin);
+    solicitacaoRepository.aprovar.mockResolvedValueOnce(solicitacaoSoCrm);
+    usuariosRepository.update.mockResolvedValueOnce({ id: solicitacaoSoCrm.idUsuario });
+
+    await usecase.execute({ idSolicitacao: solicitacaoSoCrm.id, idAdmin: admin.id });
+
+    expect(usuariosRepository.update).toHaveBeenCalledWith(solicitacaoSoCrm.idUsuario, {
+      crm: solicitacaoSoCrm.crmNovo,
+    });
+  });
+
   it('deve lançar NotFoundError quando admin não existir', async () => {
     usuariosRepository.findBy.mockResolvedValueOnce(null);
 

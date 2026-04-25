@@ -153,9 +153,9 @@ export const solicitacaoCpfCrm = pgTable(
         onDelete: 'cascade',
       }),
 
-    cpfNovo: text('cpf_novo').notNull(),
+    cpfNovo: text('cpf_novo'),
 
-    crmNovo: text('crm_novo').notNull(),
+    crmNovo: text('crm_novo'),
 
     status: solicitacaoStatusEnum('status').default('PENDENTE').notNull(),
 

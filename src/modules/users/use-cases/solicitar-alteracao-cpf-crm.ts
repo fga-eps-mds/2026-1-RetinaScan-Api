@@ -6,8 +6,8 @@ import { isValidCpf } from '@/shared/validators/is-valid-cpf';
 
 export type SolicitarAlteracaoCpfCrmUsecaseInput = {
   idUsuario: string;
-  cpfNovo: string;
-  crmNovo: string;
+  cpfNovo?: string;
+  crmNovo?: string;
 };
 
 export type SolicitarAlteracaoCpfCrmUsecaseOutput = {
@@ -25,8 +25,8 @@ export class SolicitarAlteracaoCpfCrmUsecase {
   async execute(
     input: SolicitarAlteracaoCpfCrmUsecaseInput,
   ): Promise<SolicitarAlteracaoCpfCrmUsecaseOutput> {
-    const cpfNormalizado = input.cpfNovo.replace(/\D/g, '');
-    const crmNormalizado = input.crmNovo.trim();
+    const cpfNormalizado = input.cpfNovo?.replace(/\D/g, '');
+    const crmNormalizado = input.crmNovo?.trim();
 
     this.validateInput(cpfNormalizado, crmNormalizado);
 
@@ -47,16 +47,18 @@ export class SolicitarAlteracaoCpfCrmUsecase {
       throw new ConflictError('Usuário já possui solicitação pendente');
     }
 
-    const usuarioComCpf = await this.usuariosRepository.findByCpf(cpfNormalizado);
-
-    if (usuarioComCpf && usuarioComCpf.id !== input.idUsuario) {
-      throw new ConflictError('CPF já cadastrado');
+    if (cpfNormalizado) {
+      const usuarioComCpf = await this.usuariosRepository.findByCpf(cpfNormalizado);
+      if (usuarioComCpf && usuarioComCpf.id !== input.idUsuario) {
+        throw new ConflictError('CPF já cadastrado');
+      }
     }
 
-    const usuarioComCrm = await this.usuariosRepository.findByCrm(crmNormalizado);
-
-    if (usuarioComCrm && usuarioComCrm.id !== input.idUsuario) {
-      throw new ConflictError('CRM já cadastrado');
+    if (crmNormalizado) {
+      const usuarioComCrm = await this.usuariosRepository.findByCrm(crmNormalizado);
+      if (usuarioComCrm && usuarioComCrm.id !== input.idUsuario) {
+        throw new ConflictError('CRM já cadastrado');
+      }
     }
 
     const solicitacao = await this.solicitacaoCpfCrmRepository.criar({
@@ -72,14 +74,18 @@ export class SolicitarAlteracaoCpfCrmUsecase {
     };
   }
 
-  private validateInput(cpfNovo: string, crmNovo: string): void {
+  private validateInput(cpfNovo: string | undefined, crmNovo: string | undefined): void {
     const fields = [] as { path: (string | number)[]; message: string }[];
 
-    if (!isValidCpf(cpfNovo)) {
+    if (!cpfNovo && !crmNovo) {
+      fields.push({ path: ['cpfNovo'], message: 'Informe ao menos CPF ou CRM para alteração' });
+    }
+
+    if (cpfNovo && !isValidCpf(cpfNovo)) {
       fields.push({ path: ['cpfNovo'], message: 'CPF inválido' });
     }
 
-    if (!/^[A-Za-z0-9./-]{4,20}$/.test(crmNovo)) {
+    if (crmNovo && !/^[A-Za-z0-9./-]{4,20}$/.test(crmNovo)) {
       fields.push({ path: ['crmNovo'], message: 'CRM inválido' });
     }
 

@@ -59,7 +59,7 @@ describe('SolicitarAlteracaoCpfCrmUsecase', () => {
     usecase = new SolicitarAlteracaoCpfCrmUsecase(usuariosRepository, solicitacaoRepository);
   });
 
-  it('deve criar solicitacao quando dados forem validos', async () => {
+  it('deve criar solicitacao com cpf e crm quando ambos forem informados', async () => {
     usuariosRepository.findBy.mockResolvedValueOnce(medico);
     solicitacaoRepository.findPendenteByUsuario.mockResolvedValueOnce(null);
     usuariosRepository.findByCpf.mockResolvedValueOnce(null);
@@ -84,6 +84,52 @@ describe('SolicitarAlteracaoCpfCrmUsecase', () => {
       status: solicitacaoStatus.PENDENTE,
       mensagem: 'Solicitação de alteração de CPF/CRM enviada com sucesso. Aguarde a análise do administrador.',
     });
+  });
+
+  it('deve criar solicitacao apenas com cpf', async () => {
+    const solicitacaoSoCpf = { ...solicitacaoCriada, crmNovo: null };
+    usuariosRepository.findBy.mockResolvedValueOnce(medico);
+    solicitacaoRepository.findPendenteByUsuario.mockResolvedValueOnce(null);
+    usuariosRepository.findByCpf.mockResolvedValueOnce(null);
+    solicitacaoRepository.criar.mockResolvedValueOnce(solicitacaoSoCpf);
+
+    const result = await usecase.execute({
+      idUsuario: medico.id,
+      cpfNovo: '52998224725',
+    });
+
+    expect(solicitacaoRepository.criar).toHaveBeenCalledWith({
+      idUsuario: medico.id,
+      cpfNovo: '52998224725',
+      crmNovo: undefined,
+    });
+    expect(result.idSolicitacao).toBe('sol-1');
+  });
+
+  it('deve criar solicitacao apenas com crm', async () => {
+    const solicitacaoSoCrm = { ...solicitacaoCriada, cpfNovo: null };
+    usuariosRepository.findBy.mockResolvedValueOnce(medico);
+    solicitacaoRepository.findPendenteByUsuario.mockResolvedValueOnce(null);
+    usuariosRepository.findByCrm.mockResolvedValueOnce(null);
+    solicitacaoRepository.criar.mockResolvedValueOnce(solicitacaoSoCrm);
+
+    const result = await usecase.execute({
+      idUsuario: medico.id,
+      crmNovo: 'CRM-1234',
+    });
+
+    expect(solicitacaoRepository.criar).toHaveBeenCalledWith({
+      idUsuario: medico.id,
+      cpfNovo: undefined,
+      crmNovo: 'CRM-1234',
+    });
+    expect(result.idSolicitacao).toBe('sol-1');
+  });
+
+  it('deve lançar ValidationError quando nem cpf nem crm forem informados', async () => {
+    await expect(
+      usecase.execute({ idUsuario: medico.id }),
+    ).rejects.toBeInstanceOf(ValidationError);
   });
 
   it('deve lançar ValidationError para cpf invalido', async () => {

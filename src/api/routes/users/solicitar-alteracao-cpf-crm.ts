@@ -6,12 +6,17 @@ import { ValidationError } from '@/shared/errors';
 
 const bodySchema = z
   .object({
-    cpfNovo: z.string().refine(isValidCpf, {
-      message: 'CPF inválido.',
-    }),
-    crmNovo: z.string().trim().min(1, 'CRM obrigatório.'),
+    cpfNovo: z
+      .string()
+      .refine(isValidCpf, { message: 'CPF inválido.' })
+      .optional(),
+    crmNovo: z.string().trim().min(1, 'CRM obrigatório.').optional(),
   })
-  .strict({ message: 'Campos inválidos.' });
+  .strict({ message: 'Campos inválidos.' })
+  .refine((data) => data.cpfNovo !== undefined || data.crmNovo !== undefined, {
+    message: 'Informe ao menos CPF ou CRM para alteração.',
+    path: ['cpfNovo'],
+  });
 
 export async function solicitarAlteracaoCpfCrmRoute(request: FastifyRequest, reply: FastifyReply) {
   const result = bodySchema.safeParse(request.body);

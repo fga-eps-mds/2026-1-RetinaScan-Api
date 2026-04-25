@@ -30,8 +30,8 @@ export interface UsuariosRepository {
 
 export type SolicitarAlteracaoCpfCrmInput = {
   idUsuario: string;
-  cpfNovo: string;
-  crmNovo: string;
+  cpfNovo?: string;
+  crmNovo?: string;
 };
 
 export type ListarSolicitacoesCpfCrmInput = {
