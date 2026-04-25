@@ -12,6 +12,7 @@ class FakeUsuariosRepository implements UsuariosRepository {
   findByCpf = vi.fn();
   findByCrm = vi.fn();
   findBy = vi.fn();
+  getAllUsers = vi.fn();
   update = vi.fn();
 }
 

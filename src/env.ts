@@ -34,6 +34,7 @@ const envSchema = z.object({
     .url('BETTER_AUTH_URL must be a valid URL')
     .default('http://localhost:3000'),
   BETTER_AUTH_SECRET: z.string().min(1, 'BETTER_AUTH_SECRET is required'),
+  CRYPTOGRAPHY_SECRET: z.string().min(1, 'CRYPTOGRAPHY_SECRET is required'),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
