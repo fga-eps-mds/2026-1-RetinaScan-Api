@@ -55,12 +55,7 @@ container.register({
       new UpdateUserImageUsecase(usuariosRepository, storageService),
   ).scoped(),
   createExamUseCase: asFunction(
-    ({
-      usuariosRepository,
-      examesRepository,
-      cryptographyService,
-      maskingService,
-    }: AppContainer) =>
+    ({ usuariosRepository, examesRepository, cryptographyService, maskingService }: AppContainer) =>
       new CreateExamUseCase(
         usuariosRepository,
         examesRepository,
