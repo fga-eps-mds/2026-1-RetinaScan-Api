@@ -6,6 +6,11 @@ on:
       - main
     types: [closed]
 
+  # apenas para testes
+  push:
+    branches:
+      - develop
+
 jobs:
   realese:
     if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'NOT RELEASE') == false
