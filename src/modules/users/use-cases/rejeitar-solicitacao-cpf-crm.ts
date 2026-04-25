@@ -25,7 +25,10 @@ export class RejeitarSolicitacaoCpfCrmUsecase {
     const motivoRejeicao = input.motivoRejeicao.trim();
 
     if (!motivoRejeicao) {
-      throw new ValidationError([{ path: ['motivoRejeicao'], message: 'Motivo da rejeição é obrigatório' }], true);
+      throw new ValidationError(
+        [{ path: ['motivoRejeicao'], message: 'Motivo da rejeição é obrigatório' }],
+        true,
+      );
     }
 
     const admin = await this.usuariosRepository.findBy({ id: input.idAdmin });

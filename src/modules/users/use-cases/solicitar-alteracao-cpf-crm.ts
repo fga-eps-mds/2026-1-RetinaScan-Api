@@ -1,4 +1,4 @@
-import { tiposPerfil, solicitacaoStatus, type SolicitacaoStatus } from '@/modules/users/domain';
+import { tiposPerfil, type SolicitacaoStatus } from '@/modules/users/domain';
 import type { SolicitacaoCpfCrmRepository, UsuariosRepository } from '@/modules/users/repositories';
 import { NotFoundError, ValidationError } from '@/shared/errors';
 import { ConflictError } from '@/shared/errors/conflict-error';
@@ -40,8 +40,9 @@ export class SolicitarAlteracaoCpfCrmUsecase {
       throw new ConflictError('Apenas médicos podem solicitar alteração de CPF/CRM');
     }
 
-    const solicitacaoPendente =
-      await this.solicitacaoCpfCrmRepository.findPendenteByUsuario(input.idUsuario);
+    const solicitacaoPendente = await this.solicitacaoCpfCrmRepository.findPendenteByUsuario(
+      input.idUsuario,
+    );
 
     if (solicitacaoPendente) {
       throw new ConflictError('Usuário já possui solicitação pendente');
@@ -69,8 +70,9 @@ export class SolicitarAlteracaoCpfCrmUsecase {
 
     return {
       idSolicitacao: solicitacao.id,
-      status: solicitacao.status ?? solicitacaoStatus.PENDENTE,
-      mensagem: 'Solicitação de alteração de CPF/CRM enviada com sucesso. Aguarde a análise do administrador.',
+      status: solicitacao.status,
+      mensagem:
+        'Solicitação de alteração de CPF/CRM enviada com sucesso. Aguarde a análise do administrador.',
     };
   }
 

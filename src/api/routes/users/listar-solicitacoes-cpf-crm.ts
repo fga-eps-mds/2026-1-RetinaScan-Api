@@ -11,10 +11,7 @@ const querySchema = z
   })
   .strict({ message: 'Parâmetros inválidos.' });
 
-export async function listarSolicitacoesCpfCrmRoute(
-  request: FastifyRequest,
-  reply: FastifyReply,
-) {
+export async function listarSolicitacoesCpfCrmRoute(request: FastifyRequest, reply: FastifyReply) {
   const result = querySchema.safeParse(request.query);
 
   if (!result.success) {

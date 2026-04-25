@@ -6,10 +6,7 @@ import { ValidationError } from '@/shared/errors';
 
 const bodySchema = z
   .object({
-    cpfNovo: z
-      .string()
-      .refine(isValidCpf, { message: 'CPF inválido.' })
-      .optional(),
+    cpfNovo: z.string().refine(isValidCpf, { message: 'CPF inválido.' }).optional(),
     crmNovo: z.string().trim().min(1, 'CRM obrigatório.').optional(),
   })
   .strict({ message: 'Campos inválidos.' })

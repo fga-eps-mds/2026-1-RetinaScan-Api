@@ -12,8 +12,7 @@ import { SolicitarAlteracaoCpfCrmUsecase } from '@/modules/users/use-cases/solic
 import { AprovarSolicitacaoCpfCrmUsecase } from '@/modules/users/use-cases/aprovar-solicitacao-cpf-crm';
 import { RejeitarSolicitacaoCpfCrmUsecase } from '@/modules/users/use-cases/rejeitar-solicitacao-cpf-crm';
 import { ListarSolicitacoesCpfCrmUsecase } from '@/modules/users/use-cases/listar-solicitacoes-cpf-crm';
-import type { UsuariosRepository } from '@/modules/users/repositories';
-import type { SolicitacaoCpfCrmRepository } from '@/modules/users/repositories';
+import type { UsuariosRepository, SolicitacaoCpfCrmRepository } from '@/modules/users/repositories';
 import type { AuthService } from '@/shared/services/auth-service';
 import type { StorageService } from '@/shared/services/storage-service';
 
@@ -65,7 +64,7 @@ container.register({
       new RejeitarSolicitacaoCpfCrmUsecase(usuariosRepository, solicitacaoCpfCrmRepository),
   ).scoped(),
   listarSolicitacoesCpfCrmUsecase: asFunction(
-  ({ solicitacaoCpfCrmRepository }: AppContainer) =>
-    new ListarSolicitacoesCpfCrmUsecase(solicitacaoCpfCrmRepository),
+    ({ solicitacaoCpfCrmRepository }: AppContainer) =>
+      new ListarSolicitacoesCpfCrmUsecase(solicitacaoCpfCrmRepository),
   ).scoped(),
 });

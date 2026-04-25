@@ -54,7 +54,10 @@ export class DrizzleSolicitacaoCpfCrmRepository implements SolicitacaoCpfCrmRepo
     }
 
     if (filters.length === 0) {
-      return (await db.select().from(solicitacaoCpfCrm).orderBy(solicitacaoCpfCrm.createdAt)) as SolicitacaoCpfCrm[];
+      return (await db
+        .select()
+        .from(solicitacaoCpfCrm)
+        .orderBy(solicitacaoCpfCrm.createdAt)) as SolicitacaoCpfCrm[];
     }
 
     return (await db

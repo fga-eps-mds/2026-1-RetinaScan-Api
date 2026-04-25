@@ -11,9 +11,7 @@ export type ListarSolicitacoesCpfCrmUsecaseOutput = {
 };
 
 export class ListarSolicitacoesCpfCrmUsecase {
-  constructor(
-    private readonly solicitacaoCpfCrmRepository: SolicitacaoCpfCrmRepository,
-  ) {}
+  constructor(private readonly solicitacaoCpfCrmRepository: SolicitacaoCpfCrmRepository) {}
 
   async execute(
     input?: ListarSolicitacoesCpfCrmUsecaseInput,

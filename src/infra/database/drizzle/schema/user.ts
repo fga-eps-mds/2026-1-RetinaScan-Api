@@ -14,7 +14,11 @@ export const tipoPerfilEnum = pgEnum('tipo_perfil', ['ADMIN', 'MEDICO']);
 
 export const statusUsuarioEnum = pgEnum('status_usuario', ['ATIVO', 'INATIVO', 'BLOQUEADO']);
 
-export const solicitacaoStatusEnum = pgEnum('solicitacao_status', ['PENDENTE', 'APROVADA', 'REJEITADA']);
+export const solicitacaoStatusEnum = pgEnum('solicitacao_status', [
+  'PENDENTE',
+  'APROVADA',
+  'REJEITADA',
+]);
 
 export const usuario = pgTable(
   'usuario',
