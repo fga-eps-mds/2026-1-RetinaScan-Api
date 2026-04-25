@@ -25,7 +25,7 @@ jobs:
           python-version: '3.12'
 
       - name: Instalar dependências
-        run: pip install python-dotenv packaging pandas
+        run: pip install requests python-dotenv packaging pandas
 
       - name: Criar arquivo .env
         run: |
