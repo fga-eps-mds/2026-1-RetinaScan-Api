@@ -5,8 +5,22 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1777155345429,
-      "tag": "0000_init_schema",
+      "when": 1776379297986,
+      "tag": "0000_create_usuario_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776985324311,
+      "tag": "0001_create_exam_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1777154606018,
+      "tag": "0002_add_crm_and_cpf_solicitation_table",
       "breakpoints": true
     }
   ]

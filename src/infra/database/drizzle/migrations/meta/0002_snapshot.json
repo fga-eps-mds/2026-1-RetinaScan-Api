@@ -1,6 +1,6 @@
 {
-  "id": "26119f9b-d7b0-4507-81bb-b1eccd05e9fd",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "9275c618-ef9c-45c7-8e16-445a2f7d71a2",
+  "prevId": "35defa82-cb0f-4a64-8c77-f5ab03df750a",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -228,6 +228,162 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.solicitacao_cpf_crm": {
+      "name": "solicitacao_cpf_crm",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "id_usuario": {
+          "name": "id_usuario",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cpf_novo": {
+          "name": "cpf_novo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "crm_novo": {
+          "name": "crm_novo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "solicitacao_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'PENDENTE'"
+        },
+        "motivo_rejeicao": {
+          "name": "motivo_rejeicao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "analisado_por": {
+          "name": "analisado_por",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "analisado_em": {
+          "name": "analisado_em",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "solicitacao_usuario_idx": {
+          "name": "solicitacao_usuario_idx",
+          "columns": [
+            {
+              "expression": "id_usuario",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "solicitacao_status_idx": {
+          "name": "solicitacao_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "solicitacao_usuario_status_idx": {
+          "name": "solicitacao_usuario_status_idx",
+          "columns": [
+            {
+              "expression": "id_usuario",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "solicitacao_cpf_crm_id_usuario_usuario_id_usuario_fk": {
+          "name": "solicitacao_cpf_crm_id_usuario_usuario_id_usuario_fk",
+          "tableFrom": "solicitacao_cpf_crm",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "id_usuario"
+          ],
+          "columnsTo": [
+            "id_usuario"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "solicitacao_cpf_crm_analisado_por_usuario_id_usuario_fk": {
+          "name": "solicitacao_cpf_crm_analisado_por_usuario_id_usuario_fk",
+          "tableFrom": "solicitacao_cpf_crm",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "analisado_por"
+          ],
+          "columnsTo": [
+            "id_usuario"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.usuario": {
       "name": "usuario",
       "schema": "",
@@ -432,9 +588,119 @@
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
+    },
+    "public.exame": {
+      "name": "exame",
+      "schema": "",
+      "columns": {
+        "id_exame": {
+          "name": "id_exame",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "id_usuario": {
+          "name": "id_usuario",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome_completo": {
+          "name": "nome_completo",
+          "type": "varchar(150)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cpf": {
+          "name": "cpf",
+          "type": "varchar(14)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data_nascimento": {
+          "name": "data_nascimento",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sexo": {
+          "name": "sexo",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data_hora": {
+          "name": "data_hora",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "comorbidades": {
+          "name": "comorbidades",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "descricao": {
+          "name": "descricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "exame_id_usuario_usuario_id_usuario_fk": {
+          "name": "exame_id_usuario_usuario_id_usuario_fk",
+          "tableFrom": "exame",
+          "tableTo": "usuario",
+          "columnsFrom": [
+            "id_usuario"
+          ],
+          "columnsTo": [
+            "id_usuario"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {
+    "public.solicitacao_status": {
+      "name": "solicitacao_status",
+      "schema": "public",
+      "values": [
+        "PENDENTE",
+        "APROVADA",
+        "REJEITADA"
+      ]
+    },
     "public.status_usuario": {
       "name": "status_usuario",
       "schema": "public",
