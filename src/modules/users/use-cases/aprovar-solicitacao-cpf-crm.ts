@@ -42,8 +42,8 @@ export class AprovarSolicitacaoCpfCrmUsecase {
     }
 
     const updateData = {
-      ...(solicitacao.cpfNovo != null && { cpf: solicitacao.cpfNovo }),
-      ...(solicitacao.crmNovo != null && { crm: solicitacao.crmNovo }),
+      ...(solicitacao.cpfNovo && { cpf: solicitacao.cpfNovo }),
+      ...(solicitacao.crmNovo && { crm: solicitacao.crmNovo }),
     };
 
     const usuarioAtualizado = await this.usuariosRepository.update(
