@@ -271,7 +271,7 @@ describe('solicitação de CPF/CRM routes', () => {
     expect(JSON.parse(res.body).solicitacoes).toHaveLength(2);
   });
 
-  it('should return 403 when a non-admin user tries to list requests', async () => {
+  it('should list own requests when medical user accesses the route', async () => {
     getSessionMock.mockResolvedValue({
       user: {
         id: 'medico-1',
@@ -281,11 +281,20 @@ describe('solicitação de CPF/CRM routes', () => {
       },
     });
 
+    resolveMock.mockImplementation((key: string) => {
+      if (key === 'listarSolicitacoesCpfCrmUsecase') {
+        return {
+          execute: vi.fn().mockResolvedValue({ solicitacoes: [] }),
+        };
+      }
+      throw new Error(`Unknown resolve key: ${key}`);
+    });
+
     const res = await app.inject({
       method: 'GET',
       url: '/usuarios/solicitacoes-cpf-crm',
     });
 
-    expect(res.statusCode).toBe(403);
+    expect(res.statusCode).toBe(200);
   });
 });

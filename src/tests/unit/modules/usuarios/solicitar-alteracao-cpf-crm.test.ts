@@ -83,6 +83,7 @@ describe('SolicitarAlteracaoCpfCrmUsecase', () => {
       idSolicitacao: 'sol-1',
       status: solicitacaoStatus.PENDENTE,
       mensagem: 'Solicitação de alteração de CPF/CRM enviada com sucesso. Aguarde a análise do administrador.',
+    });
   });
 
   it('deve lançar ValidationError para cpf invalido', async () => {

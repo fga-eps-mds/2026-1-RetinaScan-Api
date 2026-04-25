@@ -67,7 +67,7 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
   app.get(
     '/usuarios/solicitacoes-cpf-crm',
     {
-      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN, tiposPerfil.MEDICO])],
     },
     listarSolicitacoesCpfCrmRoute,
   );

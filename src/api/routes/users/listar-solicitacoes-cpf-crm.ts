@@ -1,4 +1,5 @@
 import { container } from '@/infra/container';
+import { tiposPerfil } from '@/modules/users/domain';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import z from 'zod';
 import { ValidationError } from '@/shared/errors';
@@ -22,7 +23,12 @@ export async function listarSolicitacoesCpfCrmRoute(
 
   const usecase = container.resolve('listarSolicitacoesCpfCrmUsecase');
 
-  const response = await usecase.execute(result.data);
+  const isMedico = request.user!.tipoPerfil === tiposPerfil.MEDICO;
+
+  const response = await usecase.execute({
+    ...result.data,
+    idUsuario: isMedico ? request.user!.id : result.data.idUsuario,
+  });
 
   return reply.status(200).send(response);
 }

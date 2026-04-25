@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { solicitacaoStatus, type SolicitacaoCpfCrm } from '@/modules/users/domain';
 import type { SolicitacaoCpfCrmRepository } from '@/modules/users/repositories';
-import { ListarSolicitacoesCpfCrmUsecase } from '@/modules/users/use-cases/listar-solicitacoes-cpf-crm.usecase';
+import { ListarSolicitacoesCpfCrmUsecase } from '@/modules/users/use-cases/listar-solicitacoes-cpf-crm';
 
 class FakeSolicitacaoCpfCrmRepository implements SolicitacaoCpfCrmRepository {
   criar = vi.fn();
