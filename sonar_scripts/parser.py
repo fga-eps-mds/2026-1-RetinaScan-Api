@@ -2,7 +2,6 @@ import json
 import requests
 import sys
 from datetime import datetime
-import requests
 # import datetime
 import pandas as pd
 import os
@@ -165,23 +164,45 @@ def save_github_metrics_issues():
     issues = []
     page = 1
 
+    headers = {
+        "Authorization": f"Bearer {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github+json"
+    }
+
     while True:
-        response = requests.get(api_url_issues, params={'state': 'all', 'per_page': 100, 'page': page})
+        response = requests.get(
+            api_url_issues,
+            headers=headers,
+            params={
+                "state": "all",
+                "per_page": 100,
+                "page": page
+            },
+            timeout=30
+        )
+
+        response.raise_for_status()
 
         page_issues = response.json()
-        if not page_issues:
+
+        if not isinstance(page_issues, list):
+            print("Resposta inválida da API:")
+            print(page_issues)
+            break
+
+        if len(page_issues) == 0:
             break
 
         issues.extend(page_issues)
+
         print(f"Página {page}: {len(page_issues)} issues carregadas.")
 
         page += 1
 
-    print("Quantidade total de issues: " + str(len(issues)))
+    print("Quantidade total de issues:", len(issues))
 
     file_path = f'./analytics-raw-data/GitHub_API-Issues-fga-eps-mds-{REPO_ISSUES}.json'
 
-    # Salvar todas as issues em um arquivo JSON
     with open(file_path, 'w') as fp:
         json.dump(issues, fp, indent=4)
 
