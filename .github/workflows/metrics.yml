@@ -1,42 +1,42 @@
-name: Export de Métricas
+name: Export de métricas
 
 on:
-  pull_request:
-    branches:
-      - main
-    types: [closed]
-
-  # apenas para testes
   push:
     branches:
+      - main
       - develop
+    tags:
+      - 'v*'
+
+  workflow_dispatch:
 
 jobs:
-  realese:
-    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'NOT RELEASE') == false
+  release:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: install dotenv
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar dependências
         run: pip install python-dotenv packaging pandas
 
-      - name: Exportar Metrics
+      - name: Criar arquivo .env
         run: |
           touch ./sonar_scripts/.env
           echo GITHUB_TOKEN=${{ secrets.API_TOKEN_GITHUB }} >> ./sonar_scripts/.env
-          echo RELEASE_MAJOR=${{ contains(github.event.pull_request.labels.*.name, 'MAJOR RELEASE') }} >> ./sonar_scripts/.env
-          echo RELEASE_MINOR=${{ contains(github.event.pull_request.labels.*.name, 'MINOR RELEASE') }} >> ./sonar_scripts/.env
-          echo RELEASE_FIX=${{ contains(github.event.pull_request.labels.*.name, 'FIX RELEASE') }} >> ./sonar_scripts/.env
-          echo DEVELOP=${{ contains(github.event.pull_request.labels.*.name, 'DEVELOP') }} >> ./sonar_scripts/.env
           echo REPO=${{ github.event.repository.name }} >> ./sonar_scripts/.env
-      - name: criar diretorio
+
+      - name: Criar diretório
         run: mkdir -p analytics-raw-data
 
-      - name: Coletar Métricar do SoncarCloud
+      - name: Coletar métricas no SonarCloud
         run: python3 ./sonar_scripts/parser.py
 
       - name: Envia métricas para repo de Doc
@@ -52,5 +52,7 @@ jobs:
 
           cd doc
           git add .
+
           git commit -m "Adicionando métricas do repositório ${{ github.event.repository.name }} ${{ github.ref_name }}" || echo "Sem alterações para commit"
+
           git push
