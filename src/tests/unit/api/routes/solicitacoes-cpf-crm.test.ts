@@ -281,11 +281,11 @@ describe('solicitação de CPF/CRM routes', () => {
       },
     });
 
+    const executeMock = vi.fn().mockResolvedValue({ solicitacoes: [] });
+
     resolveMock.mockImplementation((key: string) => {
       if (key === 'listarSolicitacoesCpfCrmUsecase') {
-        return {
-          execute: vi.fn().mockResolvedValue({ solicitacoes: [] }),
-        };
+        return { execute: executeMock };
       }
       throw new Error(`Unknown resolve key: ${key}`);
     });
@@ -296,5 +296,38 @@ describe('solicitação de CPF/CRM routes', () => {
     });
 
     expect(res.statusCode).toBe(200);
+    expect(executeMock).toHaveBeenCalledWith(
+      expect.objectContaining({ idUsuario: 'medico-1' }),
+    );
+  });
+
+  it('should not allow medical user to override idUsuario filter', async () => {
+    getSessionMock.mockResolvedValue({
+      user: {
+        id: 'medico-1',
+        email: 'medico@email.com',
+        name: 'Medico Teste',
+        tipoPerfil: 'MEDICO',
+      },
+    });
+
+    const executeMock = vi.fn().mockResolvedValue({ solicitacoes: [] });
+
+    resolveMock.mockImplementation((key: string) => {
+      if (key === 'listarSolicitacoesCpfCrmUsecase') {
+        return { execute: executeMock };
+      }
+      throw new Error(`Unknown resolve key: ${key}`);
+    });
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/usuarios/solicitacoes-cpf-crm?idUsuario=outro-medico',
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(executeMock).toHaveBeenCalledWith(
+      expect.objectContaining({ idUsuario: 'medico-1' }),
+    );
   });
 });
