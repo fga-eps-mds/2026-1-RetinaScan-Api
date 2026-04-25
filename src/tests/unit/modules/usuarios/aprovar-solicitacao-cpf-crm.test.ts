@@ -80,6 +80,7 @@ describe('AprovarSolicitacaoCpfCrmUsecase', () => {
       crm: solicitacao.crmNovo,
     });
     expect(result.solicitacao).toEqual(solicitacao);
+    expect(result.notificacaoEnviada).toBe(true);
   });
 
   it('deve lançar NotFoundError quando admin não existir', async () => {

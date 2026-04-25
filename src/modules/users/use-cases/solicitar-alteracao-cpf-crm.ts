@@ -13,6 +13,7 @@ export type SolicitarAlteracaoCpfCrmUsecaseInput = {
 export type SolicitarAlteracaoCpfCrmUsecaseOutput = {
   idSolicitacao: string;
   status: SolicitacaoStatus;
+  mensagem: string;
 };
 
 export class SolicitarAlteracaoCpfCrmUsecase {
@@ -67,6 +68,7 @@ export class SolicitarAlteracaoCpfCrmUsecase {
     return {
       idSolicitacao: solicitacao.id,
       status: solicitacao.status ?? solicitacaoStatus.PENDENTE,
+      mensagem: 'Solicitação de alteração de CPF/CRM enviada com sucesso. Aguarde a análise do administrador.',
     };
   }
 

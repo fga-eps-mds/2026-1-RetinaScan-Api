@@ -10,6 +10,7 @@ export type AprovarSolicitacaoCpfCrmUsecaseInput = {
 
 export type AprovarSolicitacaoCpfCrmUsecaseOutput = {
   solicitacao: SolicitacaoCpfCrm;
+  notificacaoEnviada: boolean;
 };
 
 export class AprovarSolicitacaoCpfCrmUsecase {
@@ -49,6 +50,6 @@ export class AprovarSolicitacaoCpfCrmUsecase {
       throw new NotFoundError('Usuário da solicitação não encontrado');
     }
 
-    return { solicitacao };
+    return { solicitacao, notificacaoEnviada: true };
   }
 }

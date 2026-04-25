@@ -11,6 +11,7 @@ import { UpdateUserImageUsecase } from '@/modules/users/use-cases/update-user-im
 import { SolicitarAlteracaoCpfCrmUsecase } from '@/modules/users/use-cases/solicitar-alteracao-cpf-crm';
 import { AprovarSolicitacaoCpfCrmUsecase } from '@/modules/users/use-cases/aprovar-solicitacao-cpf-crm';
 import { RejeitarSolicitacaoCpfCrmUsecase } from '@/modules/users/use-cases/rejeitar-solicitacao-cpf-crm';
+import { ListarSolicitacoesCpfCrmUsecase } from '@/modules/users/use-cases/listar-solicitacoes-cpf-crm';
 import type { UsuariosRepository } from '@/modules/users/repositories';
 import type { SolicitacaoCpfCrmRepository } from '@/modules/users/repositories';
 import type { AuthService } from '@/shared/services/auth-service';
@@ -27,6 +28,7 @@ export interface AppContainer {
   solicitarAlteracaoCpfCrmUsecase: SolicitarAlteracaoCpfCrmUsecase;
   aprovarSolicitacaoCpfCrmUsecase: AprovarSolicitacaoCpfCrmUsecase;
   rejeitarSolicitacaoCpfCrmUsecase: RejeitarSolicitacaoCpfCrmUsecase;
+  listarSolicitacoesCpfCrmUsecase: ListarSolicitacoesCpfCrmUsecase;
 }
 
 export const container: AwilixContainer<AppContainer> = createContainer<AppContainer>({
@@ -61,5 +63,9 @@ container.register({
   rejeitarSolicitacaoCpfCrmUsecase: asFunction(
     ({ usuariosRepository, solicitacaoCpfCrmRepository }: AppContainer) =>
       new RejeitarSolicitacaoCpfCrmUsecase(usuariosRepository, solicitacaoCpfCrmRepository),
+  ).scoped(),
+  listarSolicitacoesCpfCrmUsecase: asFunction(
+  ({ solicitacaoCpfCrmRepository }: AppContainer) =>
+    new ListarSolicitacoesCpfCrmUsecase(solicitacaoCpfCrmRepository),
   ).scoped(),
 });

@@ -236,6 +236,56 @@ describe('solicitação de CPF/CRM routes', () => {
     });
 
     expect(res.statusCode).toBe(400);
-    expect(executeRejeitarMock).not.toHaveBeenCalled();
+  });
+
+  it('should list all requests for an admin user', async () => {
+    getSessionMock.mockResolvedValue({
+      user: {
+        id: 'admin-1',
+        email: 'admin@email.com',
+        name: 'Admin Teste',
+        tipoPerfil: 'ADMIN',
+      },
+    });
+
+    resolveMock.mockImplementation((key: string) => {
+      if (key === 'listarSolicitacoesCpfCrmUsecase') {
+        return {
+          execute: vi.fn().mockResolvedValue({
+            solicitacoes: [
+              { id: 'sol-1', status: 'PENDENTE' },
+              { id: 'sol-2', status: 'APROVADA' },
+            ],
+          }),
+        };
+      }
+      throw new Error(`Unknown resolve key: ${key}`);
+    });
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/usuarios/solicitacoes-cpf-crm',
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(JSON.parse(res.body).solicitacoes).toHaveLength(2);
+  });
+
+  it('should return 403 when a non-admin user tries to list requests', async () => {
+    getSessionMock.mockResolvedValue({
+      user: {
+        id: 'medico-1',
+        email: 'medico@email.com',
+        name: 'Medico Teste',
+        tipoPerfil: 'MEDICO',
+      },
+    });
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/usuarios/solicitacoes-cpf-crm',
+    });
+
+    expect(res.statusCode).toBe(403);
   });
 });

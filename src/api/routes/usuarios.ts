@@ -8,6 +8,7 @@ import { getAllUsers } from './users/get-all-users';
 import { solicitarAlteracaoCpfCrmRoute } from './users/solicitar-alteracao-cpf-crm';
 import { aprovarSolicitacaoCpfCrmRoute } from './users/aprovar-solicitacao-cpf-crm';
 import { rejeitarSolicitacaoCpfCrmRoute } from './users/rejeitar-solicitacao-cpf-crm';
+import { listarSolicitacoesCpfCrmRoute } from './users/listar-solicitacoes-cpf-crm';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
@@ -61,5 +62,13 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
       preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
     },
     rejeitarSolicitacaoCpfCrmRoute,
+  );
+
+  app.get(
+    '/usuarios/solicitacoes-cpf-crm',
+    {
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
+    },
+    listarSolicitacoesCpfCrmRoute,
   );
 }
