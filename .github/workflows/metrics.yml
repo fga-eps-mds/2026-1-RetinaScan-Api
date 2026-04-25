@@ -32,6 +32,7 @@ jobs:
           touch ./sonar_scripts/.env
           echo GITHUB_TOKEN=${{ secrets.API_TOKEN_GITHUB }} >> ./sonar_scripts/.env
           echo REPO=${{ github.event.repository.name }} >> ./sonar_scripts/.env
+          echo REPO_DOC=${{ secrets.REPO_DOC }} >> ./sonar_scripts/.env
 
       - name: Criar diretório
         run: mkdir -p analytics-raw-data
