@@ -41,10 +41,15 @@ export class AprovarSolicitacaoCpfCrmUsecase {
       throw new NotFoundError('Solicitação não encontrada');
     }
 
-    const usuarioAtualizado = await this.usuariosRepository.update(solicitacao.idUsuario, {
-      cpf: solicitacao.cpfNovo ?? undefined,
-      crm: solicitacao.crmNovo ?? undefined,
-    });
+    const updateData = {
+      ...(solicitacao.cpfNovo != null && { cpf: solicitacao.cpfNovo }),
+      ...(solicitacao.crmNovo != null && { crm: solicitacao.crmNovo }),
+    };
+
+    const usuarioAtualizado = await this.usuariosRepository.update(
+      solicitacao.idUsuario,
+      updateData,
+    );
 
     if (!usuarioAtualizado) {
       throw new NotFoundError('Usuário da solicitação não encontrado');
