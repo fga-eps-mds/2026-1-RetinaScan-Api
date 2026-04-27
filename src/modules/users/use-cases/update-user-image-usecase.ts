@@ -22,6 +22,7 @@ export class UpdateUserImageUsecase {
     const { idUsuario, imageBuffer, contentType } = input;
 
     const user = await this.getUser(idUsuario);
+    const previousImageUrl = user.image ?? null;
 
     const url = await this.storageService.upload(
       {
@@ -33,6 +34,10 @@ export class UpdateUserImageUsecase {
     );
 
     await this.userRepository.update(user.id, { image: url });
+
+    if (previousImageUrl) {
+      await this.storageService.deleteByUrl(previousImageUrl, Buckets.userImages);
+    }
 
     return { url };
   }

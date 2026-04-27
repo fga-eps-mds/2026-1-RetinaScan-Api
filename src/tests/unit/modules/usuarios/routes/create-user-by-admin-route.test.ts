@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createUserByAdmin } from '../../../../../api/routes/users/create-user-by-admin';
+import { createUserByAdmin } from '@/api/routes/users/create-user-by-admin';
 import { CreateUserByAdmin } from '@/modules/users/use-cases';
 import { better_auth_errors } from '@/shared/errors/better-auth-errors';
 
