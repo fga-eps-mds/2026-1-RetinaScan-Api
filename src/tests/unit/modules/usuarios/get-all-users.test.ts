@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-// IMPORTANTE: Ajuste este caminho se o teste não estiver na pasta src/tests/unit/modules/usuarios/
-import { GetAllUsers } from '../../../../modules/users/use-cases/get-all-users';
-import type { UsuariosRepository } from '../../../../modules/users/repositories/users-repository';
-import type { Usuario } from '../../../../modules/users/domain/usuario';
+import { GetAllUsers } from '@/modules/users/use-cases/get-all-users';
+import type { UsuariosRepository } from '@/modules/users/repositories/users-repository';
+import type { Usuario } from '@/modules/users/domain/usuario';
 
 describe('GetAllUsers Use Case', () => {
   let sut: GetAllUsers;

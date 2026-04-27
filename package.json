@@ -4,9 +4,9 @@
   "description": "RetinaScan REST API",
   "main": "dist/server.js",
   "scripts": {
-    "build": "tsc && tsc-alias -p tsconfig.json",
+    "build": "tsc -p tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "start": "node dist/server.js",
-    "dev": "nodemon --watch src -e ts --exec 'tsx --inspect --env-file=./env/.env.dev ./src/server.ts'",
+    "dev": "nodemon --watch src -e ts --exec \"tsx --inspect --env-file=./env/.env.dev ./src/server.ts\"",
     "test": "dotenv -e env/.env.test -- vitest run",
     "test:watch": "vitest",
     "test:coverage": "dotenv -e env/.env.test -- vitest run --coverage",
@@ -16,7 +16,13 @@
     "lint": "eslint src/",
     "lint:fix": "eslint src/ --fix",
     "test:sonar": "npm run test:coverage",
-    "sonar:scan": "npm run test:sonar"
+    "sonar:scan": "npm run test:sonar",
+    "db:generate": "dotenv -e env/.env.dev -- drizzle-kit generate",                                                    
+    "db:migrate": "dotenv -e env/.env.dev -- tsx ./src/infra/database/drizzle/migrate.ts",                              
+    "db:migrate:prod": "node ./dist/infra/database/drizzle/migrate.js",                                                 
+    "db:push": "dotenv -e env/.env.dev -- drizzle-kit push",                                                     
+    "db:studio": "dotenv -e env/.env.dev -- drizzle-kit studio",                                                 
+    "db:drop": "dotenv -e env/.env.dev -- drizzle-kit drop"
   },
   "keywords": [],
   "author": "",

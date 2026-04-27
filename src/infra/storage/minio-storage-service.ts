@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { env } from '@/env';
 import type { BucketName, StorageService, UploadInput } from '@/shared/services/storage-service';
 import { minioClient } from './minio-client';
@@ -12,5 +10,13 @@ export class MinioStorageService implements StorageService {
 
     const baseUrl = env.MINIO_PUBLIC_URL.replace(/\/$/, '');
     return `${baseUrl}/${bucket}/${input.key}`;
+  }
+
+  async deleteByUrl(url: string, bucket: BucketName): Promise<void> {
+    const { pathname } = new URL(url);
+    const bucketPath = `/${bucket}/`;
+    const key = pathname.slice(pathname.indexOf(bucketPath) + bucketPath.length);
+
+    await minioClient.removeObject(bucket, key);
   }
 }
