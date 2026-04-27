@@ -12,5 +12,4 @@ export interface UploadInput {
 
 export interface StorageService {
   upload(input: UploadInput, bucket: BucketName): Promise<string>;
-  deleteByUrl(url: string, bucket: BucketName): Promise<void>;
 }
