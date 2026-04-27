@@ -1,7 +1,7 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, type SQL } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { db } from '@/infra/database/drizzle/connection';
-import { solicitacaoCpfCrm } from '@/infra/database/drizzle/schema';
+import { solicitacaoCpfCrm, usuario } from '@/infra/database/drizzle/schema';
 import { solicitacaoStatus, type SolicitacaoCpfCrm } from '@/modules/users/domain';
 import type {
   AprovarSolicitacaoCpfCrmInput,
@@ -43,7 +43,7 @@ export class DrizzleSolicitacaoCpfCrmRepository implements SolicitacaoCpfCrmRepo
   }
 
   async listar(input?: ListarSolicitacoesCpfCrmInput): Promise<SolicitacaoCpfCrm[]> {
-    const filters = [];
+    const filters: SQL[] = [];
 
     if (input?.status) {
       filters.push(eq(solicitacaoCpfCrm.status, input.status));
@@ -53,18 +53,27 @@ export class DrizzleSolicitacaoCpfCrmRepository implements SolicitacaoCpfCrmRepo
       filters.push(eq(solicitacaoCpfCrm.idUsuario, input.idUsuario));
     }
 
-    if (filters.length === 0) {
-      return (await db
+    const whereClause = filters.length > 0 ? and(...filters) : undefined;
+
+    if (!input?.relations) {
+      return db
         .select()
         .from(solicitacaoCpfCrm)
-        .orderBy(solicitacaoCpfCrm.createdAt)) as SolicitacaoCpfCrm[];
+        .where(whereClause)
+        .orderBy(solicitacaoCpfCrm.createdAt) as Promise<SolicitacaoCpfCrm[]>;
     }
 
-    return (await db
-      .select()
+    const rows = await db
+      .select({ solicitacao: solicitacaoCpfCrm, usuario })
       .from(solicitacaoCpfCrm)
-      .where(and(...filters))
-      .orderBy(solicitacaoCpfCrm.createdAt)) as SolicitacaoCpfCrm[];
+      .innerJoin(usuario, eq(solicitacaoCpfCrm.idUsuario, usuario.id))
+      .where(whereClause)
+      .orderBy(solicitacaoCpfCrm.createdAt);
+
+    return rows.map(({ solicitacao, usuario }) => ({
+      ...solicitacao,
+      usuario,
+    })) as SolicitacaoCpfCrm[];
   }
 
   async aprovar(input: AprovarSolicitacaoCpfCrmInput): Promise<SolicitacaoCpfCrm | null> {

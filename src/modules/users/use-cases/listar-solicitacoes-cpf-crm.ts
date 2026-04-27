@@ -7,7 +7,7 @@ export type ListarSolicitacoesCpfCrmUsecaseInput = {
 };
 
 export type ListarSolicitacoesCpfCrmUsecaseOutput = {
-  solicitacoes: SolicitacaoCpfCrm[];
+  solicitacoes: Array<SolicitacaoCpfCrm & { nomeCompleto: string; email: string }>;
 };
 
 export class ListarSolicitacoesCpfCrmUsecase {
@@ -16,8 +16,17 @@ export class ListarSolicitacoesCpfCrmUsecase {
   async execute(
     input?: ListarSolicitacoesCpfCrmUsecaseInput,
   ): Promise<ListarSolicitacoesCpfCrmUsecaseOutput> {
-    const solicitacoes = await this.solicitacaoCpfCrmRepository.listar(input);
+    const solicitacoes = await this.solicitacaoCpfCrmRepository.listar({
+      ...input,
+      relations: true,
+    });
 
-    return { solicitacoes };
+    return {
+      solicitacoes: solicitacoes.map(({ usuario, ...solicitacao }) => ({
+        ...solicitacao,
+        nomeCompleto: usuario!.nomeCompleto,
+        email: usuario!.email,
+      })),
+    };
   }
 }

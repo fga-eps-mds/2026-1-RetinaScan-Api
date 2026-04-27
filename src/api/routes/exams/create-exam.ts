@@ -7,13 +7,13 @@ import { cpf } from 'cpf-cnpj-validator';
 
 const bodySchema = z
   .object({
-    nomeCompleto: z.string().min(1, 'nomeCompleto é obrigatório.'),
+    nomeCompleto: z.string().trim().min(1, 'nomeCompleto é obrigatório.'),
     cpf: z.string().refine((value) => cpf.isValid(value), { message: 'CPF inválido.' }),
     sexo: z.nativeEnum(Sexo, { message: 'sexo inválido.' }),
     dtNascimento: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'dtNascimento deve ser AAAA-MM-DD.'),
     dtHora: z.string().datetime({ message: 'dtHora inválida.' }).pipe(z.coerce.date()),
-    comorbidades: z.string().optional(),
-    descricao: z.string().optional(),
+    comorbidades: z.string().trim().min(1, 'comorbidades não pode ser vazio.').optional(),
+    descricao: z.string().trim().min(1, 'descricao não pode ser vazio.').optional(),
   })
   .strict({ message: 'Campos inválidos.' });
 
