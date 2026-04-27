@@ -188,6 +188,108 @@ describe('POST /api/exams (integration)', () => {
     expect(res.statusCode).toBe(400);
   });
 
+  it('should return 400 when nomeCompleto is an empty string', async () => {
+    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+    authSpies.authenticateAs(user);
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/exams',
+      payload: {
+        ...validPatientPayload(),
+        nomeCompleto: '',
+        dtHora: new Date().toISOString(),
+      },
+    });
+
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('should return 400 when nomeCompleto contains only whitespace', async () => {
+    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+    authSpies.authenticateAs(user);
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/exams',
+      payload: {
+        ...validPatientPayload(),
+        nomeCompleto: '   ',
+        dtHora: new Date().toISOString(),
+      },
+    });
+
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('should return 400 when comorbidades is an empty string', async () => {
+    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+    authSpies.authenticateAs(user);
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/exams',
+      payload: {
+        ...validPatientPayload(),
+        dtHora: new Date().toISOString(),
+        comorbidades: '',
+      },
+    });
+
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('should return 400 when comorbidades contains only whitespace', async () => {
+    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+    authSpies.authenticateAs(user);
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/exams',
+      payload: {
+        ...validPatientPayload(),
+        dtHora: new Date().toISOString(),
+        comorbidades: '   ',
+      },
+    });
+
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('should return 400 when descricao is an empty string', async () => {
+    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+    authSpies.authenticateAs(user);
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/exams',
+      payload: {
+        ...validPatientPayload(),
+        dtHora: new Date().toISOString(),
+        descricao: '',
+      },
+    });
+
+    expect(res.statusCode).toBe(400);
+  });
+
+  it('should return 400 when descricao contains only whitespace', async () => {
+    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+    authSpies.authenticateAs(user);
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/exams',
+      payload: {
+        ...validPatientPayload(),
+        dtHora: new Date().toISOString(),
+        descricao: '\t\n ',
+      },
+    });
+
+    expect(res.statusCode).toBe(400);
+  });
+
   it('should return 400 when body has unknown fields', async () => {
     const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
     authSpies.authenticateAs(user);
