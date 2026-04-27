@@ -9,7 +9,7 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - postgres_data_dev:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
@@ -52,6 +52,7 @@ services:
       - env/.env.dev
     volumes:
       - .:/app
+      - /app/node_modules
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       postgres:
@@ -62,7 +63,7 @@ services:
       - retina-scan-network
 
 volumes:
-  postgres_data:
+  postgres_data_dev:
   minio_data:
 
 networks:

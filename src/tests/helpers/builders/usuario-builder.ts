@@ -61,6 +61,11 @@ export class UsuarioBuilder {
     return new UsuarioBuilder();
   }
 
+  public customData(data: Partial<Usuario>): this {
+    Object.assign(this.data, data);
+    return this;
+  }
+
   public async build(): Promise<Usuario> {
     await this.database.insert(usuario).values({
       id: this.data.id,
