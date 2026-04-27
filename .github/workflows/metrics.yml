@@ -15,6 +15,7 @@ on:
 
 jobs:
   release:
+    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'NOT RELEASE') == false
     runs-on: ubuntu-latest
 
     steps:
@@ -36,6 +37,9 @@ jobs:
           echo GITHUB_TOKEN=${{ secrets.API_TOKEN_GITHUB }} >> ./sonar_scripts/.env
           echo REPO=${{ github.event.repository.name }} >> ./sonar_scripts/.env
           echo REPO_DOC=${{ secrets.REPO_DOC }} >> ./sonar_scripts/.env
+          echo RELEASE_MAJOR=${{ contains(github.event.pull_request.labels.*.name, 'MAJOR RELEASE') }} >> ./sonar_scripts/.env
+          echo RELEASE_MINOR=${{ contains(github.event.pull_request.labels.*.name, 'MINOR RELEASE') }} >> ./sonar_scripts/.env
+          echo RELEASE_FIX=${{ contains(github.event.pull_request.labels.*.name, 'FIX RELEASE') }} >> ./sonar_scripts/.env
 
       - name: Criar diretório
         run: mkdir -p analytics-raw-data
