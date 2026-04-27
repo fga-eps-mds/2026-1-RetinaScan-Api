@@ -64,3 +64,16 @@ jobs:
           git commit -m "Adicionando métricas do repositório ${{ github.event.repository.name }} ${{ github.ref_name }}" || echo "Sem alterações para commit"
 
           git push
+
+            - name: Envia métricas como assets da release
+
+      - run: |
+          # Pega a última tag criada pelo parser
+          TAG=$(git describe --tags --abbrev=0)
+
+          # Itera sobre os arquivos e faz upload via GH CLI (já disponível no ubuntu-latest)
+          for file in analytics-raw-data/*.json; do
+            gh release upload $TAG "$file"
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.API_TOKEN_GITHUB }}
