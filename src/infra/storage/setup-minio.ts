@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import logger from '@/infra/logger';
 import { type BucketName, Buckets } from '@/shared/services';
 import { bucketAccess } from './bucket-access';
