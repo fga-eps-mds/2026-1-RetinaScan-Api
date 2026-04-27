@@ -37,6 +37,7 @@ export type SolicitarAlteracaoCpfCrmInput = {
 export type ListarSolicitacoesCpfCrmInput = {
   status?: SolicitacaoStatus;
   idUsuario?: string;
+  relations?: boolean;
 };
 
 export type RejeitarSolicitacaoCpfCrmInput = {
