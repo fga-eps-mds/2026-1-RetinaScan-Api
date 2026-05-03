@@ -3,6 +3,7 @@ import {
   DrizzleSolicitacaoCpfCrmRepository,
   DrizzleUsuariosRepository,
   DrizzleExamesRepository,
+  DrizzleImagemRepository,
 } from '@/infra/database/drizzle/repositories';
 import { BetterAuthService } from '@/infra/auth/better-auth-service';
 import { MinioStorageService } from '@/infra/storage/minio-storage-service';
@@ -17,7 +18,9 @@ import { RejeitarSolicitacaoCpfCrmUsecase } from '@/modules/users/use-cases/reje
 import { ListarSolicitacoesCpfCrmUsecase } from '@/modules/users/use-cases/listar-solicitacoes-cpf-crm';
 import type { UsuariosRepository, SolicitacaoCpfCrmRepository } from '@/modules/users/repositories';
 import { CreateExamUseCase } from '@/modules/exam/use-cases/create-exam-usecase';
+import { UploadExamImagesUseCase } from '@/modules/exam/use-cases/upload-exam-images-usecase';
 import type { ExamesRepository } from '@/modules/exam/exam-repository';
+import type { ImagemRepository } from '@/modules/exam/imagem-repository';
 import type { AuthService } from '@/shared/services/auth-service';
 import type { StorageService } from '@/shared/services/storage-service';
 import type { CryptographyService } from '@/shared/services/cryptography-service';
@@ -27,6 +30,7 @@ export interface AppContainer {
   usuariosRepository: UsuariosRepository;
   solicitacaoCpfCrmRepository: SolicitacaoCpfCrmRepository;
   examesRepository: ExamesRepository;
+  imagemRepository: ImagemRepository;
   authService: AuthService;
   storageService: StorageService;
   cryptographyService: CryptographyService;
@@ -39,6 +43,7 @@ export interface AppContainer {
   rejeitarSolicitacaoCpfCrmUsecase: RejeitarSolicitacaoCpfCrmUsecase;
   listarSolicitacoesCpfCrmUsecase: ListarSolicitacoesCpfCrmUsecase;
   createExamUseCase: CreateExamUseCase;
+  uploadExamImagesUseCase: UploadExamImagesUseCase;
 }
 
 export const container: AwilixContainer<AppContainer> = createContainer<AppContainer>({
@@ -50,6 +55,7 @@ container.register({
   usuariosRepository: asClass(DrizzleUsuariosRepository).singleton(),
   solicitacaoCpfCrmRepository: asClass(DrizzleSolicitacaoCpfCrmRepository).singleton(),
   examesRepository: asClass(DrizzleExamesRepository).singleton(),
+  imagemRepository: asClass(DrizzleImagemRepository).singleton(),
   authService: asClass(BetterAuthService).singleton(),
   storageService: asClass(MinioStorageService).singleton(),
   cryptographyService: asClass(NodeCryptoCryptographyService).singleton(),
@@ -89,5 +95,9 @@ container.register({
         cryptographyService,
         maskingService,
       ),
+  ).scoped(),
+  uploadExamImagesUseCase: asFunction(
+    ({ examesRepository, imagemRepository, storageService }: AppContainer) =>
+      new UploadExamImagesUseCase(examesRepository, imagemRepository, storageService),
   ).scoped(),
 });
