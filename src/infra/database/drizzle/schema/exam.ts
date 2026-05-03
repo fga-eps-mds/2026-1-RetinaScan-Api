@@ -2,6 +2,7 @@ import { pgTable, text, timestamp, varchar, uuid } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 import { usuario } from './user';
+import { imagem } from './image';
 
 export const exam = pgTable('exame', {
   idExame: uuid('id_exame').primaryKey(),
@@ -23,9 +24,10 @@ export const exam = pgTable('exame', {
     .notNull(),
 });
 
-export const examRelations = relations(exam, ({ one }) => ({
+export const examRelations = relations(exam, ({ one, many }) => ({
   usuario: one(usuario, {
     fields: [exam.idUsuario],
     references: [usuario.id],
   }),
+  imagens: many(imagem),
 }));
