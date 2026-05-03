@@ -15,7 +15,12 @@ describe('PATCH /api/usuarios/imagem (integration)', () => {
   let app: FastifyInstance;
   const authSpies = spyOnAuthApi();
   const uploadMock = vi.fn();
-  const stubStorage: StorageService = { upload: uploadMock };
+  const stubStorage: StorageService = {
+    upload: uploadMock,
+    uploadPrivate: vi.fn(),
+    deleteByUrl: vi.fn(),
+    deleteByKey: vi.fn(),
+  };
 
   beforeAll(async () => {
     await connectDatabase();
