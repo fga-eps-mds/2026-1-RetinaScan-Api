@@ -1,0 +1,57 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  deployments: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Cloudflared
+        run: |
+          curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+          sudo dpkg -i cloudflared.deb
+
+      - name: SSH Setup
+        env:
+          CF_ID: ${{ secrets.CF_CLIENT_ID }}
+          CF_SECRET: ${{ secrets.CF_CLIENT_SECRET }}
+          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        run: |
+          # Cria a pasta e garante permissão total pro runner nela
+          mkdir -p $HOME/.ssh
+          chmod 700 $HOME/.ssh
+
+          cat <<EOF > $HOME/.ssh/config
+          Host retinascanvm.retinascan.site
+              ProxyCommand /usr/bin/cloudflared access ssh --hostname %h --service-token-id $CF_ID --service-token-secret $CF_SECRET
+              StrictHostKeyChecking no
+              UserKnownHostsFile /dev/null
+          EOF
+
+          # Grava a chave usando a variável de env (muito mais seguro)
+          echo "$SSH_KEY" > $HOME/.ssh/id_rsa
+          chmod 600 $HOME/.ssh/id_rsa
+
+      - name: Execute Docker Compose on VM
+        run: |
+          # Adicionamos a flag -o para reforçar que não queremos validar o host
+          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@retinascanvm.retinascan.site << 'EOF'
+            cd /home/retinascan/2026-1-RetinaScan-Api
+            git pull origin main
+            docker compose -f docker-compose.prod.yml up -d --build
+            docker image prune -f
+          EOF
