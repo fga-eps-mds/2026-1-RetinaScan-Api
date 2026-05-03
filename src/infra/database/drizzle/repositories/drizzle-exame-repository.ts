@@ -1,4 +1,4 @@
-import { and, eq, type SQL } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 import { db } from '@/infra/database/drizzle/connection';
 import { exam } from '@/infra/database/drizzle/schema';
@@ -38,16 +38,7 @@ export class DrizzleExamesRepository implements ExamesRepository {
   }
 
   async findOne({ examId }: FindExameInput): Promise<Exame | null> {
-    const conditions: SQL[] = [];
-    if (examId !== undefined) conditions.push(eq(exam.idExame, examId));
-
-    if (conditions.length === 0) return null;
-
-    const rows = await db
-      .select()
-      .from(exam)
-      .where(and(...conditions))
-      .limit(1);
+    const rows = await db.select().from(exam).where(eq(exam.idExame, examId)).limit(1);
 
     if (rows.length === 0) return null;
 

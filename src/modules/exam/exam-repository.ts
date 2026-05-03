@@ -1,7 +1,7 @@
 import type { Exame } from './exam';
 
 export type FindExameInput = {
-  examId?: string;
+  examId: string;
 };
 
 export type ExamesRepository = {

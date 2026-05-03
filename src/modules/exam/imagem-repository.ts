@@ -1,7 +1,7 @@
 import type { Imagem } from './imagem';
 
 export type FindImagensInput = {
-  examId?: string;
+  examId: string;
 };
 
 export type ImagemRepository = {

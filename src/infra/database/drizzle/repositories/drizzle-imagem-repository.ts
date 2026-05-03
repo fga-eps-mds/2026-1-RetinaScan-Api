@@ -1,4 +1,4 @@
-import { and, eq, type SQL } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 
 import { db } from '@/infra/database/drizzle/connection';
 import { imagem } from '@/infra/database/drizzle/schema';
@@ -7,16 +7,7 @@ import type { FindImagensInput, ImagemRepository } from '@/modules/exam/imagem-r
 
 export class DrizzleImagemRepository implements ImagemRepository {
   async findMany({ examId }: FindImagensInput): Promise<Imagem[]> {
-    const conditions: SQL[] = [];
-    if (examId !== undefined) conditions.push(eq(imagem.idExame, examId));
-
-    const rows =
-      conditions.length > 0
-        ? await db
-            .select()
-            .from(imagem)
-            .where(and(...conditions))
-        : await db.select().from(imagem);
+    const rows = await db.select().from(imagem).where(eq(imagem.idExame, examId));
 
     return rows.map((row) => ({
       id: row.idImagem,
