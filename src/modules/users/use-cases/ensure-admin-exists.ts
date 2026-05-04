@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { eq, or } from 'drizzle-orm';
 
 import logger from '@/infra/logger';
 import { db } from '@/infra/database/drizzle/connection';
@@ -29,10 +29,18 @@ export async function ensureAdminUserExists(): Promise<void> {
       .select({
         idUsuario: usuario.id,
         email: usuario.email,
+        cpf: usuario.cpf,
+        crm: usuario.crm,
         tipoPerfil: usuario.tipoPerfil,
       })
       .from(usuario)
-      .where(eq(usuario.email, env.ADMIN_EMAIL))
+      .where(
+        or(
+          eq(usuario.email, env.ADMIN_EMAIL),
+          eq(usuario.cpf, env.ADMIN_CPF),
+          eq(usuario.crm, env.ADMIN_CRM),
+        ),
+      )
       .limit(1);
 
     if (!existingAdmin[0]) {
@@ -58,9 +66,15 @@ export async function ensureAdminUserExists(): Promise<void> {
     } else {
       logger.info('Administrador já existe.', {
         email: existingAdmin[0].email,
+        cpf: existingAdmin[0].cpf,
+        crm: existingAdmin[0].crm,
         tipoPerfil: existingAdmin[0].tipoPerfil,
       });
     }
+
+    const whereClause = existingAdmin[0]
+      ? eq(usuario.id, existingAdmin[0].idUsuario)
+      : eq(usuario.email, env.ADMIN_EMAIL);
 
     await db
       .update(usuario)
@@ -68,7 +82,7 @@ export async function ensureAdminUserExists(): Promise<void> {
         tipoPerfil: 'ADMIN',
         status: 'ATIVO',
       })
-      .where(eq(usuario.email, env.ADMIN_EMAIL));
+      .where(whereClause);
 
     logger.info('Perfil ADMIN garantido com sucesso.', {
       email: env.ADMIN_EMAIL,
