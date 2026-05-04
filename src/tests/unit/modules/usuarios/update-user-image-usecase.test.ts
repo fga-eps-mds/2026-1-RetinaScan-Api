@@ -3,7 +3,7 @@ import type { Usuario } from '@/modules/users/domain';
 import type { UsuariosRepository } from '@/modules/users/repositories/users-repository';
 import { UpdateUserImageUsecase } from '@/modules/users/use-cases/update-user-image-usecase';
 import { NotFoundError } from '@/shared/errors';
-import { Buckets, type StorageService } from '@/shared/services';
+import { BucketName, Buckets, UploadInput, type StorageService } from '@/shared/services';
 import { UsuarioBuilder } from '@/tests/helpers/builders/usuario-builder';
 
 class FakeUsuariosRepository implements UsuariosRepository {
@@ -18,6 +18,8 @@ class FakeUsuariosRepository implements UsuariosRepository {
 class FakeStorageService implements StorageService {
   upload = vi.fn();
   deleteByUrl = vi.fn();
+  deleteByKey = vi.fn();
+  uploadPrivate = vi.fn();
 }
 
 const existingUser: Usuario = UsuarioBuilder.anUser().getData();
