@@ -32,6 +32,8 @@ vi.mock('@/infra/database/drizzle/schema', () => ({
   usuario: {
     id: 'id',
     email: 'email',
+    cpf: 'cpf',
+    crm: 'crm',
     tipoPerfil: 'tipoPerfil',
   },
 }));
@@ -91,7 +93,29 @@ describe('ensureAdminUserExists', () => {
   it('should not create admin if already exists', async () => {
     limitMock.mockResolvedValue([
       {
+        idUsuario: 'admin-id',
         email: 'admin@test.com',
+        cpf: '00000000000',
+        crm: '0001',
+        tipoPerfil: 'ADMIN',
+      },
+    ]);
+
+    const mod = await import('@/modules/users/use-cases/ensure-admin-exists.js');
+
+    await mod.ensureAdminUserExists();
+
+    expect(signUpEmailMock).not.toHaveBeenCalled();
+    expect(updateWhereMock).toHaveBeenCalled();
+  });
+
+  it('should not recreate admin when email changed but cpf/crm already exist', async () => {
+    limitMock.mockResolvedValue([
+      {
+        idUsuario: 'admin-id',
+        email: 'admin-alterado@test.com',
+        cpf: '00000000000',
+        crm: '0001',
         tipoPerfil: 'ADMIN',
       },
     ]);
