@@ -1,6 +1,7 @@
 import { DrizzleUsuariosRepository } from '@/infra/database/drizzle/repositories';
 import { CreateUserByAdmin } from '@/modules/users/use-cases';
 import { better_auth_errors } from '@/shared/errors/better-auth-errors';
+import { ConflictError } from '@/shared/errors/conflict-error';
 import { isValidCpf } from '@/shared/validators/is-valid-cpf';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import z from 'zod';
@@ -58,6 +59,14 @@ export async function createUserByAdmin(request: FastifyRequest, reply: FastifyR
       message: 'Usuário criado com sucesso.',
     });
   } catch (error: unknown) {
+    if (error instanceof ConflictError) {
+      return reply.status(409).send({
+        statusCode: 409,
+        error: 'Conflict',
+        message: error.message,
+      });
+    }
+
     const code = getErrorCode(error);
 
     return reply.status(400).send({
