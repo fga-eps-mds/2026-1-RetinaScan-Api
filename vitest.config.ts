@@ -11,6 +11,10 @@ export default defineConfig({
   },
   test: {
     globals: true,
+    reporters: [
+      'default',
+      ['vitest-sonar-reporter', { outputFile: './coverage/sonar-report.xml' }],
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],

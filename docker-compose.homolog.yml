@@ -1,0 +1,45 @@
+services:
+  retina-scan-postgres-homolog:
+    image: postgres:15-alpine
+    container_name: retina-scan-postgres-homolog
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: retina-scan
+    volumes:
+      - postgres_data_homolog:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    env_file:
+      - env/.env.prod
+    networks:
+      - retina-scan-network
+    restart: unless-stopped
+
+  retina-scan-api-homolog:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: retina-scan-api-homolog
+    env_file:
+      - env/.env.prod
+    depends_on:
+      retina-scan-postgres-homolog:
+        condition: service_healthy
+    ports:
+      - "3006:3000"
+    networks:
+      - retina-scan-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data_homolog:
+
+networks:
+  retina-scan-network:
+    driver: bridge
+    name: retina-scan-prod-net

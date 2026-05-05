@@ -20,6 +20,7 @@ class FakeUsuariosRepository implements UsuariosRepository {
 
 class FakeExamesRepository implements ExamesRepository {
   create = vi.fn();
+  findOne = vi.fn();
 }
 
 class FakeCryptographyService implements CryptographyService {

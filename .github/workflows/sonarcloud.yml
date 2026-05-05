@@ -12,6 +12,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,6 +40,7 @@ jobs:
             -Dsonar.sources=src
             -Dsonar.tests=src/tests
             -Dsonar.test.inclusions=**/*.test.ts
+            -Dsonar.testExecutionReportPaths=coverage/sonar-report.xml
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.inclusions=src/modules/**,src/api/routes/**,src/api/middlewares/**,src/infra/database/drizzle/repositories/**,src/shared/validators/**,src/shared/errors/**

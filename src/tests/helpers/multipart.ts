@@ -38,3 +38,28 @@ export function buildEmptyMultipart(): MultipartPayload {
   const boundary = '----TestBoundaryEmpty';
   return buildPayload(boundary, Buffer.from(`--${boundary}--\r\n`));
 }
+
+export interface MultipartFilePart {
+  fieldName: string;
+  filename: string;
+  contentType: string;
+  buffer: Buffer;
+}
+
+export function buildMultipartFiles(parts: MultipartFilePart[]): MultipartPayload {
+  const boundary = `----TestBoundary${Date.now()}${randomBytes(8).toString('hex')}`;
+
+  const chunks: Buffer[] = [];
+  for (const part of parts) {
+    chunks.push(
+      Buffer.from(
+        `--${boundary}\r\nContent-Disposition: form-data; name="${part.fieldName}"; filename="${part.filename}"\r\nContent-Type: ${part.contentType}\r\n\r\n`,
+      ),
+      part.buffer,
+      Buffer.from('\r\n'),
+    );
+  }
+  chunks.push(Buffer.from(`--${boundary}--\r\n`));
+
+  return buildPayload(boundary, Buffer.concat(chunks));
+}
