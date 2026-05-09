@@ -56,7 +56,6 @@ export class CreateExamUseCase {
     return {
       ...exam,
       nomeCompleto: this.maskingService.maskName(exam.nomeCompleto),
-      cpf: this.maskingService.maskCpf(exam.cpf),
       dtNascimento: this.encrypt(exam.dtNascimento),
       comorbidades: exam.comorbidades ? this.encrypt(exam.comorbidades) : exam.comorbidades,
       descricao: exam.descricao ? this.encrypt(exam.descricao) : exam.descricao,

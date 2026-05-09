@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/infra/database/drizzle/connection';
 import { exam } from '@/infra/database/drizzle/schema';
 import type { Exame, ExameStatus, Sexo } from '@/modules/exam/exam';
-import type { ExamesRepository, FindExameInput } from '@/modules/exam/exam-repository';
+import type { ExamesRepository, FindExameInput, FindExamsByCpfInput } from '@/modules/exam/exam-repository';
 
 export class DrizzleExamesRepository implements ExamesRepository {
   async create(input: Exame): Promise<Exame> {
@@ -55,5 +55,22 @@ export class DrizzleExamesRepository implements ExamesRepository {
       comorbidades: row.comorbidades,
       descricao: row.descricao,
     };
+  }
+
+  async findByCpf({ cpf }: FindExamsByCpfInput): Promise<Exame[]> {
+    const rows = await db.select().from(exam).where(eq(exam.cpf, cpf));
+
+    return rows.map((row) => ({
+      id: row.idExame,
+      idUsuario: row.idUsuario,
+      nomeCompleto: row.nomeCompleto,
+      cpf: row.cpf,
+      dtNascimento: row.dtNascimento,
+      sexo: row.sexo as Sexo,
+      dtHora: row.dtHora,
+      status: row.status as ExameStatus,
+      comorbidades: row.comorbidades,
+      descricao: row.descricao,
+    }));
   }
 }

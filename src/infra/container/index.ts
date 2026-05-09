@@ -19,6 +19,7 @@ import { ListarSolicitacoesCpfCrmUsecase } from '@/modules/users/use-cases/lista
 import type { UsuariosRepository, SolicitacaoCpfCrmRepository } from '@/modules/users/repositories';
 import { CreateExamUseCase } from '@/modules/exam/use-cases/create-exam-usecase';
 import { UploadExamImagesUseCase } from '@/modules/exam/use-cases/upload-exam-images-usecase';
+import { GetExamsByCpfUseCase } from '@/modules/exam/use-cases/get-exams-by-cpf-usecase';
 import type { ExamesRepository } from '@/modules/exam/exam-repository';
 import type { ImagemRepository } from '@/modules/exam/imagem-repository';
 import type { AuthService } from '@/shared/services/auth-service';
@@ -44,6 +45,7 @@ export interface AppContainer {
   listarSolicitacoesCpfCrmUsecase: ListarSolicitacoesCpfCrmUsecase;
   createExamUseCase: CreateExamUseCase;
   uploadExamImagesUseCase: UploadExamImagesUseCase;
+  getExamsByCpfUseCase: GetExamsByCpfUseCase;
 }
 
 export const container: AwilixContainer<AppContainer> = createContainer<AppContainer>({
@@ -99,5 +101,8 @@ container.register({
   uploadExamImagesUseCase: asFunction(
     ({ examesRepository, imagemRepository, storageService }: AppContainer) =>
       new UploadExamImagesUseCase(examesRepository, imagemRepository, storageService),
+  ).scoped(),
+  getExamsByCpfUseCase: asFunction(
+    ({ examesRepository }: AppContainer) => new GetExamsByCpfUseCase(examesRepository),
   ).scoped(),
 });
