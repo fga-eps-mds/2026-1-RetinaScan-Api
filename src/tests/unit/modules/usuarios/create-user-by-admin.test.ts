@@ -46,6 +46,7 @@ describe('Create User By Admin', () => {
     repository.findByCrm.mockResolvedValue(null);
 
     vi.mocked(auth.api.signUpEmail).mockResolvedValue({} as never);
+    const dtNascimento = new Date('2002-10-17');
 
     await expect(
       sut.execute({
@@ -53,13 +54,19 @@ describe('Create User By Admin', () => {
         email: 'gustavo@email.com',
         cpf: '12345678909',
         crm: '12345',
-        dtNascimento: new Date('2002-10-17'),
+        dtNascimento,
         senha: '123456',
         tipoPerfil: 'MEDICO',
       }),
     ).resolves.toBeUndefined();
 
-    expect(auth.api.signUpEmail).toHaveBeenCalled();
+    expect(auth.api.signUpEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          dtNascimento,
+        }),
+      }),
+    );
   });
 
   it('should not allow duplicated email', async () => {

@@ -1,7 +1,6 @@
 import { ConflictError } from '@/shared/errors/conflict-error';
 import type { UsuariosRepository } from '../repositories/users-repository';
 import { auth } from '@/lib/auth';
-import { env } from '@/env';
 
 type Request = {
   nomeCompleto: string;
@@ -37,8 +36,7 @@ export class CreateUserByAdmin {
         cpf: data.cpf,
         crm: data.crm || '',
         image: '',
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        dtNascimento: new Date(env.ADMIN_BIRTH_DATE ?? new Date()),
+        dtNascimento: data.dtNascimento,
       },
     });
   }
