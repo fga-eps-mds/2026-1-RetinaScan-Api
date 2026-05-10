@@ -21,7 +21,12 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
 
   app.get(
     '/exams',
-    { preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ADMIN])] },
+    {
+      preHandler: [
+        authenticationMiddleware,
+        authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ADMIN]),
+      ],
+    },
     listExams,
   );
 }

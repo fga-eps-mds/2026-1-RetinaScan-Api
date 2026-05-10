@@ -61,7 +61,6 @@ export class DrizzleExamesRepository implements ExamesRepository {
   }
 
   async findMany({ filters, pagination }: FindManyExamsInput): Promise<FindManyExamsResult> {
-
     const conditions: SQL[] = [];
 
     if (filters.idUsuario) {
