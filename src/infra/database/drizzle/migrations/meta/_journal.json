@@ -29,6 +29,13 @@
       "when": 1777819744987,
       "tag": "0003_create_imagem_table",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1778371670577,
+      "tag": "0004_add_olho_to_exame",
+      "breakpoints": true
     }
   ]
 }

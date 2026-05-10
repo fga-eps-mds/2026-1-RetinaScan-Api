@@ -2,7 +2,7 @@ import type { UsuariosRepository } from '@/modules/users/repositories';
 import { type Exame, ExameStatus, type ExamesRepository, type Sexo } from '@/modules/exam';
 import { NotFoundError } from '@/shared/errors';
 import { randomUUID } from 'node:crypto';
-import type { CryptographyService, MaskingService } from '@/shared/services';
+import type { CryptographyService } from '@/shared/services';
 
 export type CreateExamUseCaseInput = {
   idUsuario: string;
@@ -22,7 +22,6 @@ export class CreateExamUseCase {
     private readonly userRepository: UsuariosRepository,
     private readonly examRepository: ExamesRepository,
     private readonly cryptographyService: CryptographyService,
-    private readonly maskingService: MaskingService,
   ) {}
 
   async execute(input: CreateExamUseCaseInput): Promise<CreateExamUseCaseOutput> {
@@ -55,8 +54,6 @@ export class CreateExamUseCase {
   private anonimizeData(exam: Exame): Exame {
     return {
       ...exam,
-      nomeCompleto: this.maskingService.maskName(exam.nomeCompleto),
-      cpf: this.maskingService.maskCpf(exam.cpf),
       dtNascimento: this.encrypt(exam.dtNascimento),
       comorbidades: exam.comorbidades ? this.encrypt(exam.comorbidades) : exam.comorbidades,
       descricao: exam.descricao ? this.encrypt(exam.descricao) : exam.descricao,

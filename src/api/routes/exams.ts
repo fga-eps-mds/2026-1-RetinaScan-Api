@@ -3,6 +3,7 @@ import { authenticationMiddleware, authorizationMiddleware } from '../middleware
 import { tiposPerfil } from '@/modules/users/domain';
 import { createExam } from './exams/create-exam';
 import { uploadExamImages } from './exams/upload-exam-images';
+import { listExams } from './exams/list-exams';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function examRoutes(app: FastifyInstance): Promise<void> {
@@ -16,5 +17,11 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
     '/exams/:examId/images',
     { preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])] },
     uploadExamImages,
+  );
+
+  app.get(
+    '/exams',
+    { preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])] },
+    listExams,
   );
 }

@@ -15,6 +15,8 @@ import {
 class FakeExamesRepository implements ExamesRepository {
   create = vi.fn();
   findOne = vi.fn();
+  findMany = vi.fn();
+  update = vi.fn();
 }
 
 class FakeImagemRepository implements ImagemRepository {
@@ -102,6 +104,8 @@ describe('UploadExamImagesUseCase', () => {
     ]);
     expect(result.imagens[0]).not.toHaveProperty('caminhoImg');
     expect(storageService.deleteByKey).not.toHaveBeenCalled();
+
+    expect(examRepository.update).toHaveBeenCalledWith({ examId: exame.id, data: { olho: 'OD' } });
   });
 
   it('should upload OD and OE images and persist both', async () => {
@@ -150,6 +154,26 @@ describe('UploadExamImagesUseCase', () => {
     );
     expect(result.imagens.every((i) => !('caminhoImg' in i))).toBe(true);
     expect(storageService.deleteByKey).not.toHaveBeenCalled();
+
+    expect(examRepository.update).toHaveBeenCalledWith({ examId: exame.id, data: { olho: 'AO' } });
+  });
+
+  it('should set olho to OE when only the left eye is uploaded', async () => {
+    const userId = faker.string.uuid();
+    const exame = ExameBuilder.anExame().withIdUsuario(userId).getData();
+
+    examRepository.findOne.mockResolvedValue(exame);
+    imagemRepository.findMany.mockResolvedValue([]);
+    storageService.uploadPrivate.mockResolvedValue(undefined);
+    imagemRepository.createMany.mockImplementation(async (input: Imagem[]) => input);
+
+    await usecase.execute({
+      examId: exame.id,
+      userId,
+      imagens: [buildImageInput(LateralidadeOlho.OE)],
+    });
+
+    expect(examRepository.update).toHaveBeenCalledWith({ examId: exame.id, data: { olho: 'OE' } });
   });
 
   it('should throw NotFoundError when exam does not exist', async () => {
@@ -166,6 +190,7 @@ describe('UploadExamImagesUseCase', () => {
     expect(storageService.uploadPrivate).not.toHaveBeenCalled();
     expect(imagemRepository.findMany).not.toHaveBeenCalled();
     expect(imagemRepository.createMany).not.toHaveBeenCalled();
+    expect(examRepository.update).not.toHaveBeenCalled();
   });
 
   it('should throw NotFoundError when user is not the exam owner', async () => {

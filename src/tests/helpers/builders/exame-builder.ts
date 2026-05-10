@@ -3,7 +3,7 @@ import { cpf as cpfUtil } from 'cpf-cnpj-validator';
 import { eq } from 'drizzle-orm';
 import { db } from '@/infra/database/drizzle/connection';
 import { exam, usuario } from '@/infra/database/drizzle/schema';
-import { ExameStatus, Sexo, type Exame } from '@/modules/exam/exam';
+import { ExameStatus, type OlhoExame, Sexo, type Exame } from '@/modules/exam/exam';
 import { UsuarioBuilder } from './usuario-builder';
 
 export class ExameBuilder {
@@ -21,9 +21,15 @@ export class ExameBuilder {
       dtNascimento: faker.date.past({ years: 30 }).toISOString().slice(0, 10),
       dtHora: faker.date.recent(),
       status: ExameStatus.CRIADO,
+      olho: null,
       comorbidades: null,
       descricao: null,
     };
+  }
+
+  public withOlho(olho: OlhoExame | null): this {
+    this.data.olho = olho;
+    return this;
   }
 
   public withIdUsuario(idUsuario: string): this {
@@ -87,6 +93,7 @@ export class ExameBuilder {
       dtNascimento: this.data.dtNascimento,
       dtHora: this.data.dtHora,
       status: this.data.status,
+      olho: this.data.olho ?? null,
       comorbidades: this.data.comorbidades ?? null,
       descricao: this.data.descricao ?? null,
     });

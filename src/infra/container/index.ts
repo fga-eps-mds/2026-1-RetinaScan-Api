@@ -19,6 +19,7 @@ import { ListarSolicitacoesCpfCrmUsecase } from '@/modules/users/use-cases/lista
 import type { UsuariosRepository, SolicitacaoCpfCrmRepository } from '@/modules/users/repositories';
 import { CreateExamUseCase } from '@/modules/exam/use-cases/create-exam-usecase';
 import { UploadExamImagesUseCase } from '@/modules/exam/use-cases/upload-exam-images-usecase';
+import { ListExamsUseCase } from '@/modules/exam/use-cases/list-exams-usecase';
 import type { ExamesRepository } from '@/modules/exam/exam-repository';
 import type { ImagemRepository } from '@/modules/exam/imagem-repository';
 import type { AuthService } from '@/shared/services/auth-service';
@@ -44,6 +45,7 @@ export interface AppContainer {
   listarSolicitacoesCpfCrmUsecase: ListarSolicitacoesCpfCrmUsecase;
   createExamUseCase: CreateExamUseCase;
   uploadExamImagesUseCase: UploadExamImagesUseCase;
+  listExamsUseCase: ListExamsUseCase;
 }
 
 export const container: AwilixContainer<AppContainer> = createContainer<AppContainer>({
@@ -88,16 +90,14 @@ container.register({
       new ListarSolicitacoesCpfCrmUsecase(solicitacaoCpfCrmRepository),
   ).scoped(),
   createExamUseCase: asFunction(
-    ({ usuariosRepository, examesRepository, cryptographyService, maskingService }: AppContainer) =>
-      new CreateExamUseCase(
-        usuariosRepository,
-        examesRepository,
-        cryptographyService,
-        maskingService,
-      ),
+    ({ usuariosRepository, examesRepository, cryptographyService }: AppContainer) =>
+      new CreateExamUseCase(usuariosRepository, examesRepository, cryptographyService),
   ).scoped(),
   uploadExamImagesUseCase: asFunction(
     ({ examesRepository, imagemRepository, storageService }: AppContainer) =>
       new UploadExamImagesUseCase(examesRepository, imagemRepository, storageService),
+  ).scoped(),
+  listExamsUseCase: asFunction(
+    ({ examesRepository }: AppContainer) => new ListExamsUseCase(examesRepository),
   ).scoped(),
 });

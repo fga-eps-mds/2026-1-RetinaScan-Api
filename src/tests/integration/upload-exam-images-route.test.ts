@@ -157,6 +157,10 @@ describe('POST /api/exams/:id/images (integration)', () => {
     expect(rows[0].idExame).toBe(exame.id);
     expect(rows[0].lateralidadeOlho).toBe('OD');
     expect(rows[0].qualidadeImg).toBe('Pendente');
+
+    expect(payload.imagens[0]).not.toHaveProperty('olho');
+    const [examRow] = await db.select().from(exam);
+    expect(examRow.olho).toBe('OD');
   });
 
   it('returns 201 when uploading both eyes', async () => {
@@ -187,6 +191,9 @@ describe('POST /api/exams/:id/images (integration)', () => {
 
     const rows = await db.select().from(imagem);
     expect(rows).toHaveLength(2);
+
+    const [examRow] = await db.select().from(exam);
+    expect(examRow.olho).toBe('AO');
   });
 
   it('returns 409 on re-upload', async () => {
