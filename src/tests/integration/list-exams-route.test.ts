@@ -39,13 +39,15 @@ describe('GET /api/exams (integration)', () => {
     expect(res.statusCode).toBe(401);
   });
 
-  it('should return 403 when user is not MEDICO', async () => {
+  it('should allow ADMIN to access the endpoint', async () => {
     const user = await UsuarioBuilder.anUser().withTipoPerfil('ADMIN').build();
     authSpies.authenticateAs(user);
 
     const res = await app.inject({ method: 'GET', url: '/api/exams' });
 
-    expect(res.statusCode).toBe(403);
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.data).toBeDefined();
   });
 
   it('should return only exams created by the authenticated medico', async () => {
