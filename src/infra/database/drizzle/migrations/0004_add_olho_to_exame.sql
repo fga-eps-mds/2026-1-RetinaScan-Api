@@ -1,0 +1,1 @@
+ALTER TABLE "exame" ADD COLUMN "olho" varchar(2);
