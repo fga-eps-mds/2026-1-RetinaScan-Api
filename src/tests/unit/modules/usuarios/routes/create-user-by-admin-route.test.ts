@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { createUserByAdmin } from '@/api/routes/users/create-user-by-admin';
 import { CreateUserByAdmin } from '@/modules/users/use-cases';
 import { better_auth_errors } from '@/shared/errors/better-auth-errors';
+import { ConflictError } from '@/shared/errors/conflict-error';
 
 // 1. Mock das dependências externas
 vi.mock('@/modules/users/use-cases');
@@ -125,6 +126,69 @@ describe('createUserByAdmin Controller', () => {
           message: 'Erro ao criar usuário.',
         }),
       );
+    });
+  });
+
+  describe('Tratamento de Erro 409 - Conflict', () => {
+    it('deve retornar 409 quando o Use Case lança ConflictError por email duplicado', async () => {
+      const conflictError = new ConflictError('Email já cadastrado');
+
+      vi.spyOn(CreateUserByAdmin.prototype, 'execute').mockRejectedValue(conflictError);
+
+      await createUserByAdmin(mockRequest, mockReply);
+
+      expect(mockReply.status).toHaveBeenCalledWith(409);
+      expect(mockReply.send).toHaveBeenCalledWith({
+        statusCode: 409,
+        error: 'Conflict',
+        message: 'Email já cadastrado',
+      });
+    });
+
+    it('deve retornar 409 quando o Use Case lança ConflictError por CPF duplicado', async () => {
+      const conflictError = new ConflictError('CPF já cadastrado');
+
+      vi.spyOn(CreateUserByAdmin.prototype, 'execute').mockRejectedValue(conflictError);
+
+      await createUserByAdmin(mockRequest, mockReply);
+
+      expect(mockReply.status).toHaveBeenCalledWith(409);
+      expect(mockReply.send).toHaveBeenCalledWith({
+        statusCode: 409,
+        error: 'Conflict',
+        message: 'CPF já cadastrado',
+      });
+    });
+
+    it('deve retornar 409 quando o Use Case lança ConflictError por CRM duplicado', async () => {
+      const conflictError = new ConflictError('CRM já cadastrado');
+
+      vi.spyOn(CreateUserByAdmin.prototype, 'execute').mockRejectedValue(conflictError);
+
+      await createUserByAdmin(mockRequest, mockReply);
+
+      expect(mockReply.status).toHaveBeenCalledWith(409);
+      expect(mockReply.send).toHaveBeenCalledWith({
+        statusCode: 409,
+        error: 'Conflict',
+        message: 'CRM já cadastrado',
+      });
+    });
+
+    it('deve retornar 409 com mensagem de erro customizada de ConflictError', async () => {
+      const customMessage = 'Recurso duplicado: Este usuário já existe no sistema';
+      const conflictError = new ConflictError(customMessage);
+
+      vi.spyOn(CreateUserByAdmin.prototype, 'execute').mockRejectedValue(conflictError);
+
+      await createUserByAdmin(mockRequest, mockReply);
+
+      expect(mockReply.status).toHaveBeenCalledWith(409);
+      expect(mockReply.send).toHaveBeenCalledWith({
+        statusCode: 409,
+        error: 'Conflict',
+        message: customMessage,
+      });
     });
   });
 });
