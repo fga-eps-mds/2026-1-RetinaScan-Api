@@ -5,7 +5,7 @@ import type { ExamesRepository } from '@/modules/exam/exam-repository';
 import { ExameStatus } from '@/modules/exam/exam';
 import { CreateExamUseCase } from '@/modules/exam/use-cases/create-exam-usecase';
 import { NotFoundError } from '@/shared/errors';
-import type { CryptographyService, MaskingService } from '@/shared/services';
+import type { CryptographyService } from '@/shared/services';
 import { UsuarioBuilder } from '@/tests/helpers/builders/usuario-builder';
 import { ExameBuilder } from '@/tests/helpers/builders/exame-builder';
 
@@ -21,6 +21,8 @@ class FakeUsuariosRepository implements UsuariosRepository {
 class FakeExamesRepository implements ExamesRepository {
   create = vi.fn();
   findOne = vi.fn();
+  findMany = vi.fn();
+  update = vi.fn();
 }
 
 class FakeCryptographyService implements CryptographyService {
@@ -28,16 +30,9 @@ class FakeCryptographyService implements CryptographyService {
   decrypt = vi.fn();
 }
 
-class FakeMaskingService implements MaskingService {
-  maskEmail = vi.fn();
-  maskName = vi.fn((name: string) => `masked-name(${name})`);
-  maskCpf = vi.fn((cpf: string) => `masked(${cpf})`);
-}
-
 let userRepository: FakeUsuariosRepository;
 let examRepository: FakeExamesRepository;
 let cryptographyService: FakeCryptographyService;
-let maskingService: FakeMaskingService;
 let usecase: CreateExamUseCase;
 
 describe('CreateExamUseCase', () => {
@@ -45,18 +40,12 @@ describe('CreateExamUseCase', () => {
     userRepository = new FakeUsuariosRepository();
     examRepository = new FakeExamesRepository();
     cryptographyService = new FakeCryptographyService();
-    maskingService = new FakeMaskingService();
-    usecase = new CreateExamUseCase(
-      userRepository,
-      examRepository,
-      cryptographyService,
-      maskingService,
-    );
+    usecase = new CreateExamUseCase(userRepository, examRepository, cryptographyService);
 
     vi.clearAllMocks();
   });
 
-  it('should create an exam encrypting sensitive data and masking the cpf', async () => {
+  it('should create an exam encrypting sensitive data without masking the name or cpf', async () => {
     const usuario = UsuarioBuilder.anUser().getData();
     const exame = ExameBuilder.anExame().withIdUsuario(usuario.id).getData();
     const comorbidades = faker.lorem.words(3);
@@ -77,8 +66,6 @@ describe('CreateExamUseCase', () => {
     });
 
     expect(userRepository.findBy).toHaveBeenCalledWith({ id: usuario.id });
-    expect(maskingService.maskCpf).toHaveBeenCalledWith(exame.cpf);
-    expect(maskingService.maskName).toHaveBeenCalledWith(exame.nomeCompleto);
     expect(cryptographyService.encrypt).toHaveBeenCalledWith({ text: exame.dtNascimento });
     expect(cryptographyService.encrypt).toHaveBeenCalledWith({ text: comorbidades });
     expect(cryptographyService.encrypt).toHaveBeenCalledWith({ text: descricao });
@@ -86,8 +73,8 @@ describe('CreateExamUseCase', () => {
     expect(examRepository.create).toHaveBeenCalledWith(
       expect.objectContaining({
         idUsuario: usuario.id,
-        nomeCompleto: `masked-name(${exame.nomeCompleto})`,
-        cpf: `masked(${exame.cpf})`,
+        nomeCompleto: exame.nomeCompleto,
+        cpf: exame.cpf,
         sexo: exame.sexo,
         dtNascimento: `enc(${exame.dtNascimento})`,
         dtHora: exame.dtHora,
@@ -96,7 +83,8 @@ describe('CreateExamUseCase', () => {
         descricao: `enc(${descricao})`,
       }),
     );
-    expect(result.cpf).toBe(`masked(${exame.cpf})`);
+    expect(result.nomeCompleto).toBe(exame.nomeCompleto);
+    expect(result.cpf).toBe(exame.cpf);
   });
 
   it('should not encrypt optional fields when not provided', async () => {
@@ -164,7 +152,5 @@ describe('CreateExamUseCase', () => {
 
     expect(examRepository.create).not.toHaveBeenCalled();
     expect(cryptographyService.encrypt).not.toHaveBeenCalled();
-    expect(maskingService.maskCpf).not.toHaveBeenCalled();
-    expect(maskingService.maskName).not.toHaveBeenCalled();
   });
 });
