@@ -1,15 +1,10 @@
-export type Exame = {
-  id: string;
-  idUsuario: string;
-  nomeCompleto: string;
-  cpf: string;
-  sexo: Sexo;
-  dtNascimento: string;
-  dtHora: Date;
-  status: ExameStatus;
-  comorbidades?: string | null;
-  descricao?: string | null;
-};
+export const OlhoExame = {
+  AO: 'AO',
+  OD: 'OD',
+  OE: 'OE',
+} as const;
+
+export type OlhoExame = keyof typeof OlhoExame;
 
 export const ExameStatus = {
   CRIADO: 'CRIADO',
@@ -26,3 +21,17 @@ export const Sexo = {
 } as const;
 
 export type Sexo = keyof typeof Sexo;
+
+export type Exame = {
+  id: string;
+  idUsuario: string;
+  nomeCompleto: string;
+  cpf: string;
+  sexo: Sexo;
+  dtNascimento: string;
+  dtHora: Date;
+  status: ExameStatus;
+  olho?: OlhoExame | null;
+  comorbidades?: string | null;
+  descricao?: string | null;
+};

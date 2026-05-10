@@ -15,6 +15,7 @@ export const exam = pgTable('exame', {
   sexo: varchar('sexo', { length: 20 }).notNull(),
   dtHora: timestamp('data_hora').notNull(),
   status: varchar('status', { length: 50 }).notNull(),
+  olho: varchar('olho', { length: 2 }),
   comorbidades: text('comorbidades'),
   descricao: text('descricao'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
