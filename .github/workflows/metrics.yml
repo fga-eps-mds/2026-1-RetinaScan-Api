@@ -2,24 +2,22 @@ name: Export de métricas
 
 on:
   pull_request:
-    branches:
-      - main
-    types:
-      - closed
-
-  # push:
-  #   branches:
-  #     - develop
-
+    branches: [main, develop]
+    types: [closed]
   workflow_dispatch:
+
+concurrency:
+  group: export-metrics-${{ github.event.pull_request.number || github.ref || github.run_id }}
+  cancel-in-progress: false
 
 jobs:
   release:
-    if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'NOT RELEASE') == false
+    if: github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true && !contains(github.event.pull_request.labels.*.name, 'NOT RELEASE'))
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -31,49 +29,48 @@ jobs:
       - name: Instalar dependências
         run: pip install requests python-dotenv packaging pandas
 
-      - name: Criar arquivo .env
-        run: |
-          touch ./sonar_scripts/.env
-          echo GITHUB_TOKEN=${{ secrets.API_TOKEN_GITHUB }} >> ./sonar_scripts/.env
-          echo REPO=${{ github.event.repository.name }} >> ./sonar_scripts/.env
-          echo REPO_DOC=${{ secrets.REPO_DOC }} >> ./sonar_scripts/.env
-          echo RELEASE_MAJOR=${{ contains(github.event.pull_request.labels.*.name, 'MAJOR RELEASE') }} >> ./sonar_scripts/.env
-          echo RELEASE_MINOR=${{ contains(github.event.pull_request.labels.*.name, 'MINOR RELEASE') }} >> ./sonar_scripts/.env
-          echo RELEASE_FIX=${{ contains(github.event.pull_request.labels.*.name, 'FIX RELEASE') }} >> ./sonar_scripts/.env
-
       - name: Criar diretório
         run: mkdir -p analytics-raw-data
 
-      - name: Coletar métricas no SonarCloud
-        run: python3 ./sonar_scripts/parser.py
+      - name: Coletar métricas e criar release
+        env:
+          GITHUB_TOKEN: ${{ secrets.API_TOKEN_GITHUB }}
+          REPO: ${{ github.event.repository.name }}
+          REPO_DOC: ${{ secrets.REPO_DOC }}
+          TARGET_COMMITISH: main
+          RELEASE_MAJOR: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'MAJOR RELEASE') || false }}
+          RELEASE_MINOR: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'MINOR RELEASE') || false }}
+          RELEASE_FIX: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'FIX RELEASE') || false }}
+        run: python ./sonar_scripts/parser.py
+
+      - name: Ler tag criada
+        shell: bash
+        run: |
+          if [ -f analytics-raw-data/release-tag.txt ]; then
+            echo "RELEASE_TAG=$(cat analytics-raw-data/release-tag.txt)" >> "$GITHUB_ENV"
+          else
+            echo "Arquivo analytics-raw-data/release-tag.txt não encontrado"
+            exit 1
+          fi
 
       - name: Envia métricas para repo de Doc
+        shell: bash
         run: |
           git config --global user.email "${{ secrets.USER_EMAIL }}"
           git config --global user.name "${{ secrets.USER_NAME }}"
 
-          git clone --single-branch --branch main "https://x-access-token:${{ secrets.API_TOKEN_GITHUB }}@github.com/fga-eps-mds/2026-1-RetinaScan-Doc" doc
+          git clone --single-branch --branch main "https://x-access-token:${{ secrets.API_TOKEN_GITHUB }}@github.com/fga-eps-mds/${{ secrets.REPO_DOC }}.git" doc
 
           mkdir -p doc/analytics/raw-data
-
-          cp -R analytics-raw-data/*.json doc/analytics/raw-data/
+          cp analytics-raw-data/*.json doc/analytics/raw-data/
 
           cd doc
           git add .
-
-          git commit -m "Adicionando métricas do repositório ${{ github.event.repository.name }} ${{ github.ref_name }}" || echo "Sem alterações para commit"
-
+          git commit -m "Adicionando métricas do repositório ${{ github.event.repository.name }} ${RELEASE_TAG}" || echo "Sem alterações"
           git push
 
-            - name: Envia métricas como assets da release
-
-      - run: |
-          # Pega a última tag criada pelo parser
-          TAG=$(git describe --tags --abbrev=0)
-
-          # Itera sobre os arquivos e faz upload via GH CLI (já disponível no ubuntu-latest)
-          for file in analytics-raw-data/*.json; do
-            gh release upload $TAG "$file"
-          done
+      - name: Envia métricas como assets da release
+        shell: bash
+        run: gh release upload "$RELEASE_TAG" analytics-raw-data/*.json --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.API_TOKEN_GITHUB }}
