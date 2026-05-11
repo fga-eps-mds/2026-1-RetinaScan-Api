@@ -1,6 +1,10 @@
 name: Export de métricas
 
 on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
   pull_request:
     branches: [main, develop]
     types: [closed]
@@ -22,9 +26,9 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.12'
+          python-version: '3.10'
 
       - name: Instalar dependências
         run: pip install requests python-dotenv packaging pandas

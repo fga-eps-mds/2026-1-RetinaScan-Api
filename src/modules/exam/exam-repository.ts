@@ -5,7 +5,7 @@ export type FindExamInput = {
 };
 
 export type FindManyExamsFilters = {
-  idUsuario: string;
+  idUsuario?: string;
   cpf?: string;
   nomeCompleto?: string;
 };

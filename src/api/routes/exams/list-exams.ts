@@ -2,6 +2,7 @@ import z from 'zod';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { cpf as cpfValidator } from 'cpf-cnpj-validator';
 import { container } from '@/infra/container';
+import { tiposPerfil } from '@/modules/users/domain';
 import { ValidationError } from '@/shared/errors';
 import type { ListExamsUseCase } from '@/modules/exam/use-cases/list-exams-usecase';
 
@@ -28,9 +29,11 @@ export async function listExams(request: FastifyRequest, reply: FastifyReply) {
 
   const usecase: ListExamsUseCase = container.resolve('listExamsUseCase');
 
+  const isMedico = request.user!.tipoPerfil === tiposPerfil.MEDICO;
+
   const response = await usecase.execute({
     filters: {
-      idUsuario: request.user!.id,
+      idUsuario: isMedico ? request.user!.id : undefined,
       cpf: data.cpf,
       nomeCompleto: data.nomeCompleto,
     },
