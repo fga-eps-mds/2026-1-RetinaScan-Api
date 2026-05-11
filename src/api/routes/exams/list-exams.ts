@@ -12,6 +12,7 @@ const querySchema = z
       .refine((value) => cpfValidator.isValid(value), { message: 'CPF inválido.' })
       .optional(),
     nomeCompleto: z.string().trim().min(1, 'Nome inválido.').optional(),
+    status: z.enum(['CRIADO', 'CONCLUIDO', 'EM PROCESSAMENTO']).optional(),
     page: z.coerce.number().int().positive().default(1),
     pageSize: z.coerce.number().int().positive().max(100).default(20),
   })
@@ -33,6 +34,7 @@ export async function listExams(request: FastifyRequest, reply: FastifyReply) {
       idUsuario: request.user!.id,
       cpf: data.cpf,
       nomeCompleto: data.nomeCompleto,
+      status: data.status,
     },
     pagination: {
       page: data.page,

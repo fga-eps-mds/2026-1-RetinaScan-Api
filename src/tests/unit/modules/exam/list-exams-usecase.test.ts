@@ -31,12 +31,12 @@ describe('ListExamsUseCase', () => {
     examRepository.findMany.mockResolvedValue({ data: [], total: 0 });
 
     await usecase.execute({
-      filters: { idUsuario: 'medico-1', cpf: '12345678900', nomeCompleto: 'Maria' },
+      filters: { idUsuario: 'medico-1', cpf: '12345678900', nomeCompleto: 'Maria', status: 'CRIADO' },
       pagination: { page: 2, pageSize: 10 },
     });
 
     expect(examRepository.findMany).toHaveBeenCalledWith({
-      filters: { idUsuario: 'medico-1', cpf: '12345678900', nomeCompleto: 'Maria' },
+      filters: { idUsuario: 'medico-1', cpf: '12345678900', nomeCompleto: 'Maria', status: 'CRIADO' },
       pagination: { page: 2, pageSize: 10 },
     });
   });
