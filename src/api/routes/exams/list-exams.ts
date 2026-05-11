@@ -12,7 +12,7 @@ const querySchema = z
       .refine((value) => cpfValidator.isValid(value), { message: 'CPF inválido.' })
       .optional(),
     nomeCompleto: z.string().trim().min(1, 'Nome inválido.').optional(),
-    status: z.enum(['CRIADO', 'CONCLUIDO', 'EM PROCESSAMENTO']).optional(),
+    status: z.enum(['CRIADO', 'CONCLUIDO', 'EM_PROCESSAMENTO']).optional(),
     page: z.coerce.number().int().positive().default(1),
     pageSize: z.coerce.number().int().positive().max(100).default(20),
   })
