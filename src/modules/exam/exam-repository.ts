@@ -8,6 +8,7 @@ export type FindManyExamsFilters = {
   idUsuario?: string;
   cpf?: string;
   nomeCompleto?: string;
+  status?: ExameStatus;
 };
 
 export type FindManyExamsPagination = {
