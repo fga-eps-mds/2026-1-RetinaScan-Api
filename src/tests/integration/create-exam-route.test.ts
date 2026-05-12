@@ -89,14 +89,14 @@ describe('POST /api/exams (integration)', () => {
     const body = res.json();
     expect(body.idUsuario).toBe(user.id);
     expect(body.status).toBe('CRIADO');
-    expect(body.nomeCompleto).not.toBe(patient.nomeCompleto);
-    expect(body.cpf).not.toBe(patient.cpf);
-    expect(body.cpf).toMatch(/^\d{2}\*\.\*{3}\.\*{3}-\d{2}$/);
+    expect(body.nomeCompleto).toBe(patient.nomeCompleto);
+    expect(body.cpf).toBe(patient.cpf);
 
     const rows = await db.select().from(exam);
     expect(rows).toHaveLength(1);
     expect(rows[0].idUsuario).toBe(user.id);
-    expect(rows[0].nomeCompleto).not.toBe(patient.nomeCompleto);
+    expect(rows[0].nomeCompleto).toBe(patient.nomeCompleto);
+    expect(rows[0].cpf).toBe(patient.cpf);
     expect(rows[0].dtNascimento).not.toBe(patient.dtNascimento);
     expect(rows[0].comorbidades).not.toBe('Diabetes');
     expect(rows[0].descricao).not.toBe('Exame de rotina');

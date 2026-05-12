@@ -1,30 +1,13 @@
 import json
-import requests
-import sys
-from datetime import datetime
-# import datetime
-import pandas as pd
 import os
-from packaging import version
+from datetime import datetime
+
+import requests
 from dotenv import load_dotenv
+from packaging import version
 
-######################################
-# DECLARAÇÃO DE CONSTANTES/VARIÁVEIS #
-######################################
 TODAY = datetime.now()
-
-load_dotenv()
-# Variáveis globais ao repositório
 OWNER = "fga-eps-mds"
-REPO = os.getenv('REPO')
-REPO_ISSUES = os.getenv('REPO_DOC')
-
-# Configurar as variáveis de ambiente
-GITHUB_TOKEN = os.getenv('GITHUB_TOKEN')
-RELEASE_MAJOR = os.getenv('RELEASE_MAJOR')
-RELEASE_MINOR = os.getenv('RELEASE_MINOR')
-RELEASE_FIX = os.getenv('RELEASE_FIX')
-DEVELOP = os.getenv('DEVELOP')
 
 METRICS_SONAR = [
     "files",
@@ -41,174 +24,163 @@ METRICS_SONAR = [
     "security_rating",
 ]
 
+load_dotenv()
+
+REPO = os.getenv("REPO")
+REPO_ISSUES = os.getenv("REPO_DOC")
+GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
+RELEASE_MAJOR = os.getenv("RELEASE_MAJOR", "false").lower()
+RELEASE_MINOR = os.getenv("RELEASE_MINOR", "false").lower()
+RELEASE_FIX = os.getenv("RELEASE_FIX", "false").lower()
+TARGET_COMMITISH = os.getenv("TARGET_COMMITISH", "main")
+SONAR_TOKEN = os.getenv("SONAR_TOKEN")
+
 BASE_URL_SONAR = "https://sonarcloud.io/api/measures/component_tree?component=fga-eps-mds_"
+API_URL_RUNS = f"https://api.github.com/repos/{OWNER}/{REPO}/actions/runs"
+API_URL_ISSUES = f"https://api.github.com/repos/{OWNER}/{REPO_ISSUES}/issues"
 
-# Utilize a api que for necessária
-# api_url_workflows = f"https://api.github.com/repos/{owner}/{repo}/actions/workflows"
-# api_url_jobs = f"https://api.github.com/repos/{owner}/{repo}/actions/runs/3624383254/jobs"
-# api_url_deployments = f"https://api.github.com/repos/{owner}/{repo}/deployments"
-api_url_runs = f"https://api.github.com/repos/{OWNER}/{REPO}/actions/runs"
-api_url_issues = f"https://api.github.com/repos/{OWNER}/{REPO_ISSUES}/issues"
 
-###################
-# FUNÇÕES RELEASE #
-###################
-# Pega a última release
-def get_latest_release():
-    url = f'https://api.github.com/repos/{OWNER}/{REPO}/releases'
-    headers = {
-        'Authorization': f'token {GITHUB_TOKEN}'
+def ensure_output_dir():
+    os.makedirs("./analytics-raw-data", exist_ok=True)
+
+
+def github_headers():
+    return {
+        "Authorization": f"Bearer {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
     }
-    response = requests.get(url, headers=headers)
-    releases = response.json()
-    
-    if releases:
-        return releases[0].get('tag_name', '0.0.0')
-    return '0.0.0'
 
-# Cria um novo nome de tag
+
+def sonar_headers():
+    headers = {"Accept": "application/json"}
+    if SONAR_TOKEN:
+        headers["Authorization"] = f"Bearer {SONAR_TOKEN}"
+    return headers
+
+
+def get_json(url, headers=None, params=None, timeout=30):
+    response = requests.get(url, headers=headers, params=params, timeout=timeout)
+    response.raise_for_status()
+    return response.json()
+
+
+def post_json(url, headers=None, payload=None, timeout=30):
+    response = requests.post(url, headers=headers, json=payload, timeout=timeout)
+    response.raise_for_status()
+    return response.json()
+
+
+def normalize_tag(tag: str) -> str:
+    return tag.lstrip("v").strip()
+
+
+def get_latest_release_tag():
+    url = f"https://api.github.com/repos/{OWNER}/{REPO}/releases"
+    releases = get_json(url, headers=github_headers(), params={"per_page": 1})
+    if releases:
+        return releases[0].get("tag_name", "0.0.0")
+    return "0.0.0"
+
+
 def new_tag_name():
-    old_tag = get_latest_release()
+    old_tag = normalize_tag(get_latest_release_tag())
     try:
         old_version = version.parse(old_tag)
     except version.InvalidVersion:
-        old_version = version.parse('0.0.0')
+        old_version = version.parse("0.0.0")
 
-    if RELEASE_MAJOR == 'true':
-        return f'{old_version.major + 1}.0.0'
-    elif RELEASE_MINOR == 'true':
-        return f'{old_version.major}.{old_version.minor + 1}.0'
-    elif RELEASE_FIX == 'true':
-        return f'{old_version.major}.{old_version.minor}.{old_version.micro + 1}'
-    else:
-        return f'{old_version.major}.{old_version.minor}.{old_version.micro + 1}'
-    
-# Cria a nova release
-def create_release():
-    tag = new_tag_name()
-    url = f'https://api.github.com/repos/{OWNER}/{REPO}/releases'
-    headers = {
-        'Authorization': f'token {GITHUB_TOKEN}',
-        'Accept': 'application/vnd.github.v3+json'
-    }
+    if RELEASE_MAJOR == "true":
+        return f"{old_version.major + 1}.0.0"
+    if RELEASE_MINOR == "true":
+        return f"{old_version.major}.{old_version.minor + 1}.0"
+    if RELEASE_FIX == "true":
+        return f"{old_version.major}.{old_version.minor}.{old_version.micro + 1}"
+    return f"{old_version.major}.{old_version.minor}.{old_version.micro + 1}"
+
+
+def create_release(tag):
+    url = f"https://api.github.com/repos/{OWNER}/{REPO}/releases"
     payload = {
-        'tag_name': tag,
-        'name': tag
+        "tag_name": tag,
+        "name": tag,
+        "target_commitish": TARGET_COMMITISH,
+        "generate_release_notes": True,
     }
-    response = requests.post(url, headers=headers, json=payload)
-    res_data = response.json()
-    return res_data.get('upload_url'), tag
+    return post_json(url, headers=github_headers(), payload=payload)
 
-#################
-# FUNÇÕES SONAR #
-#################
+
+def write_release_tag(tag):
+    with open("./analytics-raw-data/release-tag.txt", "w") as fp:
+        fp.write(tag)
+
 
 def save_sonar_metrics(tag):
-    response = requests.get(f'{BASE_URL_SONAR}{REPO}&metricKeys={",".join(METRICS_SONAR)}&ps=500')
+    url = f"{BASE_URL_SONAR}{REPO}"
+    params = {
+        "metricKeys": ",".join(METRICS_SONAR),
+        "ps": 500,
+    }
+    data = get_json(url, headers=sonar_headers(), params=params)
 
-    j = json.loads(response.text)
+    file_path = f"./analytics-raw-data/fga-eps-mds-{REPO}-{TODAY.strftime('%m-%d-%Y-%H-%M-%S')}-{tag}.json"
+    with open(file_path, "w") as fp:
+        json.dump(data, fp)
 
-    print("Extração do Sonar concluída.")
-
-    file_path = f'./analytics-raw-data/fga-eps-mds-{REPO}-{TODAY.strftime("%m-%d-%Y-%H-%M-%S")}-{tag}.json'
-
-    with open(file_path, 'w') as fp:
-        fp.write(json.dumps(j))
-        fp.close()
-
-    return
-
-##################
-# FUNÇÕES GITHUB #
-##################
 
 def all_request_pages(data):
-    total_runs = data["total_count"]
+    total_runs = data.get("total_count", 0)
     pages = (total_runs // 100) + (1 if total_runs % 100 > 0 else 0)
-    for i in range(pages+1):
-        if i == 0 or i == 1:
-            continue
-        api_url_now = api_url_runs + "?page=" + str(i)
-        response = requests.get(api_url_now)
-        for j in ((response.json()['workflow_runs'])):
-            data['workflow_runs'].append(j)
+
+    for page in range(2, pages + 1):
+        response = get_json(
+            API_URL_RUNS,
+            headers=github_headers(),
+            params={"per_page": 100, "page": page},
+        )
+        data["workflow_runs"].extend(response.get("workflow_runs", []))
+
     return data
 
-def filter_request_per_date(data, date):
-    data_filtered = []
-    for i in data["workflow_runs"]:
-        if datetime.strptime(i["created_at"][:10],"%Y-%m-%d").strftime("%Y-%m-%d") == date:
-            data_filtered.append(i)
-    return {"workflow_runs": data_filtered}
 
-def save_github_metrics_runs():
-    response = requests.get(api_url_runs, params={'per_page': 100,})
-
-    data = response.json()
-
-    # date = datetime.strptime("2023-03-23","%Y-%m-%d").strftime("%Y-%m-%d")
+def save_github_metrics_runs(tag):
+    data = get_json(API_URL_RUNS, headers=github_headers(), params={"per_page": 100})
     data = all_request_pages(data)
 
-    print("Quantidade de workflow_runs: " + str(len(data["workflow_runs"])))
+    file_path = f"./analytics-raw-data/GitHub_API-Runs-fga-eps-mds-{REPO}-{TODAY.strftime('%m-%d-%Y-%H-%M-%S')}-{tag}.json"
+    with open(file_path, "w") as fp:
+        json.dump(data, fp)
 
-    file_path = f'./analytics-raw-data/GitHub_API-Runs-fga-eps-mds-{REPO}-{TODAY.strftime("%m-%d-%Y-%H-%M-%S")}.json'
 
-    # Salva os dados em um json file
-    with open(file_path, 'w') as fp:
-        fp.write(json.dumps(data))
-        fp.close()
-
-    return
-
-def save_github_metrics_issues():
+def save_github_metrics_issues(tag):
     issues = []
     page = 1
 
-    headers = {
-        "Authorization": f"Bearer {GITHUB_TOKEN}",
-        "Accept": "application/vnd.github+json"
-    }
-
     while True:
-        response = requests.get(
-            api_url_issues,
-            headers=headers,
-            params={
-                "state": "all",
-                "per_page": 100,
-                "page": page
-            },
-            timeout=30
+        page_issues = get_json(
+            API_URL_ISSUES,
+            headers=github_headers(),
+            params={"state": "all", "per_page": 100, "page": page},
         )
 
-        response.raise_for_status()
-
-        page_issues = response.json()
-
-        if not isinstance(page_issues, list):
-            print("Resposta inválida da API:")
-            print(page_issues)
-            break
-
-        if len(page_issues) == 0:
+        if not isinstance(page_issues, list) or len(page_issues) == 0:
             break
 
         issues.extend(page_issues)
-
-        print(f"Página {page}: {len(page_issues)} issues carregadas.")
-
         page += 1
 
-    print("Quantidade total de issues:", len(issues))
+    file_path = f"./analytics-raw-data/GitHub_API-Issues-fga-eps-mds-{REPO_ISSUES}-{tag}.json"
+    with open(file_path, "w") as fp:
+        json.dump(issues, fp, indent=2)
 
-    file_path = f'./analytics-raw-data/GitHub_API-Issues-fga-eps-mds-{REPO_ISSUES}.json'
-
-    with open(file_path, 'w') as fp:
-        json.dump(issues, fp, indent=4)
 
 if __name__ == "__main__":
-    _, tag = create_release()
+    ensure_output_dir()
+
+    tag = new_tag_name()
+    create_release(tag)
+    write_release_tag(tag)
 
     save_sonar_metrics(tag)
-    save_github_metrics_runs()
-    save_github_metrics_issues()
+    save_github_metrics_runs(tag)
+    save_github_metrics_issues(tag)

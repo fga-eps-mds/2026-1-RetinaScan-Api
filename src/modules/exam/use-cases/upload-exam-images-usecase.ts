@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
-import type { Exame } from '@/modules/exam/exam';
+import type { Exame, OlhoExame } from '@/modules/exam/exam';
 import type { ExamesRepository } from '@/modules/exam/exam-repository';
 import type { ImagemRepository } from '@/modules/exam/imagem-repository';
-import { QualidadeImagem, type Imagem, type LateralidadeOlho } from '@/modules/exam/imagem';
+import { LateralidadeOlho, QualidadeImagem, type Imagem } from '@/modules/exam/imagem';
 import { Buckets, type StorageService } from '@/shared/services';
 import { ConflictError, NotFoundError } from '@/shared/errors';
 import logger from '@/infra/logger';
@@ -66,7 +66,23 @@ export class UploadExamImagesUseCase {
     await this.uploadAll(prepared);
 
     const created = await this.createImages(examId, prepared);
+    await this.updateExamOlho(examId, created);
     return { imagens: created.map(toUploadedImagemDto) };
+  }
+
+  private async updateExamOlho(examId: string, imagens: Imagem[]): Promise<void> {
+    const olho = this.resolveOlho(imagens);
+    if (!olho) return;
+    await this.examRepository.update({ examId, data: { olho } });
+  }
+
+  private resolveOlho(imagens: Imagem[]): OlhoExame | null {
+    const hasOD = imagens.some((img) => img.lateralidadeOlho === LateralidadeOlho.OD);
+    const hasOE = imagens.some((img) => img.lateralidadeOlho === LateralidadeOlho.OE);
+    if (hasOD && hasOE) return 'AO';
+    if (hasOD) return 'OD';
+    if (hasOE) return 'OE';
+    return null;
   }
 
   private async getExam(examId: string): Promise<Exame> {
