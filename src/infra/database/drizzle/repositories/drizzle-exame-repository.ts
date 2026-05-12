@@ -75,6 +75,10 @@ export class DrizzleExamesRepository implements ExamesRepository {
       conditions.push(ilike(exam.nomeCompleto, `%${filters.nomeCompleto}%`));
     }
 
+    if (filters.status) {
+      conditions.push(eq(exam.status, filters.status));
+    }
+
     const whereClause = and(...conditions);
     const offset = (pagination.page - 1) * pagination.pageSize;
 
