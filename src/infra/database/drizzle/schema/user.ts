@@ -44,7 +44,7 @@ export const usuario = pgTable(
 
     image: text('image'),
 
-    criadoPor: text('criado_por').references((): AnyPgColumn => usuario.id, {
+    criadoPor: text('criado_por').references((): any => usuario.id, {
       onDelete: 'set null',
     }),
 
