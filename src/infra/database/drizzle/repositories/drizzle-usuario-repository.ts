@@ -8,7 +8,7 @@ import type {
   UsuariosRepository,
 } from '@/modules/users/repositories';
 import { usuario } from '@/infra/database/drizzle/schema';
-import { eq, or, type SQL } from 'drizzle-orm';
+import { eq, and, or, ilike, type SQL } from 'drizzle-orm';
 
 export class DrizzleUsuariosRepository implements UsuariosRepository {
   async findByEmail(email: string): Promise<Usuario | null> {
@@ -72,4 +72,15 @@ export class DrizzleUsuariosRepository implements UsuariosRepository {
 
     return result;
   }
+
+  async searchByAdmin(adminId: string, criteria: { name?: string; crm?: string; email?: string }) {
+  const conds: SQL[] = [eq(usuario.tipoPerfil, 'MEDICO'), eq(usuario.criadoPor, adminId)];
+
+  if (criteria.name) conds.push(ilike(usuario.nomeCompleto, `%${criteria.name}%`));
+  if (criteria.crm) conds.push(eq(usuario.crm, criteria.crm));
+  if (criteria.email) conds.push(eq(usuario.email, criteria.email));
+
+  const result = await db.select().from(usuario).where(and(...conds)).orderBy(usuario.nomeCompleto);
+  return result;
+}
 }
