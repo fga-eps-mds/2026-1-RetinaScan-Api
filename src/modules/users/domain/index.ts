@@ -1,3 +1,3 @@
 export * from './usuario';
 export * from './solicitacao-cpf-crm';
-export * from './busca-medicos';
+export * from './search-docs-criteria';

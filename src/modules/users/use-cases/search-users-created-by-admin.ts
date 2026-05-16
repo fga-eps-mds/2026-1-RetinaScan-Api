@@ -1,5 +1,5 @@
 import { IdAdminSearchDoctors } from '../repositories';
-import { BuscaMedicos as SearchDoctorsCriteria } from '../domain';
+import { SearchDoctorsCriteria } from '../domain';
 
 interface Request {
   adminId: string;

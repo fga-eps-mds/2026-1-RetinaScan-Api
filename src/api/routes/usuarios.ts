@@ -10,6 +10,7 @@ import { aprovarSolicitacaoCpfCrmRoute } from './users/aprovar-solicitacao-cpf-c
 import { rejeitarSolicitacaoCpfCrmRoute } from './users/rejeitar-solicitacao-cpf-crm';
 import { listarSolicitacoesCpfCrmAdminRoute } from './users/listar-solicitacoes-cpf-crm-admin';
 import { listarMinhasSolicitacoesCpfCrmRoute } from './users/listar-minhas-solicitacoes-cpf-crm';
+import { searchMedicosByAdmin } from './users/seach-users-created-by-admin';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
@@ -79,5 +80,12 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
       preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
     },
     listarMinhasSolicitacoesCpfCrmRoute,
+  );
+  app.get(
+    '/medicos/search',
+    {
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
+    },
+    searchMedicosByAdmin
   );
 }
