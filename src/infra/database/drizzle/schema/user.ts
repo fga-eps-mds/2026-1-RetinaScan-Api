@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm';
 import {
+  type AnyPgColumn,
   pgEnum,
   pgTable,
   text,
@@ -42,6 +43,10 @@ export const usuario = pgTable(
     emailVerified: boolean('email_verified').default(false).notNull(),
 
     image: text('image'),
+
+    criadoPor: text('criado_por').references((): AnyPgColumn => usuario.id, {
+      onDelete: 'set null',
+    }),
 
     createdAt: timestamp('created_at').defaultNow().notNull(),
 

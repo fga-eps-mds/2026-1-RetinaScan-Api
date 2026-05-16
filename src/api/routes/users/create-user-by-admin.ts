@@ -3,6 +3,7 @@ import { CreateUserByAdmin } from '@/modules/users/use-cases';
 import { better_auth_errors } from '@/shared/errors/better-auth-errors';
 import { ConflictError } from '@/shared/errors/conflict-error';
 import { isValidCpf } from '@/shared/validators/is-valid-cpf';
+import { admin } from 'better-auth/plugins';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import z from 'zod';
 
@@ -16,6 +17,7 @@ const bodySchema = z.object({
   dtNascimento: z.string().date().pipe(z.coerce.date()),
   senha: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres.'),
   tipoPerfil: z.enum(['ADMIN', 'MEDICO']),
+  criadoPor: z.string().optional(),
 });
 
 function getErrorCode(error: unknown): string | null {
@@ -50,10 +52,11 @@ export async function createUserByAdmin(request: FastifyRequest, reply: FastifyR
 
   try {
     const body = result.data;
+    const adminId = request.user!.id;
 
     const useCase = new CreateUserByAdmin(new DrizzleUsuariosRepository());
 
-    await useCase.execute(body);
+    await useCase.execute({ ...body, adminId });
 
     return reply.status(201).send({
       message: 'Usuário criado com sucesso.',

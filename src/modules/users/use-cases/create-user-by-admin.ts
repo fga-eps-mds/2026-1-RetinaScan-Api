@@ -10,6 +10,7 @@ type Request = {
   dtNascimento: Date;
   senha: string;
   tipoPerfil: 'ADMIN' | 'MEDICO';
+  adminId: string;
 };
 
 export class CreateUserByAdmin {
@@ -37,6 +38,7 @@ export class CreateUserByAdmin {
         crm: data.crm || '',
         image: '',
         dtNascimento: data.dtNascimento,
+        criadoPor: data.adminId,
       },
     });
   }
