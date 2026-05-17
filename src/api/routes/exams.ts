@@ -4,6 +4,7 @@ import { tiposPerfil } from '@/modules/users/domain';
 import { createExam } from './exams/create-exam';
 import { uploadExamImages } from './exams/upload-exam-images';
 import { listExams } from './exams/list-exams';
+import { registerExamWebhook } from './exams/register-exam-webhook';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function examRoutes(app: FastifyInstance): Promise<void> {
@@ -29,4 +30,6 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
     },
     listExams,
   );
+
+  app.post<{ Params: { examId: string } }>('/exams/:examId/webhook', registerExamWebhook);
 }

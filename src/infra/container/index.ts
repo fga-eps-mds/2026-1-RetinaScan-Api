@@ -4,6 +4,7 @@ import {
   DrizzleUsuariosRepository,
   DrizzleExamesRepository,
   DrizzleImagemRepository,
+  DrizzleResultadoIaRepository,
 } from '@/infra/database/drizzle/repositories';
 import { BetterAuthService } from '@/infra/auth/better-auth-service';
 import { BullMQMessageBroker } from '@/infra/queue/notify-bullmq-service';
@@ -21,8 +22,10 @@ import type { UsuariosRepository, SolicitacaoCpfCrmRepository } from '@/modules/
 import { CreateExamUseCase } from '@/modules/exam/use-cases/create-exam-usecase';
 import { UploadExamImagesUseCase } from '@/modules/exam/use-cases/upload-exam-images-usecase';
 import { ListExamsUseCase } from '@/modules/exam/use-cases/list-exams-usecase';
+import { RegisterExamAiResultUseCase } from '@/modules/exam/use-cases/register-exam-ai-result-usecase';
 import type { ExamesRepository } from '@/modules/exam/exam-repository';
 import type { ImagemRepository } from '@/modules/exam/imagem-repository';
+import type { ResultadoIaRepository } from '@/modules/exam/resultado-ia-repository';
 import type { AuthService } from '@/shared/services/auth-service';
 import type { StorageService } from '@/shared/services/storage-service';
 import type { CryptographyService } from '@/shared/services/cryptography-service';
@@ -34,6 +37,7 @@ export interface AppContainer {
   solicitacaoCpfCrmRepository: SolicitacaoCpfCrmRepository;
   examesRepository: ExamesRepository;
   imagemRepository: ImagemRepository;
+  resultadoIaRepository: ResultadoIaRepository;
   authService: AuthService;
   storageService: StorageService;
   cryptographyService: CryptographyService;
@@ -49,6 +53,7 @@ export interface AppContainer {
   createExamUseCase: CreateExamUseCase;
   uploadExamImagesUseCase: UploadExamImagesUseCase;
   listExamsUseCase: ListExamsUseCase;
+  registerExamAiResultUseCase: RegisterExamAiResultUseCase;
 }
 
 export const container: AwilixContainer<AppContainer> = createContainer<AppContainer>({
@@ -61,6 +66,7 @@ container.register({
   solicitacaoCpfCrmRepository: asClass(DrizzleSolicitacaoCpfCrmRepository).singleton(),
   examesRepository: asClass(DrizzleExamesRepository).singleton(),
   imagemRepository: asClass(DrizzleImagemRepository).singleton(),
+  resultadoIaRepository: asClass(DrizzleResultadoIaRepository).singleton(),
   authService: asClass(BetterAuthService).singleton(),
   storageService: asClass(MinioStorageService).singleton(),
   cryptographyService: asClass(NodeCryptoCryptographyService).singleton(),
@@ -108,5 +114,9 @@ container.register({
   ).scoped(),
   listExamsUseCase: asFunction(
     ({ examesRepository }: AppContainer) => new ListExamsUseCase(examesRepository),
+  ).scoped(),
+  registerExamAiResultUseCase: asFunction(
+    ({ examesRepository, imagemRepository, resultadoIaRepository }: AppContainer) =>
+      new RegisterExamAiResultUseCase(examesRepository, imagemRepository, resultadoIaRepository),
   ).scoped(),
 });
