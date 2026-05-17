@@ -10,7 +10,7 @@ type Request = {
   dtNascimento: Date;
   senha: string;
   tipoPerfil: 'ADMIN' | 'MEDICO';
-  adminId: string;
+  adminId?: string;
 };
 
 export class CreateUserByAdmin {
