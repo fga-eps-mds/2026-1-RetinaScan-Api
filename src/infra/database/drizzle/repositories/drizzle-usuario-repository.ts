@@ -1,6 +1,7 @@
 import { db } from '@/infra/database/drizzle/connection';
-import type { Usuario } from '@/modules/users/domain';
+import type { Usuario, SearchDoctorsCriteria } from '@/modules/users/domain';
 import type {
+  IdAdminSearchDoctors,
   UsuarioFindByInput,
   UsuarioFindByOutput,
   UsuarioUpdateInput,
@@ -10,7 +11,7 @@ import type {
 import { usuario } from '@/infra/database/drizzle/schema';
 import { eq, and, or, ilike, type SQL } from 'drizzle-orm';
 
-export class DrizzleUsuariosRepository implements UsuariosRepository {
+export class DrizzleUsuariosRepository implements UsuariosRepository, IdAdminSearchDoctors {
   async findByEmail(email: string): Promise<Usuario | null> {
     const result = await db.select().from(usuario).where(eq(usuario.email, email)).limit(1);
 
@@ -73,14 +74,19 @@ export class DrizzleUsuariosRepository implements UsuariosRepository {
     return result;
   }
 
-  async searchByAdmin(adminId: string, criteria: { name?: string; crm?: string; email?: string }) {
-  const conds: SQL[] = [eq(usuario.tipoPerfil, 'MEDICO'), eq(usuario.criadoPor, adminId)];
+  async searchByAdmin(adminId: string, criteria: SearchDoctorsCriteria): Promise<Usuario[]> {
+    const conds: SQL[] = [eq(usuario.tipoPerfil, 'MEDICO'), eq(usuario.criadoPor, adminId)];
 
-  if (criteria.name) conds.push(ilike(usuario.nomeCompleto, `%${criteria.name}%`));
-  if (criteria.crm) conds.push(eq(usuario.crm, criteria.crm));
-  if (criteria.email) conds.push(eq(usuario.email, criteria.email));
+    if (criteria.name) conds.push(ilike(usuario.nomeCompleto, `%${criteria.name}%`));
+    if (criteria.crm) conds.push(eq(usuario.crm, criteria.crm));
+    if (criteria.email) conds.push(eq(usuario.email, criteria.email));
 
-  const result = await db.select().from(usuario).where(and(...conds)).orderBy(usuario.nomeCompleto);
-  return result;
-}
+    const result = await db
+      .select()
+      .from(usuario)
+      .where(and(...conds))
+      .orderBy(usuario.nomeCompleto);
+
+    return result;
+  }
 }

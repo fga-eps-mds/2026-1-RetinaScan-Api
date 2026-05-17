@@ -86,6 +86,6 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
     {
       preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
     },
-    searchMedicosByAdmin
+    searchMedicosByAdmin,
   );
 }

@@ -7,6 +7,7 @@ import z from 'zod';
 const searchSchema = z.object({
   nome: z.string().optional(),
   crm: z.string().optional(),
+  email: z.string().email('Email inválido.').optional(),
 });
 
 export async function searchMedicosByAdmin(request: FastifyRequest, reply: FastifyReply) {
@@ -23,18 +24,31 @@ export async function searchMedicosByAdmin(request: FastifyRequest, reply: Fasti
   }
 
   try {
-    const { nome, crm } = queryResult.data;
-    
-    //O adminId SEMPRE vem da sessão autenticada, NUNCA dos parâmetros da requisição.
-    const adminId = request.user!.id; 
+    const { nome, crm, email } = queryResult.data;
+    const adminId = request.user?.id;
+
+    if (!adminId) {
+      return reply.status(401).send({
+        statusCode: 401,
+        error: 'Unauthorized',
+        message: 'Usuário não autenticado',
+      });
+    }
 
     const usuariosRepository = new DrizzleUsuariosRepository();
-    const useCase = new SearchDoctorsUseCase(usuariosRepository as any);
+    const useCase = new SearchDoctorsUseCase(usuariosRepository);
 
-    const result = await useCase.execute({ adminId, nome, crm} as any);
+    const result = await useCase.execute({
+      adminId,
+      criteria: {
+        name: nome,
+        crm,
+        email,
+      },
+    });
 
     return reply.status(200).send(result);
-  } catch (error: unknown) {
+  } catch {
     return reply.status(500).send({
       statusCode: 500,
       error: 'Internal Server Error',

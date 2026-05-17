@@ -1,6 +1,5 @@
-import type { SearchDoctorsCriteria } from '@/modules/users/domain';
-import { User } from 'better-auth';
+import type { SearchDoctorsCriteria, Usuario } from '@/modules/users/domain';
 
 export interface IdAdminSearchDoctors {
-  searchByAdmin(adminId: string, criteria: SearchDoctorsCriteria): Promise<User[]>;
+  searchByAdmin(adminId: string, criteria: SearchDoctorsCriteria): Promise<Usuario[]>;
 }

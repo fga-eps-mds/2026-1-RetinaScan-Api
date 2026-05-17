@@ -77,11 +77,11 @@ export const auth = betterAuth({
         returned: true,
       },
       criadoPor: {
-      type: 'string',
-      databaseName: 'criado_por',
-      required: false,
-      returned: true,
-    },
+        type: 'string',
+        databaseName: 'criado_por',
+        required: false,
+        returned: true,
+      },
     },
   },
 

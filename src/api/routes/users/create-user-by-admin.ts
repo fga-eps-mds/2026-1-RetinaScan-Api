@@ -3,7 +3,6 @@ import { CreateUserByAdmin } from '@/modules/users/use-cases';
 import { better_auth_errors } from '@/shared/errors/better-auth-errors';
 import { ConflictError } from '@/shared/errors/conflict-error';
 import { isValidCpf } from '@/shared/validators/is-valid-cpf';
-import { admin } from 'better-auth/plugins';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import z from 'zod';
 
@@ -51,7 +50,15 @@ export async function createUserByAdmin(request: FastifyRequest, reply: FastifyR
 
   try {
     const body = result.data;
-    const adminId = (request as any).user?.id;
+    const adminId = request.user?.id;
+
+    if (!adminId) {
+      return reply.status(401).send({
+        statusCode: 401,
+        error: 'Unauthorized',
+        message: 'Usuário não autenticado.',
+      });
+    }
 
     const useCase = new CreateUserByAdmin(new DrizzleUsuariosRepository());
 
