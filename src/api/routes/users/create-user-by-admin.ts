@@ -52,14 +52,6 @@ export async function createUserByAdmin(request: FastifyRequest, reply: FastifyR
     const body = result.data;
     const adminId = request.user?.id;
 
-    if (!adminId) {
-      return reply.status(401).send({
-        statusCode: 401,
-        error: 'Unauthorized',
-        message: 'Usuário não autenticado.',
-      });
-    }
-
     const useCase = new CreateUserByAdmin(new DrizzleUsuariosRepository());
 
     await useCase.execute({ ...body, adminId });
