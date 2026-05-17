@@ -14,7 +14,7 @@ import {
   type MultipartFilePart,
 } from '@/tests/helpers/multipart';
 import { container } from '@/infra/container';
-import type { StorageService } from '@/shared/services';
+import type { MessageBroker, StorageService } from '@/shared/services';
 import { buildApp } from '@/api/index';
 
 describe('POST /api/exams/:id/images (integration)', () => {
@@ -22,16 +22,23 @@ describe('POST /api/exams/:id/images (integration)', () => {
   const authSpies = spyOnAuthApi();
   const uploadPrivateMock = vi.fn();
   const deleteByKeyMock = vi.fn();
+  const publishMock = vi.fn();
   const stubStorage: StorageService = {
     upload: vi.fn(),
     uploadPrivate: uploadPrivateMock,
     deleteByUrl: vi.fn(),
     deleteByKey: deleteByKeyMock,
   };
+  const stubMessageBroker: MessageBroker = {
+    publish: publishMock,
+  };
 
   beforeAll(async () => {
     await connectDatabase();
-    container.register({ storageService: asValue(stubStorage) });
+    container.register({
+      storageService: asValue(stubStorage),
+      messageBroker: asValue(stubMessageBroker),
+    });
     app = await buildApp();
     await app.ready();
   });
@@ -45,6 +52,7 @@ describe('POST /api/exams/:id/images (integration)', () => {
     authSpies.resetAll();
     uploadPrivateMock.mockReset().mockResolvedValue(undefined);
     deleteByKeyMock.mockReset().mockResolvedValue(undefined);
+    publishMock.mockReset().mockResolvedValue(undefined);
     await db.execute(sql`TRUNCATE TABLE ${imagem} RESTART IDENTITY CASCADE`);
     await db.execute(sql`TRUNCATE TABLE ${exam} RESTART IDENTITY CASCADE`);
     await db.execute(sql`TRUNCATE TABLE ${usuario} RESTART IDENTITY CASCADE`);

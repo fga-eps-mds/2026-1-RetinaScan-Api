@@ -6,6 +6,7 @@ import {
   DrizzleImagemRepository,
 } from '@/infra/database/drizzle/repositories';
 import { BetterAuthService } from '@/infra/auth/better-auth-service';
+import { BullMQMessageBroker } from '@/infra/queue/notify-bullmq-service';
 import { MinioStorageService } from '@/infra/storage/minio-storage-service';
 import { NodeCryptoCryptographyService } from '@/infra/shared/node-cryptography-service';
 import { DefaultMaskingService } from '@/infra/shared/default-masking-service';
@@ -26,6 +27,7 @@ import type { AuthService } from '@/shared/services/auth-service';
 import type { StorageService } from '@/shared/services/storage-service';
 import type { CryptographyService } from '@/shared/services/cryptography-service';
 import type { MaskingService } from '@/shared/services/masking-service';
+import type { MessageBroker } from '@/shared/services/message-broker';
 
 export interface AppContainer {
   usuariosRepository: UsuariosRepository;
@@ -36,6 +38,7 @@ export interface AppContainer {
   storageService: StorageService;
   cryptographyService: CryptographyService;
   maskingService: MaskingService;
+  messageBroker: MessageBroker;
   createUserByAdmin: CreateUserByAdmin;
   updateUserUsecase: UpdateUserUsecase;
   updateUserImageUsecase: UpdateUserImageUsecase;
@@ -62,6 +65,7 @@ container.register({
   storageService: asClass(MinioStorageService).singleton(),
   cryptographyService: asClass(NodeCryptoCryptographyService).singleton(),
   maskingService: asClass(DefaultMaskingService).singleton(),
+  messageBroker: asClass(BullMQMessageBroker).singleton(),
   createUserByAdmin: asFunction(
     ({ usuariosRepository }: AppContainer) => new CreateUserByAdmin(usuariosRepository),
   ).scoped(),
@@ -94,8 +98,13 @@ container.register({
       new CreateExamUseCase(usuariosRepository, examesRepository, cryptographyService),
   ).scoped(),
   uploadExamImagesUseCase: asFunction(
-    ({ examesRepository, imagemRepository, storageService }: AppContainer) =>
-      new UploadExamImagesUseCase(examesRepository, imagemRepository, storageService),
+    ({ examesRepository, imagemRepository, storageService, messageBroker }: AppContainer) =>
+      new UploadExamImagesUseCase(
+        examesRepository,
+        imagemRepository,
+        storageService,
+        messageBroker,
+      ),
   ).scoped(),
   listExamsUseCase: asFunction(
     ({ examesRepository }: AppContainer) => new ListExamsUseCase(examesRepository),
