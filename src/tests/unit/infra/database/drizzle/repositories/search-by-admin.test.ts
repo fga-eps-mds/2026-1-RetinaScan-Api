@@ -1,131 +1,115 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { DrizzleUsuariosRepository } from '@/infra/database/drizzle/repositories';
-import type { SearchDoctorsCriteria, SearchDoctorsPagination } from '@/modules/users/domain';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { DrizzleUsuariosRepository } from '@/infra/database/drizzle/repositories/drizzle-usuario-repository';
 
-vi.mock('@/infra/database/drizzle/connection');
+const {
+  mockSelect,
+  mockFromRows,
+  mockWhereRows,
+  mockOrderBy,
+  mockLimit,
+  mockOffset,
+  mockFromCount,
+  mockWhereCount,
+} = vi.hoisted(() => {
+  const mockOffset = vi.fn();
+  const mockLimit = vi.fn(() => ({
+    offset: mockOffset,
+  }));
+  const mockOrderBy = vi.fn(() => ({
+    limit: mockLimit,
+  }));
+  const mockWhereRows = vi.fn(() => ({
+    orderBy: mockOrderBy,
+  }));
+  const mockWhereCount = vi.fn();
+  const mockFromRows = vi.fn(() => ({
+    where: mockWhereRows,
+  }));
+  const mockFromCount = vi.fn(() => ({
+    where: mockWhereCount,
+  }));
+  const mockSelect = vi.fn((fields?: unknown) => {
+    if (fields) {
+      return { from: mockFromCount };
+    }
+
+    return { from: mockFromRows };
+  });
+
+  return {
+    mockSelect,
+    mockFromRows,
+    mockWhereRows,
+    mockOrderBy,
+    mockLimit,
+    mockOffset,
+    mockFromCount,
+    mockWhereCount,
+  };
+});
+
+vi.mock('@/infra/database/drizzle/connection', () => ({
+  db: {
+    select: mockSelect,
+  },
+}));
 
 describe('DrizzleUsuariosRepository.searchByAdmin', () => {
-  let mockRepository: any;
+  let repository: DrizzleUsuariosRepository;
 
   beforeEach(() => {
     vi.clearAllMocks();
-
-    // Mock da classe inteira para validar a assinatura e comportamento esperado
-    mockRepository = {
-      searchByAdmin: vi.fn().mockResolvedValue({
-        data: [
-          { id: 'd1', nomeCompleto: 'Dr. Test', tipoPerfil: 'MEDICO', cpf: '123', crm: '456' },
-        ],
-        pagination: {
-          page: 1,
-          pageSize: 20,
-          total: 1,
-          totalPages: 1,
-        },
-      }),
-    };
+    repository = new DrizzleUsuariosRepository();
   });
 
-  it('método searchByAdmin existe e é chamável', async () => {
-    expect(typeof mockRepository.searchByAdmin).toBe('function');
+  it('deve buscar medicos por admin com critérios e paginação', async () => {
+    mockOffset.mockResolvedValueOnce([
+      { id: 'd1', nomeCompleto: 'Dr. A', tipoPerfil: 'MEDICO' },
+      { id: 'd2', nomeCompleto: 'Dr. B', tipoPerfil: 'MEDICO' },
+    ]);
+    mockWhereCount.mockResolvedValueOnce([{ value: 25 }]);
 
-    const result = await mockRepository.searchByAdmin('admin-1', {}, { page: 1, pageSize: 20 });
-
-    expect(result).toBeDefined();
-  });
-
-  it('retorna estrutura correta com propriedades data e pagination', async () => {
-    const result = await mockRepository.searchByAdmin('admin-1', {}, { page: 1, pageSize: 20 });
-
-    expect(result).toHaveProperty('data');
-    expect(result).toHaveProperty('pagination');
-    expect(Array.isArray(result.data)).toBe(true);
-  });
-
-  it('retorna pagination com campos corretos', async () => {
-    const result = await mockRepository.searchByAdmin('admin-1', {}, { page: 1, pageSize: 20 });
-
-    expect(result.pagination).toHaveProperty('page');
-    expect(result.pagination).toHaveProperty('pageSize');
-    expect(result.pagination).toHaveProperty('total');
-    expect(result.pagination).toHaveProperty('totalPages');
-  });
-
-  it('passa adminId corretamente para a query', async () => {
-    await mockRepository.searchByAdmin('admin-123', {}, { page: 1, pageSize: 20 });
-
-    expect(mockRepository.searchByAdmin).toHaveBeenCalledWith(
-      'admin-123',
-      {},
-      { page: 1, pageSize: 20 },
-    );
-  });
-
-  it('passa critérios de busca corretamente', async () => {
-    const criteria: SearchDoctorsCriteria = { name: 'João', crm: '123456' };
-
-    await mockRepository.searchByAdmin('admin-1', criteria, { page: 1, pageSize: 20 });
-
-    expect(mockRepository.searchByAdmin).toHaveBeenCalledWith(
+    const result = await repository.searchByAdmin(
       'admin-1',
-      criteria,
-      { page: 1, pageSize: 20 },
+      { name: 'Dr', crm: '123', email: 'medico@teste.com' },
+      { page: 2, pageSize: 20 },
     );
+
+    expect(mockSelect).toHaveBeenCalledTimes(2);
+    expect(mockFromRows).toHaveBeenCalledTimes(1);
+    expect(mockWhereRows).toHaveBeenCalledTimes(1);
+    expect(mockOrderBy).toHaveBeenCalledTimes(1);
+    expect(mockLimit).toHaveBeenCalledWith(20);
+    expect(mockOffset).toHaveBeenCalledWith(20);
+    expect(mockFromCount).toHaveBeenCalledTimes(1);
+    expect(mockWhereCount).toHaveBeenCalledTimes(1);
+
+    expect(result.data).toHaveLength(2);
+    expect(result.pagination).toEqual({
+      page: 2,
+      pageSize: 20,
+      total: 25,
+      totalPages: 2,
+    });
   });
 
-  it('passa paginação corretamente com page 2', async () => {
-    mockRepository.searchByAdmin.mockResolvedValue({
-      data: [],
-      pagination: {
-        page: 2,
-        pageSize: 20,
-        total: 50,
-        totalPages: 3,
-      },
-    });
+  it('deve calcular totalPages com arredondamento para cima', async () => {
+    mockOffset.mockResolvedValueOnce([]);
+    mockWhereCount.mockResolvedValueOnce([{ value: 21 }]);
 
-    const result = await mockRepository.searchByAdmin('admin-1', {}, { page: 2, pageSize: 20 });
+    const result = await repository.searchByAdmin('admin-1', {}, { page: 1, pageSize: 20 });
 
-    expect(result.pagination.page).toBe(2);
-    expect(mockRepository.searchByAdmin).toHaveBeenCalledWith('admin-1', {}, { page: 2, pageSize: 20 });
+    expect(result.pagination.total).toBe(21);
+    expect(result.pagination.totalPages).toBe(2);
   });
 
-  it('calcula totalPages corretamente: 25 items com pageSize 10 = 3 páginas', async () => {
-    mockRepository.searchByAdmin.mockResolvedValue({
-      data: Array(10).fill({ id: 'doc' }),
-      pagination: {
-        page: 1,
-        pageSize: 10,
-        total: 25,
-        totalPages: 3,
+  it('deve retornar totalPages igual a zero quando pageSize for zero', async () => {
+    mockOffset.mockResolvedValueOnce([]);
+    mockWhereCount.mockResolvedValueOnce([{ value: 10 }]);
 
-      },
-    });
+    const result = await repository.searchByAdmin('admin-1', {}, { page: 1, pageSize: 0 });
 
-    const result = await mockRepository.searchByAdmin('admin-1', {}, { page: 1, pageSize: 10 });
-
-    expect(result.pagination.totalPages).toBe(3);
-    expect(result.pagination.total).toBe(25);
-  });
-
-  it('retorna múltiplos registros quando encontrados', async () => {
-    mockRepository.searchByAdmin.mockResolvedValue({
-      data: [
-        { id: 'd1', nomeCompleto: 'Dr. A', tipoPerfil: 'MEDICO' },
-        { id: 'd2', nomeCompleto: 'Dr. B', tipoPerfil: 'MEDICO' },
-        { id: 'd3', nomeCompleto: 'Dr. C', tipoPerfil: 'MEDICO' },
-      ],
-      pagination: {
-        page: 1,
-        pageSize: 20,
-        total: 3,
-        totalPages: 1,
-      },
-    });
-
-    const result = await mockRepository.searchByAdmin('admin-1', {}, { page: 1, pageSize: 20 });
-
-    expect(result.data.length).toBe(3);
-    expect(result.pagination.total).toBe(3);
+    expect(result.pagination.total).toBe(10);
+    expect(result.pagination.totalPages).toBe(0);
   });
 });
