@@ -90,4 +90,70 @@ describe('searchMedicosByAdmin Controller', () => {
       message: 'Erro ao pesquisar médicos.',
     });
   });
+
+  it('deve retornar 400 quando pageSize for maior que 100', async () => {
+    mockRequest.query = { pageSize: '101' };
+
+    await searchMedicosByAdmin(mockRequest, mockReply);
+
+    expect(mockReply.status).toHaveBeenCalledWith(400);
+    expect(mockReply.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 400,
+        error: 'Bad Request',
+        message: 'Parâmetros de busca inválidos.',
+      }),
+    );
+  });
+
+  it('deve retornar 400 quando page for zero', async () => {
+    mockRequest.query = { page: '0' };
+
+    await searchMedicosByAdmin(mockRequest, mockReply);
+
+    expect(mockReply.status).toHaveBeenCalledWith(400);
+    expect(mockReply.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 400,
+        error: 'Bad Request',
+        message: 'Parâmetros de busca inválidos.',
+      }),
+    );
+  });
+
+  it('deve retornar 400 quando pageSize for zero', async () => {
+    mockRequest.query = { pageSize: '0' };
+
+    await searchMedicosByAdmin(mockRequest, mockReply);
+
+    expect(mockReply.status).toHaveBeenCalledWith(400);
+    expect(mockReply.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 400,
+        error: 'Bad Request',
+        message: 'Parâmetros de busca inválidos.',
+      }),
+    );
+  });
+
+  it('deve aceitar pageSize máximo de 100', async () => {
+    const useCaseResult = {
+      message: 'Médicos encontrados com sucesso.',
+      data: [],
+      pagination: { page: 1, pageSize: 100, total: 0, totalPages: 0 },
+    };
+
+    vi.spyOn(SearchDoctorsUseCase.prototype, 'execute').mockResolvedValue(useCaseResult as any);
+
+    mockRequest.query = { pageSize: '100' };
+
+    await searchMedicosByAdmin(mockRequest, mockReply);
+
+    expect(mockReply.status).toHaveBeenCalledWith(200);
+    expect(SearchDoctorsUseCase.prototype.execute).toHaveBeenCalledWith(
+      expect.objectContaining({
+        pagination: { page: 1, pageSize: 100 },
+      }),
+    );
+  });
 });
