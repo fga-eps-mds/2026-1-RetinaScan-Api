@@ -50,10 +50,11 @@ export async function createUserByAdmin(request: FastifyRequest, reply: FastifyR
 
   try {
     const body = result.data;
+    const adminId = request.user?.id;
 
     const useCase = new CreateUserByAdmin(new DrizzleUsuariosRepository());
 
-    await useCase.execute(body);
+    await useCase.execute({ ...body, adminId });
 
     return reply.status(201).send({
       message: 'Usuário criado com sucesso.',
