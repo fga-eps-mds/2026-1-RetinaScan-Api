@@ -2,6 +2,7 @@ import { pgTable, timestamp, varchar, uuid, uniqueIndex, index } from 'drizzle-o
 import { relations } from 'drizzle-orm';
 
 import { exam } from './exam';
+import { resultadoIa } from './resultado-ia';
 
 export const imagem = pgTable(
   'imagem',
@@ -29,5 +30,9 @@ export const imagemRelations = relations(imagem, ({ one }) => ({
   exame: one(exam, {
     fields: [imagem.idExame],
     references: [exam.idExame],
+  }),
+  resultadoIa: one(resultadoIa, {
+    fields: [imagem.idImagem],
+    references: [resultadoIa.idImagem],
   }),
 }));

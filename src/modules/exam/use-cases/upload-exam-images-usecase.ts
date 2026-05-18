@@ -1,10 +1,12 @@
 import { randomUUID } from 'node:crypto';
-import type { Exame, OlhoExame } from '@/modules/exam/exam';
+import { ExameStatus, type Exame, type OlhoExame } from '@/modules/exam/exam';
 import type { ExamesRepository } from '@/modules/exam/exam-repository';
 import type { ImagemRepository } from '@/modules/exam/imagem-repository';
 import { LateralidadeOlho, QualidadeImagem, type Imagem } from '@/modules/exam/imagem';
-import { Buckets, type StorageService } from '@/shared/services';
+import { Buckets, type MessageBroker, type StorageService } from '@/shared/services';
 import { ConflictError, NotFoundError } from '@/shared/errors';
+import { QueueNames } from '@/infra/queue/types';
+import type { ProcessImagesJobData } from '@/infra/queue/workers/process-images-worker';
 import logger from '@/infra/logger';
 
 export interface UploadExamImageInput {
@@ -53,6 +55,7 @@ export class UploadExamImagesUseCase {
     private readonly examRepository: ExamesRepository,
     private readonly imagemRepository: ImagemRepository,
     private readonly storageService: StorageService,
+    private readonly messageBroker: MessageBroker,
   ) {}
 
   async execute(input: UploadExamImagesUseCaseInput): Promise<UploadExamImagesUseCaseOutput> {
@@ -67,22 +70,45 @@ export class UploadExamImagesUseCase {
 
     const created = await this.createImages(examId, prepared);
     await this.updateExamOlho(examId, created);
+    await this.publishAnalysisJob(examId, created);
+    await this.markExamAsProcessing(examId);
+
     return { imagens: created.map(toUploadedImagemDto) };
+  }
+
+  private async markExamAsProcessing(examId: string): Promise<void> {
+    await this.examRepository.update({
+      examId,
+      data: { status: ExameStatus.EM_PROCESSAMENTO },
+    });
   }
 
   private async updateExamOlho(examId: string, imagens: Imagem[]): Promise<void> {
     const olho = this.resolveOlho(imagens);
-    if (!olho) return;
     await this.examRepository.update({ examId, data: { olho } });
   }
 
-  private resolveOlho(imagens: Imagem[]): OlhoExame | null {
+  private async publishAnalysisJob(examId: string, imagens: Imagem[]): Promise<void> {
+    if (imagens.length === 0) return;
+
+    const od = imagens.find((img) => img.lateralidadeOlho === LateralidadeOlho.OD);
+    const oe = imagens.find((img) => img.lateralidadeOlho === LateralidadeOlho.OE);
+
+    const payload: ProcessImagesJobData = {
+      examId,
+      leftImageKey: oe?.caminhoImg,
+      rightImageKey: od?.caminhoImg,
+    };
+
+    await this.messageBroker.publish({ queueName: QueueNames.processImages, payload });
+  }
+
+  private resolveOlho(imagens: Imagem[]): OlhoExame {
     const hasOD = imagens.some((img) => img.lateralidadeOlho === LateralidadeOlho.OD);
     const hasOE = imagens.some((img) => img.lateralidadeOlho === LateralidadeOlho.OE);
     if (hasOD && hasOE) return 'AO';
     if (hasOD) return 'OD';
-    if (hasOE) return 'OE';
-    return null;
+    return 'OE';
   }
 
   private async getExam(examId: string): Promise<Exame> {

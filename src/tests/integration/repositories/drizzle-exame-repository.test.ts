@@ -231,6 +231,51 @@ describe('DrizzleExamesRepository (integration)', () => {
       expect(thirdPage.data).toHaveLength(1);
     });
 
+    it('should filter by status within the doctor scope', async () => {
+      const medico = await UsuarioBuilder.anUser().build();
+      await ExameBuilder.anExame()
+        .withIdUsuario(medico.id)
+        .withStatus(ExameStatus.CRIADO)
+        .build();
+      await ExameBuilder.anExame()
+        .withIdUsuario(medico.id)
+        .withStatus(ExameStatus.CONCLUIDO)
+        .build();
+      await ExameBuilder.anExame()
+        .withIdUsuario(medico.id)
+        .withStatus(ExameStatus.CONCLUIDO)
+        .build();
+      await ExameBuilder.anExame()
+        .withIdUsuario(medico.id)
+        .withStatus(ExameStatus.EM_PROCESSAMENTO)
+        .build();
+
+      const result = await repository.findMany({
+        filters: { idUsuario: medico.id, status: ExameStatus.CONCLUIDO },
+        pagination: { page: 1, pageSize: 10 },
+      });
+
+      expect(result.total).toBe(2);
+      expect(result.data).toHaveLength(2);
+      expect(result.data.every((e) => e.status === ExameStatus.CONCLUIDO)).toBe(true);
+    });
+
+    it('should return empty data when no exam matches the status filter', async () => {
+      const medico = await UsuarioBuilder.anUser().build();
+      await ExameBuilder.anExame()
+        .withIdUsuario(medico.id)
+        .withStatus(ExameStatus.CRIADO)
+        .build();
+
+      const result = await repository.findMany({
+        filters: { idUsuario: medico.id, status: ExameStatus.CONCLUIDO },
+        pagination: { page: 1, pageSize: 10 },
+      });
+
+      expect(result.total).toBe(0);
+      expect(result.data).toEqual([]);
+    });
+
     it('should return empty data when no exam matches filters', async () => {
       const medico = await UsuarioBuilder.anUser().build();
       await ExameBuilder.anExame().withIdUsuario(medico.id).build();
