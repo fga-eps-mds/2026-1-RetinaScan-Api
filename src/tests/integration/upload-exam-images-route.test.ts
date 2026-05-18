@@ -126,6 +126,84 @@ describe('POST /api/exams/:id/images (integration)', () => {
     expect(uploadPrivateMock).not.toHaveBeenCalled();
   });
 
+  it('ignores non-file parts and uploads the file parts', async () => {
+    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+    authSpies.authenticateAs(user);
+    const exame = await ExameBuilder.anExame().withIdUsuario(user.id).build();
+
+    const boundary = '----TestBoundaryMixed';
+    const filePart = pngFile('olhoDireito');
+    const body = Buffer.concat([
+      Buffer.from(
+        `--${boundary}\r\nContent-Disposition: form-data; name="observacoes"\r\n\r\nignorar este campo\r\n`,
+      ),
+      Buffer.from(
+        `--${boundary}\r\nContent-Disposition: form-data; name="${filePart.fieldName}"; filename="${filePart.filename}"\r\nContent-Type: ${filePart.contentType}\r\n\r\n`,
+      ),
+      filePart.buffer,
+      Buffer.from(`\r\n--${boundary}--\r\n`),
+    ]);
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/exams/${exame.id}/images`,
+      payload: body,
+      headers: {
+        'content-type': `multipart/form-data; boundary=${boundary}`,
+        'content-length': String(body.length),
+      },
+    });
+
+    expect(res.statusCode).toBe(201);
+    expect(uploadPrivateMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('returns 400 when fieldname is not olhoDireito or olhoEsquerdo', async () => {
+    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+    authSpies.authenticateAs(user);
+    const exame = await ExameBuilder.anExame().withIdUsuario(user.id).build();
+
+    const { body, headers } = buildMultipartFiles([
+      {
+        fieldName: 'olhoCentral',
+        filename: 'foo.png',
+        contentType: 'image/png',
+        buffer: Buffer.from('xxx'),
+      },
+    ]);
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/exams/${exame.id}/images`,
+      payload: body,
+      headers,
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(uploadPrivateMock).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 when two files are sent for the same eye', async () => {
+    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+    authSpies.authenticateAs(user);
+    const exame = await ExameBuilder.anExame().withIdUsuario(user.id).build();
+
+    const { body, headers } = buildMultipartFiles([
+      pngFile('olhoDireito'),
+      pngFile('olhoDireito'),
+    ]);
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/exams/${exame.id}/images`,
+      payload: body,
+      headers,
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(uploadPrivateMock).not.toHaveBeenCalled();
+  });
+
   it('returns 201 when uploading a single eye', async () => {
     const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
     authSpies.authenticateAs(user);

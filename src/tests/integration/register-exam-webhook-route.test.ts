@@ -196,6 +196,20 @@ describe('POST /api/exams/:examId/webhook (integration)', () => {
     expect(res.statusCode).toBe(400);
   });
 
+  it('returns 400 when examId in path is not a valid UUID', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/exams/not-a-uuid/webhook`,
+      payload: {
+        total_images: 0,
+        exam_id: 'not-a-uuid',
+        results: [],
+      },
+    });
+
+    expect(res.statusCode).toBe(400);
+  });
+
   it('returns 400 when filename does not match any exam image caminhoImg', async () => {
     const fixture = await seedExamWithBothEyes();
     const body = makeBody(fixture);

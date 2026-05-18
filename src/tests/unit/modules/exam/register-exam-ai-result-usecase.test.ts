@@ -251,6 +251,36 @@ describe('RegisterExamAiResultUseCase', () => {
     expect(examRepository.update).not.toHaveBeenCalled();
   });
 
+  it('should throw ValidationError when two results reference the same image filename', async () => {
+    const exame = ExameBuilder.anExame().getData();
+    const imagemOd = buildImagem({
+      examId: exame.id,
+      lateralidadeOlho: LateralidadeOlho.OD,
+      caminhoImg: `exams/${exame.id}/od.png`,
+    });
+    const imagemOe = buildImagem({
+      examId: exame.id,
+      lateralidadeOlho: LateralidadeOlho.OE,
+      caminhoImg: `exams/${exame.id}/oe.png`,
+    });
+
+    examRepository.findOne.mockResolvedValue(exame);
+    resultadoIaRepository.existsByExamId.mockResolvedValue(false);
+    imagemRepository.findMany.mockResolvedValue([imagemOd, imagemOe]);
+
+    await expect(
+      usecase.execute({
+        examId: exame.id,
+        payloadExamId: exame.id,
+        totalImages: 2,
+        results: [buildResult(imagemOd.caminhoImg), buildResult(imagemOd.caminhoImg)],
+      }),
+    ).rejects.toBeInstanceOf(ValidationError);
+
+    expect(resultadoIaRepository.createMany).not.toHaveBeenCalled();
+    expect(examRepository.update).not.toHaveBeenCalled();
+  });
+
   it('should propagate createMany failure and not call exam update', async () => {
     const exame = ExameBuilder.anExame().getData();
     const imagem = buildImagem({

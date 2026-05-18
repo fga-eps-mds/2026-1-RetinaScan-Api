@@ -85,7 +85,6 @@ export class UploadExamImagesUseCase {
 
   private async updateExamOlho(examId: string, imagens: Imagem[]): Promise<void> {
     const olho = this.resolveOlho(imagens);
-    if (!olho) return;
     await this.examRepository.update({ examId, data: { olho } });
   }
 
@@ -104,13 +103,12 @@ export class UploadExamImagesUseCase {
     await this.messageBroker.publish({ queueName: QueueNames.processImages, payload });
   }
 
-  private resolveOlho(imagens: Imagem[]): OlhoExame | null {
+  private resolveOlho(imagens: Imagem[]): OlhoExame {
     const hasOD = imagens.some((img) => img.lateralidadeOlho === LateralidadeOlho.OD);
     const hasOE = imagens.some((img) => img.lateralidadeOlho === LateralidadeOlho.OE);
     if (hasOD && hasOE) return 'AO';
     if (hasOD) return 'OD';
-    if (hasOE) return 'OE';
-    return null;
+    return 'OE';
   }
 
   private async getExam(examId: string): Promise<Exame> {
