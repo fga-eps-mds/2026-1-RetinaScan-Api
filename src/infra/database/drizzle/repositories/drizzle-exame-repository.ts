@@ -1,8 +1,14 @@
 import { and, count, desc, eq, ilike, type SQL } from 'drizzle-orm';
 
 import { db } from '@/infra/database/drizzle/connection';
-import { exam } from '@/infra/database/drizzle/schema';
-import type { Exame, ExameStatus, OlhoExame, Sexo } from '@/modules/exam/exam';
+import { exam, examComorbidity } from '@/infra/database/drizzle/schema';
+import type {
+  CreateWithComorbidityInput,
+  Exame,
+  ExameStatus,
+  OlhoExame,
+  Sexo,
+} from '@/modules/exam/exam';
 import type {
   ExameListItem,
   ExamesRepository,
@@ -25,7 +31,6 @@ function toExame(row: ExamRow): Exame {
     dtHora: row.dtHora,
     status: row.status as ExameStatus,
     olho: row.olho as OlhoExame | null,
-    comorbidades: row.comorbidades,
     descricao: row.descricao,
   };
 }
@@ -44,12 +49,51 @@ export class DrizzleExamesRepository implements ExamesRepository {
         dtHora: input.dtHora,
         status: input.status,
         olho: input.olho ?? null,
-        comorbidades: input.comorbidades ?? null,
         descricao: input.descricao ?? null,
       })
       .returning();
 
     return toExame(row);
+  }
+
+  async createWithComorbidity(input: CreateWithComorbidityInput): Promise<Exame> {
+    return db.transaction(async (tx) => {
+      const [examRow] = await tx
+        .insert(exam)
+        .values({
+          idExame: input.exam.id,
+          idUsuario: input.exam.idUsuario,
+          nomeCompleto: input.exam.nomeCompleto,
+          cpf: input.exam.cpf,
+          dtNascimento: input.exam.dtNascimento,
+          sexo: input.exam.sexo,
+          dtHora: input.exam.dtHora,
+          status: input.exam.status,
+          olho: input.exam.olho ?? null,
+          descricao: input.exam.descricao ?? null,
+        })
+        .returning();
+
+      await tx.insert(examComorbidity).values({
+        idExame: input.comorbidades.idExame,
+        diabetes: input.comorbidades.diabetes,
+        diabetesAnos: input.comorbidades.diabetesAnos ?? null,
+        diabetesUsoInsulina: input.comorbidades.diabetesUsoInsulina,
+        diabetesControlado: input.comorbidades.diabetesControlado,
+        hipertensao: input.comorbidades.hipertensao,
+        hipertensaoControlada: input.comorbidades.hipertensaoControlada,
+        altaMiopia: input.comorbidades.altaMiopia,
+        glaucoma: input.comorbidades.glaucoma,
+        usoHidroxicloroquina: input.comorbidades.usoHidroxicloroquina,
+        uveite: input.comorbidades.uveite,
+        catarata: input.comorbidades.catarata,
+        outrasComorbidades: input.comorbidades.outrasComorbidades,
+        outrasComorbidadesDescricao: input.comorbidades.outrasComorbidadesDescricao ?? null,
+        qualidadeTecnicaDificuldade: input.comorbidades.qualidadeTecnicaDificuldade,
+      });
+
+      return toExame(examRow);
+    });
   }
 
   async findOne({ examId }: FindExamInput): Promise<Exame | null> {

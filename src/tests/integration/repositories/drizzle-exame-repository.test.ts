@@ -63,7 +63,6 @@ describe('DrizzleExamesRepository (integration)', () => {
         status: ExameStatus.CRIADO,
       });
 
-      expect(created.comorbidades).toBeNull();
       expect(created.descricao).toBeNull();
       expect(created.olho).toBeNull();
     });
