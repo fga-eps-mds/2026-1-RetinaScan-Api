@@ -27,6 +27,7 @@ describe('searchMedicosByAdmin Controller', () => {
     const useCaseResult = {
       message: 'Médicos encontrados com sucesso.',
       data: [{ id: 'doctor-1', nomeCompleto: 'Dr. João' }],
+      pagination: { page: 1, pageSize: 20, total: 1, totalPages: 1 },
     };
 
     vi.spyOn(SearchDoctorsUseCase.prototype, 'execute').mockResolvedValue(useCaseResult as any);
@@ -39,6 +40,10 @@ describe('searchMedicosByAdmin Controller', () => {
         name: undefined,
         crm: undefined,
         email: undefined,
+      },
+      pagination: {
+        page: 1,
+        pageSize: 20,
       },
     });
     expect(mockReply.status).toHaveBeenCalledWith(200);

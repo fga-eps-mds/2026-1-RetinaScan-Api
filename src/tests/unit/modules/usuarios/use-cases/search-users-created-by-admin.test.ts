@@ -14,14 +14,18 @@ describe('SearchDoctorsUseCase', () => {
   });
 
   it('returns empty message and empty data when no doctors found', async () => {
-    repository.searchByAdmin.mockResolvedValue([]);
+    repository.searchByAdmin.mockResolvedValue({
+      data: [],
+      pagination: { page: 1, pageSize: 20, total: 0, totalPages: 0 },
+    });
 
-    const result = await sut.execute({ adminId: 'admin-1', criteria: {} });
+    const result = await sut.execute({ adminId: 'admin-1', criteria: {}, pagination: { page: 1, pageSize: 20 } });
 
-    expect(repository.searchByAdmin).toHaveBeenCalledWith('admin-1', {});
+    expect(repository.searchByAdmin).toHaveBeenCalledWith('admin-1', {}, { page: 1, pageSize: 20 });
     expect(result).toEqual({
       message: 'Nenhum médico encontrado com os critérios informados.',
       data: [],
+      pagination: { page: 1, pageSize: 20, total: 0, totalPages: 0 },
     });
   });
 
@@ -31,14 +35,22 @@ describe('SearchDoctorsUseCase', () => {
       { id: 'd2', nome: 'Dr. B', crm: '456' },
     ];
 
-    repository.searchByAdmin.mockResolvedValue(doctors);
+    repository.searchByAdmin.mockResolvedValue({
+      data: doctors,
+      pagination: { page: 1, pageSize: 20, total: 2, totalPages: 1 },
+    });
 
-    const result = await sut.execute({ adminId: 'admin-1', criteria: { name: 'Dr' } });
+    const result = await sut.execute({
+      adminId: 'admin-1',
+      criteria: { name: 'Dr' },
+      pagination: { page: 1, pageSize: 20 },
+    });
 
-    expect(repository.searchByAdmin).toHaveBeenCalledWith('admin-1', { name: 'Dr' });
+    expect(repository.searchByAdmin).toHaveBeenCalledWith('admin-1', { name: 'Dr' }, { page: 1, pageSize: 20 });
     expect(result).toEqual({
       message: 'Médicos encontrados com sucesso.',
       data: doctors,
+      pagination: { page: 1, pageSize: 20, total: 2, totalPages: 1 },
     });
   });
 });

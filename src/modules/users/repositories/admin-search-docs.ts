@@ -1,5 +1,9 @@
-import type { SearchDoctorsCriteria, Usuario } from '@/modules/users/domain';
+import type { SearchDoctorsCriteria, SearchDoctorsPagination, SearchDoctorsResult } from '@/modules/users/domain';
 
 export interface IdAdminSearchDoctors {
-  searchByAdmin(adminId: string, criteria: SearchDoctorsCriteria): Promise<Usuario[]>;
+  searchByAdmin(
+    adminId: string,
+    criteria: SearchDoctorsCriteria,
+    pagination: SearchDoctorsPagination,
+  ): Promise<SearchDoctorsResult>;
 }

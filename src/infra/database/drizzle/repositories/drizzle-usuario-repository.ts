@@ -1,5 +1,5 @@
 import { db } from '@/infra/database/drizzle/connection';
-import type { Usuario, SearchDoctorsCriteria } from '@/modules/users/domain';
+import type { Usuario, SearchDoctorsCriteria, SearchDoctorsPagination, SearchDoctorsResult } from '@/modules/users/domain';
 import type {
   IdAdminSearchDoctors,
   UsuarioFindByInput,
@@ -9,7 +9,7 @@ import type {
   UsuariosRepository,
 } from '@/modules/users/repositories';
 import { usuario } from '@/infra/database/drizzle/schema';
-import { eq, and, or, ilike, type SQL } from 'drizzle-orm';
+import { eq, and, or, ilike, count, type SQL } from 'drizzle-orm';
 
 export class DrizzleUsuariosRepository implements UsuariosRepository, IdAdminSearchDoctors {
   async findByEmail(email: string): Promise<Usuario | null> {
@@ -74,19 +74,41 @@ export class DrizzleUsuariosRepository implements UsuariosRepository, IdAdminSea
     return result;
   }
 
-  async searchByAdmin(adminId: string, criteria: SearchDoctorsCriteria): Promise<Usuario[]> {
+  async searchByAdmin(
+    adminId: string,
+    criteria: SearchDoctorsCriteria,
+    pagination: SearchDoctorsPagination,
+  ): Promise<SearchDoctorsResult> {
     const conds: SQL[] = [eq(usuario.tipoPerfil, 'MEDICO'), eq(usuario.criadoPor, adminId)];
 
     if (criteria.name) conds.push(ilike(usuario.nomeCompleto, `%${criteria.name}%`));
     if (criteria.crm) conds.push(eq(usuario.crm, criteria.crm));
     if (criteria.email) conds.push(eq(usuario.email, criteria.email));
 
-    const result = await db
+    const whereClause = and(...conds);
+    const offset = (pagination.page - 1) * pagination.pageSize;
+
+    const rowsPromise = db
       .select()
       .from(usuario)
-      .where(and(...conds))
-      .orderBy(usuario.nomeCompleto);
+      .where(whereClause)
+      .orderBy(usuario.nomeCompleto)
+      .limit(pagination.pageSize)
+      .offset(offset);
 
-    return result;
+    const totalPromise = db.select({ value: count() }).from(usuario).where(whereClause);
+    const [rows, totalRows] = await Promise.all([rowsPromise, totalPromise]);
+
+    const total = Number(totalRows[0].value);
+
+    return {
+      data: rows,
+      pagination: {
+        page: pagination.page,
+        pageSize: pagination.pageSize,
+        total,
+        totalPages: pagination.pageSize > 0 ? Math.ceil(total / pagination.pageSize) : 0,
+      },
+    };
   }
 }
