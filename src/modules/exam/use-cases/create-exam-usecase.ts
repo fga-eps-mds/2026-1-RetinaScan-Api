@@ -4,6 +4,27 @@ import { NotFoundError } from '@/shared/errors';
 import { randomUUID } from 'node:crypto';
 import type { CryptographyService } from '@/shared/services';
 
+export type ExamComorbidadesInput = {
+  diabetes: boolean;
+  diabetesAnos?: number;
+  diabetesUsoInsulina: boolean;
+  diabetesControlado: boolean;
+
+  hipertensao: boolean;
+  hipertensaoControlada: boolean;
+
+  altaMiopia: boolean;
+  glaucoma: boolean;
+  usoHidroxicloroquina: boolean;
+  uveite: boolean;
+  catarata: boolean;
+
+  outrasComorbidades: boolean;
+  outrasComorbidadesDescricao?: string;
+
+  qualidadeTecnicaDificuldade: boolean;
+};
+
 export type CreateExamUseCaseInput = {
   idUsuario: string;
   nomeCompleto: string;
@@ -11,7 +32,7 @@ export type CreateExamUseCaseInput = {
   sexo: Sexo;
   dtNascimento: string;
   dtHora: Date;
-  comorbidades?: string;
+  comorbidades: ExamComorbidadesInput;
   descricao?: string;
 };
 
@@ -27,8 +48,10 @@ export class CreateExamUseCase {
   async execute(input: CreateExamUseCaseInput): Promise<CreateExamUseCaseOutput> {
     await this.validateUserExists(input.idUsuario);
 
-    const exam: Exame = this.anonimizeData({
-      id: randomUUID(),
+    const examId = randomUUID();
+
+    const exam: Exame = this.anonimizeExamData({
+      id: examId,
       idUsuario: input.idUsuario,
       nomeCompleto: input.nomeCompleto,
       cpf: input.cpf,
@@ -36,11 +59,18 @@ export class CreateExamUseCase {
       dtNascimento: input.dtNascimento,
       dtHora: input.dtHora,
       status: ExameStatus.CRIADO,
-      comorbidades: input.comorbidades,
       descricao: input.descricao,
     });
 
-    return this.examRepository.create(exam);
+    const comorbidades = this.anonimizeComorbidadesData({
+      idExame: examId,
+      ...input.comorbidades,
+    });
+
+    return this.examRepository.createWithComorbidity({
+      exam,
+      comorbidades,
+    });
   }
 
   private async validateUserExists(idUsuario: string) {
@@ -51,12 +81,20 @@ export class CreateExamUseCase {
     }
   }
 
-  private anonimizeData(exam: Exame): Exame {
+  private anonimizeExamData(exam: Exame): Exame {
     return {
       ...exam,
       dtNascimento: this.encrypt(exam.dtNascimento),
-      comorbidades: exam.comorbidades ? this.encrypt(exam.comorbidades) : exam.comorbidades,
       descricao: exam.descricao ? this.encrypt(exam.descricao) : exam.descricao,
+    };
+  }
+
+  private anonimizeComorbidadesData(comorbidades: { idExame: string } & ExamComorbidadesInput) {
+    return {
+      ...comorbidades,
+      outrasComorbidadesDescricao: comorbidades.outrasComorbidadesDescricao
+        ? this.encrypt(comorbidades.outrasComorbidadesDescricao)
+        : comorbidades.outrasComorbidadesDescricao,
     };
   }
 
