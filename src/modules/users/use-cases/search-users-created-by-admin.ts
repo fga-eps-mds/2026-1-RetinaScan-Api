@@ -1,8 +1,8 @@
 import type { IdAdminSearchDoctors } from '../repositories';
-import type { 
-  SearchDoctorsCriteria, 
-  SearchDoctorsPagination, 
-  SearchDoctorsResult 
+import type {
+  SearchDoctorsCriteria,
+  SearchDoctorsPagination,
+  SearchDoctorsResult,
 } from '../domain';
 
 interface Request {
@@ -14,7 +14,11 @@ interface Request {
 export class SearchDoctorsUseCase {
   constructor(private doctorsRepository: IdAdminSearchDoctors) {}
 
-  async execute({ adminId, criteria, pagination }: Request): Promise<SearchDoctorsResult & { message: string }> {
+  async execute({
+    adminId,
+    criteria,
+    pagination,
+  }: Request): Promise<SearchDoctorsResult & { message: string }> {
     const searchResult = await this.doctorsRepository.searchByAdmin(adminId, criteria, pagination);
 
     if (searchResult.data.length === 0) {

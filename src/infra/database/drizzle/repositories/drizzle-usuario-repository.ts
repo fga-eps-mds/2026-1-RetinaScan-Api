@@ -1,9 +1,9 @@
 import { db } from '@/infra/database/drizzle/connection';
-import type { 
-  Usuario, 
-  SearchDoctorsCriteria, 
-  SearchDoctorsPagination, 
-  SearchDoctorsResult 
+import type {
+  Usuario,
+  SearchDoctorsCriteria,
+  SearchDoctorsPagination,
+  SearchDoctorsResult,
 } from '@/modules/users/domain';
 import type {
   IdAdminSearchDoctors,
@@ -14,7 +14,7 @@ import type {
   UsuariosRepository,
 } from '@/modules/users/repositories';
 import { usuario } from '@/infra/database/drizzle/schema';
-import { eq, and, or, ilike, count, type SQL } from 'drizzle-orm';
+import { and, count, eq, ilike, or, type SQL } from 'drizzle-orm';
 
 export class DrizzleUsuariosRepository implements UsuariosRepository, IdAdminSearchDoctors {
   async findByEmail(email: string): Promise<Usuario | null> {
