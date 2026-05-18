@@ -1,4 +1,8 @@
-import type { SearchDoctorsCriteria, SearchDoctorsPagination, SearchDoctorsResult } from '@/modules/users/domain';
+import type { 
+  SearchDoctorsCriteria, 
+  SearchDoctorsPagination, 
+  SearchDoctorsResult 
+} from '@/modules/users/domain';
 
 export interface IdAdminSearchDoctors {
   searchByAdmin(

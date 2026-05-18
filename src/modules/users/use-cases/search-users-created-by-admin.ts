@@ -1,5 +1,9 @@
 import type { IdAdminSearchDoctors } from '../repositories';
-import type { SearchDoctorsCriteria, SearchDoctorsPagination, SearchDoctorsResult } from '../domain';
+import type { 
+  SearchDoctorsCriteria, 
+  SearchDoctorsPagination, 
+  SearchDoctorsResult 
+} from '../domain';
 
 interface Request {
   adminId: string;

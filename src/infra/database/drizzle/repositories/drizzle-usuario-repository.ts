@@ -1,5 +1,10 @@
 import { db } from '@/infra/database/drizzle/connection';
-import type { Usuario, SearchDoctorsCriteria, SearchDoctorsPagination, SearchDoctorsResult } from '@/modules/users/domain';
+import type { 
+  Usuario, 
+  SearchDoctorsCriteria, 
+  SearchDoctorsPagination, 
+  SearchDoctorsResult 
+} from '@/modules/users/domain';
 import type {
   IdAdminSearchDoctors,
   UsuarioFindByInput,
