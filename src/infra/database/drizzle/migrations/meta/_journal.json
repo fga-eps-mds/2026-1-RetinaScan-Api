@@ -50,6 +50,13 @@
       "when": 1779398413115,
       "tag": "0006_add_exam_ia_error_and_erro_processamento_status",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1779456097358,
+      "tag": "0007_add_comorbidity_table",
+      "breakpoints": true
     }
   ]
 }
