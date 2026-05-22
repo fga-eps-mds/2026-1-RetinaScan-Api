@@ -4,8 +4,9 @@ import { faker } from '@faker-js/faker';
 import type { ExamesRepository } from '@/modules/exam/exam-repository';
 import type { ImagemRepository } from '@/modules/exam/imagem-repository';
 import { LateralidadeOlho, type Imagem } from '@/modules/exam/imagem';
-import { Buckets, type StorageService } from '@/shared/services';
+import { Buckets, type MessageBroker, type StorageService } from '@/shared/services';
 import { ConflictError, NotFoundError } from '@/shared/errors';
+import { QueueNames } from '@/infra/queue/types';
 import { ExameBuilder } from '@/tests/helpers/builders/exame-builder';
 import {
   UploadExamImagesUseCase,
@@ -31,9 +32,14 @@ class FakeStorageService implements StorageService {
   deleteByKey = vi.fn();
 }
 
+class FakeMessageBroker implements MessageBroker {
+  publish = vi.fn();
+}
+
 let examRepository: FakeExamesRepository;
 let imagemRepository: FakeImagemRepository;
 let storageService: FakeStorageService;
+let messageBroker: FakeMessageBroker;
 let usecase: UploadExamImagesUseCase;
 
 const buildImageInput = (
@@ -52,7 +58,13 @@ describe('UploadExamImagesUseCase', () => {
     examRepository = new FakeExamesRepository();
     imagemRepository = new FakeImagemRepository();
     storageService = new FakeStorageService();
-    usecase = new UploadExamImagesUseCase(examRepository, imagemRepository, storageService);
+    messageBroker = new FakeMessageBroker();
+    usecase = new UploadExamImagesUseCase(
+      examRepository,
+      imagemRepository,
+      storageService,
+      messageBroker,
+    );
 
     vi.clearAllMocks();
   });
@@ -106,6 +118,14 @@ describe('UploadExamImagesUseCase', () => {
     expect(storageService.deleteByKey).not.toHaveBeenCalled();
 
     expect(examRepository.update).toHaveBeenCalledWith({ examId: exame.id, data: { olho: 'OD' } });
+    expect(messageBroker.publish).toHaveBeenCalledWith({
+      queueName: QueueNames.processImages,
+      payload: {
+        examId: exame.id,
+        leftImageKey: undefined,
+        rightImageKey: uploadArgs.key,
+      },
+    });
   });
 
   it('should upload OD and OE images and persist both', async () => {
@@ -156,6 +176,16 @@ describe('UploadExamImagesUseCase', () => {
     expect(storageService.deleteByKey).not.toHaveBeenCalled();
 
     expect(examRepository.update).toHaveBeenCalledWith({ examId: exame.id, data: { olho: 'AO' } });
+
+    expect(messageBroker.publish).toHaveBeenCalledTimes(1);
+    expect(messageBroker.publish).toHaveBeenCalledWith({
+      queueName: QueueNames.processImages,
+      payload: {
+        examId: exame.id,
+        leftImageKey: secondKey,
+        rightImageKey: firstKey,
+      },
+    });
   });
 
   it('should set olho to OE when only the left eye is uploaded', async () => {
@@ -174,6 +204,15 @@ describe('UploadExamImagesUseCase', () => {
     });
 
     expect(examRepository.update).toHaveBeenCalledWith({ examId: exame.id, data: { olho: 'OE' } });
+    const oeKey = storageService.uploadPrivate.mock.calls[0][0].key;
+    expect(messageBroker.publish).toHaveBeenCalledWith({
+      queueName: QueueNames.processImages,
+      payload: {
+        examId: exame.id,
+        leftImageKey: oeKey,
+        rightImageKey: undefined,
+      },
+    });
   });
 
   it('should throw NotFoundError when exam does not exist', async () => {

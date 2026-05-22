@@ -22,8 +22,6 @@ const querySchema = z
 export async function listExams(request: FastifyRequest, reply: FastifyReply) {
   const result = querySchema.safeParse(request.query);
 
-  console.log(result);
-
   if (!result.success) {
     throw new ValidationError(result.error.issues, true);
   }

@@ -2,6 +2,7 @@ import logger from '@/infra/logger';
 import { buildApp } from '@/api';
 import { env } from '@/env';
 import { connectDatabase } from '@/infra/database/drizzle/connection';
+import { createWorkers } from '@/infra/queue/workers';
 import { setupMinio } from '@/infra/storage/setup-minio';
 import { ensureAdminUserExists } from './modules/users/use-cases/ensure-admin-exists';
 
@@ -19,6 +20,10 @@ export async function server(): Promise<void> {
   logger.info('Executando seed do admin');
   await ensureAdminUserExists();
   logger.info('Seed do admin concluído');
+
+  logger.info('Inicializando workers');
+  createWorkers();
+  logger.info('Workers inicializados');
 
   await app.listen({
     port: env.PORT,
