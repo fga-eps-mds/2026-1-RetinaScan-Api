@@ -1,5 +1,5 @@
 {
-  "id": "235f06c3-567a-443e-8718-44ab0dcf9691",
+  "id": "01575663-2e62-4738-a2fe-86cc9fed1a5d",
   "prevId": "d4fca972-0eab-423b-a3e2-386ee5eddcd5",
   "version": "7",
   "dialect": "postgresql",
@@ -453,12 +453,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "criado_por": {
-          "name": "criado_por",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -521,21 +515,7 @@
           "with": {}
         }
       },
-      "foreignKeys": {
-        "usuario_criado_por_usuario_id_usuario_fk": {
-          "name": "usuario_criado_por_usuario_id_usuario_fk",
-          "tableFrom": "usuario",
-          "tableTo": "usuario",
-          "columnsFrom": [
-            "criado_por"
-          ],
-          "columnsTo": [
-            "id_usuario"
-          ],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -821,6 +801,91 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.resultado_ia": {
+      "name": "resultado_ia",
+      "schema": "",
+      "columns": {
+        "id_resultado_ia": {
+          "name": "id_resultado_ia",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "id_imagem": {
+          "name": "id_imagem",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "predicted_class": {
+          "name": "predicted_class",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "predicted_label": {
+          "name": "predicted_label",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "confidence": {
+          "name": "confidence",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "probabilities": {
+          "name": "probabilities",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "resultado_ia_id_imagem_imagem_id_imagem_fk": {
+          "name": "resultado_ia_id_imagem_imagem_id_imagem_fk",
+          "tableFrom": "resultado_ia",
+          "tableTo": "imagem",
+          "columnsFrom": [
+            "id_imagem"
+          ],
+          "columnsTo": [
+            "id_imagem"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "resultado_ia_id_imagem_unique": {
+          "name": "resultado_ia_id_imagem_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id_imagem"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

@@ -1,4 +1,4 @@
-import type { Exame, ExameStatus, OlhoExame } from './exam';
+import type { CreateWithComorbidityInput, Exame, ExameStatus, OlhoExame } from './exam';
 
 export type FindExamInput = {
   examId: string;
@@ -48,6 +48,7 @@ export type UpdateExamInput = {
 
 export type ExamesRepository = {
   create(input: Exame): Promise<Exame>;
+  createWithComorbidity(input: CreateWithComorbidityInput): Promise<Exame>;
   findOne(input: FindExamInput): Promise<Exame | null>;
   findMany(input: FindManyExamsInput): Promise<FindManyExamsResult>;
   update(input: UpdateExamInput): Promise<void>;
