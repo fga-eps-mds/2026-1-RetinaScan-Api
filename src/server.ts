@@ -5,6 +5,7 @@ import { connectDatabase } from '@/infra/database/drizzle/connection';
 import { createWorkers } from '@/infra/queue/workers';
 import { setupMinio } from '@/infra/storage/setup-minio';
 import { ensureAdminUserExists } from './modules/users/use-cases/ensure-admin-exists';
+import { setupWebSocket } from './infra/websocket/setup-websocket';
 
 export async function server(): Promise<void> {
   logger.info('Setting up server');
@@ -16,6 +17,8 @@ export async function server(): Promise<void> {
   logger.info('Buckets do MinIO prontos');
 
   const app = await buildApp();
+
+  setupWebSocket(app);
 
   logger.info('Executando seed do admin');
   await ensureAdminUserExists();
