@@ -57,6 +57,13 @@
       "when": 1779456097358,
       "tag": "0007_add_comorbidity_table",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1779475533659,
+      "tag": "0008_add_criado_por",
+      "breakpoints": true
     }
   ]
 }
