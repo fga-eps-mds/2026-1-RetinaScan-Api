@@ -1,6 +1,6 @@
 {
-  "id": "01575663-2e62-4738-a2fe-86cc9fed1a5d",
-  "prevId": "d4fca972-0eab-423b-a3e2-386ee5eddcd5",
+  "id": "7ed90a75-48ac-40f6-80cb-a1013a8c83f3",
+  "prevId": "01575663-2e62-4738-a2fe-86cc9fed1a5d",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -883,6 +883,104 @@
           "nullsNotDistinct": false,
           "columns": [
             "id_imagem"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.exam_ia_error": {
+      "name": "exam_ia_error",
+      "schema": "",
+      "columns": {
+        "id_exam_ia_error": {
+          "name": "id_exam_ia_error",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "id_exame": {
+          "name": "id_exame",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "error_message": {
+          "name": "error_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "traceback": {
+          "name": "traceback",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "task_id": {
+          "name": "task_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "task_name": {
+          "name": "task_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "args": {
+          "name": "args",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dt_hora": {
+          "name": "dt_hora",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "exam_ia_error_id_exame_exame_id_exame_fk": {
+          "name": "exam_ia_error_id_exame_exame_id_exame_fk",
+          "tableFrom": "exam_ia_error",
+          "tableTo": "exame",
+          "columnsFrom": [
+            "id_exame"
+          ],
+          "columnsTo": [
+            "id_exame"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "exam_ia_error_id_exame_unique": {
+          "name": "exam_ia_error_id_exame_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id_exame"
           ]
         }
       },

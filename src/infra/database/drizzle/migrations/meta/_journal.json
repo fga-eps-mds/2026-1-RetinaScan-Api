@@ -40,8 +40,22 @@
     {
       "idx": 5,
       "version": "7",
-      "when": 1779129196308,
-      "tag": "0005_add_exam_comorbidity_table",
+      "when": 1778976138745,
+      "tag": "0005_add_resultado_ia_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1779398413115,
+      "tag": "0006_add_exam_ia_error_and_erro_processamento_status",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1779456097358,
+      "tag": "0007_add_comorbidity_table",
       "breakpoints": true
     }
   ]

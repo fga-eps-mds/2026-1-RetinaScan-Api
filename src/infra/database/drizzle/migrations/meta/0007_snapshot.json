@@ -1,6 +1,6 @@
 {
-  "id": "01575663-2e62-4738-a2fe-86cc9fed1a5d",
-  "prevId": "d4fca972-0eab-423b-a3e2-386ee5eddcd5",
+  "id": "8457799b-4cb5-464d-b0ee-252d83d9984f",
+  "prevId": "7ed90a75-48ac-40f6-80cb-a1013a8c83f3",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -883,6 +883,248 @@
           "nullsNotDistinct": false,
           "columns": [
             "id_imagem"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.exam_ia_error": {
+      "name": "exam_ia_error",
+      "schema": "",
+      "columns": {
+        "id_exam_ia_error": {
+          "name": "id_exam_ia_error",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "id_exame": {
+          "name": "id_exame",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "error_message": {
+          "name": "error_message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "traceback": {
+          "name": "traceback",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "task_id": {
+          "name": "task_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "task_name": {
+          "name": "task_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "args": {
+          "name": "args",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dt_hora": {
+          "name": "dt_hora",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "exam_ia_error_id_exame_exame_id_exame_fk": {
+          "name": "exam_ia_error_id_exame_exame_id_exame_fk",
+          "tableFrom": "exam_ia_error",
+          "tableTo": "exame",
+          "columnsFrom": [
+            "id_exame"
+          ],
+          "columnsTo": [
+            "id_exame"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "exam_ia_error_id_exame_unique": {
+          "name": "exam_ia_error_id_exame_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id_exame"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.exame_comorbidades": {
+      "name": "exame_comorbidades",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "id_exame": {
+          "name": "id_exame",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "diabetes": {
+          "name": "diabetes",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "diabetes_anos": {
+          "name": "diabetes_anos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "diabetes_uso_insulina": {
+          "name": "diabetes_uso_insulina",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "diabetes_controlado": {
+          "name": "diabetes_controlado",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "hipertensao": {
+          "name": "hipertensao",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "hipertensao_controlada": {
+          "name": "hipertensao_controlada",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "alta_miopia": {
+          "name": "alta_miopia",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "glaucoma": {
+          "name": "glaucoma",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "uso_hidroxicloroquina": {
+          "name": "uso_hidroxicloroquina",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "uveite": {
+          "name": "uveite",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "catarata": {
+          "name": "catarata",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "outras_comorbidades": {
+          "name": "outras_comorbidades",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "outras_comorbidades_descricao": {
+          "name": "outras_comorbidades_descricao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "qualidade_tecnica_dificuldade": {
+          "name": "qualidade_tecnica_dificuldade",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "exame_comorbidades_id_exame_exame_id_exame_fk": {
+          "name": "exame_comorbidades_id_exame_exame_id_exame_fk",
+          "tableFrom": "exame_comorbidades",
+          "tableTo": "exame",
+          "columnsFrom": [
+            "id_exame"
+          ],
+          "columnsTo": [
+            "id_exame"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "exame_comorbidades_id_exame_unique": {
+          "name": "exame_comorbidades_id_exame_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id_exame"
           ]
         }
       },
