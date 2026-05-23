@@ -85,7 +85,7 @@ export class DrizzleNotificationRepository implements NotificationsRepository {
     await db
       .update(notificacao)
       .set({ lidaEm: new Date(), updatedAt: new Date() })
-      .where(and(eq(notificacao.usuarioId, usuarioId), eq(notificacao.lidaEm, null)));
+      .where(and(eq(notificacao.usuarioId, usuarioId), isNull(notificacao.lidaEm)));
   }
 
   async marcarEnviadaEmTempoReal(notificacaoId: string): Promise<void> {

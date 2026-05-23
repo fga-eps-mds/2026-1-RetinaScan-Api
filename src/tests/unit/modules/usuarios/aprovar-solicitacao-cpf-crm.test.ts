@@ -11,6 +11,7 @@ import { AprovarSolicitacaoCpfCrmUsecase } from '@/modules/users/use-cases';
 import { NotFoundError } from '@/shared/errors';
 import { UnauthorizedError } from '@/shared/errors/unauthorized-error';
 import { UsuarioBuilder } from '@/tests/helpers/builders/usuario-builder';
+import { NotificationService } from '@/modules/notification/services';
 
 class FakeUsuariosRepository implements UsuariosRepository {
   findByEmail = vi.fn();
@@ -29,9 +30,21 @@ class FakeSolicitacaoCpfCrmRepository implements SolicitacaoCpfCrmRepository {
   rejeitar = vi.fn();
 }
 
+type NotificationServiceMethods = Pick<
+  NotificationService,
+  'notificar' | 'listarPorUsuario' | 'marcarTodasComoLidas'
+>;
+
+class FakeNotificationService implements NotificationServiceMethods {
+  notificar = vi.fn();
+  listarPorUsuario = vi.fn();
+  marcarTodasComoLidas = vi.fn();
+}
+
 describe('AprovarSolicitacaoCpfCrmUsecase', () => {
   let usuariosRepository: FakeUsuariosRepository;
   let solicitacaoRepository: FakeSolicitacaoCpfCrmRepository;
+  let notificationService: FakeNotificationService;
   let usecase: AprovarSolicitacaoCpfCrmUsecase;
 
   const admin: Usuario = UsuarioBuilder.anUser()
@@ -57,14 +70,20 @@ describe('AprovarSolicitacaoCpfCrmUsecase', () => {
 
     usuariosRepository = new FakeUsuariosRepository();
     solicitacaoRepository = new FakeSolicitacaoCpfCrmRepository();
+    notificationService = new FakeNotificationService();
 
-    usecase = new AprovarSolicitacaoCpfCrmUsecase(usuariosRepository, solicitacaoRepository);
+    usecase = new AprovarSolicitacaoCpfCrmUsecase(
+      usuariosRepository,
+      solicitacaoRepository,
+      notificationService as unknown as NotificationService,
+    );
   });
 
   it('deve aprovar solicitacao e aplicar cpf/crm no usuario', async () => {
     usuariosRepository.findBy.mockResolvedValueOnce(admin);
     solicitacaoRepository.aprovar.mockResolvedValueOnce(solicitacao);
     usuariosRepository.update.mockResolvedValueOnce({ id: solicitacao.idUsuario });
+    notificationService.notificar.mockResolvedValueOnce(undefined);
 
     const result = await usecase.execute({
       idSolicitacao: solicitacao.id,
@@ -79,34 +98,47 @@ describe('AprovarSolicitacaoCpfCrmUsecase', () => {
       cpf: solicitacao.cpfNovo,
       crm: solicitacao.crmNovo,
     });
+    expect(notificationService.notificar).toHaveBeenCalled();
     expect(result.solicitacao).toEqual(solicitacao);
     expect(result.notificacaoEnviada).toBe(true);
   });
 
   it('deve aplicar apenas cpf quando solicitacao nao tiver crmNovo', async () => {
     const solicitacaoSoCpf = { ...solicitacao, crmNovo: null };
+
     usuariosRepository.findBy.mockResolvedValueOnce(admin);
     solicitacaoRepository.aprovar.mockResolvedValueOnce(solicitacaoSoCpf);
     usuariosRepository.update.mockResolvedValueOnce({ id: solicitacaoSoCpf.idUsuario });
+    notificationService.notificar.mockResolvedValueOnce(undefined);
 
-    await usecase.execute({ idSolicitacao: solicitacaoSoCpf.id, idAdmin: admin.id });
+    await usecase.execute({
+      idSolicitacao: solicitacaoSoCpf.id,
+      idAdmin: admin.id,
+    });
 
     expect(usuariosRepository.update).toHaveBeenCalledWith(solicitacaoSoCpf.idUsuario, {
       cpf: solicitacaoSoCpf.cpfNovo,
     });
+    expect(notificationService.notificar).toHaveBeenCalled();
   });
 
   it('deve aplicar apenas crm quando solicitacao nao tiver cpfNovo', async () => {
     const solicitacaoSoCrm = { ...solicitacao, cpfNovo: null };
+
     usuariosRepository.findBy.mockResolvedValueOnce(admin);
     solicitacaoRepository.aprovar.mockResolvedValueOnce(solicitacaoSoCrm);
     usuariosRepository.update.mockResolvedValueOnce({ id: solicitacaoSoCrm.idUsuario });
+    notificationService.notificar.mockResolvedValueOnce(undefined);
 
-    await usecase.execute({ idSolicitacao: solicitacaoSoCrm.id, idAdmin: admin.id });
+    await usecase.execute({
+      idSolicitacao: solicitacaoSoCrm.id,
+      idAdmin: admin.id,
+    });
 
     expect(usuariosRepository.update).toHaveBeenCalledWith(solicitacaoSoCrm.idUsuario, {
       crm: solicitacaoSoCrm.crmNovo,
     });
+    expect(notificationService.notificar).toHaveBeenCalled();
   });
 
   it('deve lançar NotFoundError quando admin não existir', async () => {
@@ -121,7 +153,10 @@ describe('AprovarSolicitacaoCpfCrmUsecase', () => {
   });
 
   it('deve lançar UnauthorizedError quando usuário não for admin', async () => {
-    usuariosRepository.findBy.mockResolvedValueOnce({ ...admin, tipoPerfil: tiposPerfil.MEDICO });
+    usuariosRepository.findBy.mockResolvedValueOnce({
+      ...admin,
+      tipoPerfil: tiposPerfil.MEDICO,
+    });
 
     await expect(
       usecase.execute({

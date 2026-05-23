@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type { FastifyInstance } from 'fastify';
 import type { NotificationsRepository } from '../repositories';
 import type { CriarNotificacaoDTO, Notificacao } from '../domain';

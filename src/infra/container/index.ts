@@ -55,7 +55,6 @@ import { NotificationService } from '@/modules/notification/services';
 import { ListMyNotificationsUsecase } from '@/modules/notification/use-case/list-my-notifications-use-case';
 import { DeleteNotificationUseCase } from '@/modules/notification/use-case/delete-notification-use-case';
 import { MarkNotificationAsReadUseCase } from '@/modules/notification/use-case/mark-notification-as-read-use-case';
-import type { EmailSender } from '@/modules/mail/domain/email-sender';
 import { NodemailerEmailProvider } from '../mail/providers/nodemailer-email-provider';
 
 export interface AppContainer {
@@ -194,8 +193,18 @@ container.register({
   ).scoped(),
 
   registerExamAiResultUseCase: asFunction(
-    ({ examesRepository, imagemRepository, resultadoIaRepository }: AppContainer) =>
-      new RegisterExamAiResultUseCase(examesRepository, imagemRepository, resultadoIaRepository),
+    ({
+      examesRepository,
+      imagemRepository,
+      resultadoIaRepository,
+      notificationService,
+    }: AppContainer) =>
+      new RegisterExamAiResultUseCase(
+        examesRepository,
+        imagemRepository,
+        resultadoIaRepository,
+        notificationService,
+      ),
   ).scoped(),
 
   registerExamAiErrorUseCase: asFunction(
