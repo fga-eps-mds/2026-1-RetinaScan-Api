@@ -74,7 +74,6 @@ export class DrizzleUsuariosRepository implements UsuariosRepository {
   }
 
   async updatePassword(userId: string, passwordHash: string): Promise<void> {
-    // Atualizamos a senha na tabela account, pois é onde o better-auth a gerencia
     await db
       .update(account)
       .set({ password: passwordHash, updatedAt: new Date() })
