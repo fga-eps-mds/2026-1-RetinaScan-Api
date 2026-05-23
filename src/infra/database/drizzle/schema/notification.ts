@@ -1,13 +1,18 @@
 import { index, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from 'drizzle-orm/pg-core';
+import { usuario } from './user';
 
 export const notificacao = pgTable(
   'notificacao',
   {
     id: uuid('id').primaryKey().defaultRandom(),
-    usuarioId: text('usuario_id').notNull(),
+    usuarioId: text('usuario_id')
+      .notNull()
+      .references(() => usuario.id, {
+        onDelete: 'cascade',
+      }),
     tipo: text('tipo').notNull(),
     titulo: text('titulo').notNull(),
-    mensage: text('mensagem').notNull(),
+    mensagem: text('mensagem').notNull(),
     dados: jsonb('dados').$type<Record<string, unknown> | null>(),
     chaveDedupe: text('chave_dedupe').notNull(),
     lidaEm: timestamp('lida_em').$type<Date | null>(),

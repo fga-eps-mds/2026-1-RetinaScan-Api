@@ -6,6 +6,7 @@ import { createWorkers } from '@/infra/queue/workers';
 import { setupMinio } from '@/infra/storage/setup-minio';
 import { ensureAdminUserExists } from './modules/users/use-cases/ensure-admin-exists';
 import { setupWebSocket } from './infra/websocket/setup-websocket';
+import { registerAppOnContainer } from './infra/container';
 
 export async function server(): Promise<void> {
   logger.info('Setting up server');
@@ -17,6 +18,8 @@ export async function server(): Promise<void> {
   logger.info('Buckets do MinIO prontos');
 
   const app = await buildApp();
+
+  registerAppOnContainer(app);
 
   setupWebSocket(app);
 
