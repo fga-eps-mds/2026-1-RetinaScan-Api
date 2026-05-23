@@ -20,6 +20,7 @@ describe('PATCH /api/usuarios/imagem (integration)', () => {
     uploadPrivate: vi.fn(),
     deleteByUrl: vi.fn(),
     deleteByKey: vi.fn(),
+    getPresignedUrl: vi.fn(),
   };
 
   beforeAll(async () => {

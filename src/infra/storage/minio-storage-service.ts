@@ -1,5 +1,10 @@
 import { env } from '@/env';
-import type { BucketName, StorageService, UploadInput } from '@/shared/services/storage-service';
+import type {
+  BucketName,
+  GetPresignedUrlInput,
+  StorageService,
+  UploadInput,
+} from '@/shared/services/storage-service';
 import { minioClient } from './minio-client';
 
 export class MinioStorageService implements StorageService {
@@ -28,5 +33,9 @@ export class MinioStorageService implements StorageService {
 
   async deleteByKey(key: string, bucket: BucketName): Promise<void> {
     await minioClient.removeObject(bucket, key);
+  }
+
+  async getPresignedUrl(input: GetPresignedUrlInput): Promise<string> {
+    return minioClient.presignedGetObject(input.bucket, input.key, input.expiresInSeconds);
   }
 }
