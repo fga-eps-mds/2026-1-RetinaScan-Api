@@ -37,6 +37,24 @@ export type Exame = {
   descricao?: string | null;
 };
 
+export type Comorbidade = {
+  idExame: string;
+  diabetes: boolean;
+  diabetesAnos?: number | null;
+  diabetesUsoInsulina: boolean;
+  diabetesControlado: boolean;
+  hipertensao: boolean;
+  hipertensaoControlada: boolean;
+  altaMiopia: boolean;
+  glaucoma: boolean;
+  usoHidroxicloroquina: boolean;
+  uveite: boolean;
+  catarata: boolean;
+  outrasComorbidades: boolean;
+  outrasComorbidadesDescricao?: string | null;
+  qualidadeTecnicaDificuldade: boolean;
+};
+
 export type CreateWithComorbidityInput = {
   exam: Exame;
   comorbidades: {

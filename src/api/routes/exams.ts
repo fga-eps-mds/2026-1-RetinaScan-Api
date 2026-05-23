@@ -4,6 +4,7 @@ import { tiposPerfil } from '@/modules/users/domain';
 import { createExam } from './exams/create-exam';
 import { uploadExamImages } from './exams/upload-exam-images';
 import { listExams } from './exams/list-exams';
+import { getExamDetails } from './exams/get-exam-details';
 import { registerExamWebhook } from './exams/register-exam-webhook';
 import { registerExamErrorWebhook } from './exams/register-exam-error-webhook';
 
@@ -30,6 +31,17 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
       ],
     },
     listExams,
+  );
+
+  app.get<{ Params: { examId: string } }>(
+    '/exams/:examId',
+    {
+      preHandler: [
+        authenticationMiddleware,
+        authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ADMIN]),
+      ],
+    },
+    getExamDetails,
   );
 
   app.post<{ Params: { examId: string } }>('/exams/:examId/webhook', registerExamWebhook);
