@@ -55,6 +55,8 @@ import { NotificationService } from '@/modules/notification/services';
 import { ListMyNotificationsUsecase } from '@/modules/notification/use-case/list-my-notifications-use-case';
 import { DeleteNotificationUseCase } from '@/modules/notification/use-case/delete-notification-use-case';
 import { MarkNotificationAsReadUseCase } from '@/modules/notification/use-case/mark-notification-as-read-use-case';
+import type { EmailSender } from '@/modules/mail/domain/email-sender';
+import { NodemailerEmailProvider } from '../mail/providers/nodemailer-email-provider';
 
 export interface AppContainer {
   app: FastifyInstance;
@@ -86,6 +88,7 @@ export interface AppContainer {
   listMyNotificationsUsecase: ListMyNotificationsUsecase;
   deleteNotificationUseCase: DeleteNotificationUseCase;
   markNotificationAsReadUseCase: MarkNotificationAsReadUseCase;
+  nodeMailerEmailProvider: NodemailerEmailProvider;
 }
 
 export const container: AwilixContainer<AppContainer> = createContainer<AppContainer>({
@@ -95,7 +98,7 @@ export const container: AwilixContainer<AppContainer> = createContainer<AppConta
 
 container.register({
   app: asValue({} as FastifyInstance),
-
+  nodeMailerEmailProvider: asClass(NodemailerEmailProvider).singleton(),
   usuariosRepository: asClass(DrizzleUsuariosRepository).singleton(),
   solicitacaoCpfCrmRepository: asClass(DrizzleSolicitacaoCpfCrmRepository).singleton(),
   notificationRepository: asClass(DrizzleNotificationRepository).singleton(),
@@ -120,10 +123,12 @@ container.register({
       new DeleteNotificationUseCase(notificationRepository),
   ).scoped(),
   notificationService: asFunction(
-    ({ app, notificationRepository }: AppContainer) =>
+    ({ app, notificationRepository, nodeMailerEmailProvider, usuariosRepository }: AppContainer) =>
       new NotificationService({
         app,
         notificationRepository,
+        nodeMailerEmailProvider,
+        usuarioRepository: usuariosRepository,
       }),
   ).scoped(),
 
