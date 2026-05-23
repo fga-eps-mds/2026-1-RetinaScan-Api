@@ -7,6 +7,7 @@ import { ExameStatus, type Exame } from '@/modules/exam/exam';
 import type { ExamIaError, ExamIaErrorArgs } from '@/modules/exam/exam-ia-error';
 import { ConflictError, NotFoundError, ValidationError } from '@/shared/errors';
 import logger from '@/infra/logger';
+import type { NotificationService } from '@/modules/notification/services';
 
 export interface RegisterExamAiErrorUseCaseInput {
   examId: string;
@@ -22,6 +23,7 @@ export class RegisterExamAiErrorUseCase {
   constructor(
     private readonly examesRepository: ExamesRepository,
     private readonly examIaErrorRepository: ExamIaErrorRepository,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async execute(input: RegisterExamAiErrorUseCaseInput): Promise<void> {
@@ -35,6 +37,22 @@ export class RegisterExamAiErrorUseCase {
     const erro = this.buildErrorPayload(input);
     await this.persistError(erro);
     await this.markExamAsErrored(examId);
+
+    await this.notificationService.notificar({
+      usuarioId: exame.idUsuario,
+      titulo: 'Erro no processamento do exame',
+      mensagem: `Ocorreu um erro durante o processamento do seu exame "${exame.nomeCompleto}". Nossa equipe já foi notificada e está trabalhando para resolver o problema o mais rápido possível. Agradecemos pela sua compreensão.`,
+      tipo: 'avaliacao_ia_error',
+      chaveDedupe: `exam_ai_error_${exame.id}`,
+      dados: {
+        examId: exame.id,
+        errorMessage: input.errorMessage,
+        traceback: input.traceback,
+        taskId: input.taskId,
+        taskName: input.taskName,
+        args: input.args,
+      },
+    });
   }
 
   private assertPayloadExamMatches(examId: string, payloadExamId: string): void {

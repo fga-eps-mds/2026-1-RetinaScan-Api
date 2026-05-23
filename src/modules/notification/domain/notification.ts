@@ -1,5 +1,6 @@
 export const TIPOS_NOTIFICACAO = [
   'avaliacao_ia_atualizada',
+  'avaliacao_ia_error',
   'avaliacao_ia_revisada_por_especialista',
   'status_solicitacao_cadastral_atualizado',
 ];

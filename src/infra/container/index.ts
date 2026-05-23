@@ -208,8 +208,8 @@ container.register({
   ).scoped(),
 
   registerExamAiErrorUseCase: asFunction(
-    ({ examesRepository, examIaErrorRepository }: AppContainer) =>
-      new RegisterExamAiErrorUseCase(examesRepository, examIaErrorRepository),
+    ({ examesRepository, examIaErrorRepository, notificationService }: AppContainer) =>
+      new RegisterExamAiErrorUseCase(examesRepository, examIaErrorRepository, notificationService),
   ).scoped(),
   listMyNotificationsUsecase: asFunction(
     ({ notificationRepository }: AppContainer) =>
