@@ -31,6 +31,7 @@ class FakeStorageService implements StorageService {
   uploadPrivate = vi.fn();
   deleteByUrl = vi.fn();
   deleteByKey = vi.fn();
+  getPresignedUrl = vi.fn();
 }
 
 class FakeMessageBroker implements MessageBroker {

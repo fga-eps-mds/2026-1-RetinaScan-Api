@@ -11,9 +11,16 @@ export interface UploadInput {
   contentType: string;
 }
 
+export interface GetPresignedUrlInput {
+  key: string;
+  bucket: BucketName;
+  expiresInSeconds: number;
+}
+
 export interface StorageService {
   upload(input: UploadInput, bucket: BucketName): Promise<string>;
   uploadPrivate(input: UploadInput, bucket: BucketName): Promise<void>;
   deleteByUrl(url: string, bucket: BucketName): Promise<void>;
   deleteByKey(key: string, bucket: BucketName): Promise<void>;
+  getPresignedUrl(input: GetPresignedUrlInput): Promise<string>;
 }
