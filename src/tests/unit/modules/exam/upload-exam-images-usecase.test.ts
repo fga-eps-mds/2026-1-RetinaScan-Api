@@ -15,6 +15,7 @@ import {
 
 class FakeExamesRepository implements ExamesRepository {
   create = vi.fn();
+  createWithComorbidity = vi.fn();
   findOne = vi.fn();
   findMany = vi.fn();
   update = vi.fn();
@@ -30,6 +31,7 @@ class FakeStorageService implements StorageService {
   uploadPrivate = vi.fn();
   deleteByUrl = vi.fn();
   deleteByKey = vi.fn();
+  getPresignedUrl = vi.fn();
 }
 
 class FakeMessageBroker implements MessageBroker {

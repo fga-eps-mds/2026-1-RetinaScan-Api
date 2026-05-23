@@ -1,4 +1,3 @@
-// TODO(hardening): rota chamada sem autenticação — adicionar HMAC/shared secret antes de produção.
 import { randomUUID } from 'node:crypto';
 
 import type { ExamesRepository } from '@/modules/exam/exam-repository';

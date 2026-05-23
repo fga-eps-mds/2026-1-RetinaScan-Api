@@ -18,6 +18,7 @@ import {
 class FakeExamesRepository implements ExamesRepository {
   createWithComorbidity = vi.fn();
   create = vi.fn();
+  createWithComorbidity = vi.fn();
   findOne = vi.fn();
   findMany = vi.fn();
   update = vi.fn();

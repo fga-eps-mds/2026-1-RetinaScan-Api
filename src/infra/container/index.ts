@@ -16,6 +16,7 @@ import {
   DrizzleResultadoIaRepository,
   DrizzleExamIaErrorRepository,
   DrizzleNotificationRepository,
+  DrizzleComorbidadeRepository,
 } from '@/infra/database/drizzle/repositories';
 
 import { BetterAuthService } from '@/infra/auth/better-auth-service';
@@ -37,6 +38,7 @@ import type { UsuariosRepository, SolicitacaoCpfCrmRepository } from '@/modules/
 import { CreateExamUseCase } from '@/modules/exam/use-cases/create-exam-usecase';
 import { UploadExamImagesUseCase } from '@/modules/exam/use-cases/upload-exam-images-usecase';
 import { ListExamsUseCase } from '@/modules/exam/use-cases/list-exams-usecase';
+import { GetExamDetailsUseCase } from '@/modules/exam/use-cases/get-exam-details-usecase';
 import { RegisterExamAiResultUseCase } from '@/modules/exam/use-cases/register-exam-ai-result-usecase';
 import { RegisterExamAiErrorUseCase } from '@/modules/exam/use-cases/register-exam-ai-error-usecase';
 
@@ -44,7 +46,7 @@ import type { ExamesRepository } from '@/modules/exam/exam-repository';
 import type { ImagemRepository } from '@/modules/exam/imagem-repository';
 import type { ResultadoIaRepository } from '@/modules/exam/resultado-ia-repository';
 import type { ExamIaErrorRepository } from '@/modules/exam/exam-ia-error-repository';
-
+import type { ComorbidadeRepository } from '@/modules/exam/comorbidade-repository';
 import type { AuthService } from '@/shared/services/auth-service';
 import type { StorageService } from '@/shared/services/storage-service';
 import type { CryptographyService } from '@/shared/services/cryptography-service';
@@ -66,6 +68,7 @@ export interface AppContainer {
   imagemRepository: ImagemRepository;
   resultadoIaRepository: ResultadoIaRepository;
   examIaErrorRepository: ExamIaErrorRepository;
+  comorbidadeRepository: ComorbidadeRepository;
   authService: AuthService;
   storageService: StorageService;
   cryptographyService: CryptographyService;
@@ -81,6 +84,7 @@ export interface AppContainer {
   createExamUseCase: CreateExamUseCase;
   uploadExamImagesUseCase: UploadExamImagesUseCase;
   listExamsUseCase: ListExamsUseCase;
+  getExamDetailsUseCase: GetExamDetailsUseCase;
   registerExamAiResultUseCase: RegisterExamAiResultUseCase;
   registerExamAiErrorUseCase: RegisterExamAiErrorUseCase;
   notificationService: NotificationService;
@@ -105,7 +109,7 @@ container.register({
   imagemRepository: asClass(DrizzleImagemRepository).singleton(),
   resultadoIaRepository: asClass(DrizzleResultadoIaRepository).singleton(),
   examIaErrorRepository: asClass(DrizzleExamIaErrorRepository).singleton(),
-
+  comorbidadeRepository: asClass(DrizzleComorbidadeRepository).singleton(),
   authService: asClass(BetterAuthService).singleton(),
   storageService: asClass(MinioStorageService).singleton(),
   cryptographyService: asClass(NodeCryptoCryptographyService).singleton(),
@@ -191,7 +195,26 @@ container.register({
   listExamsUseCase: asFunction(
     ({ examesRepository }: AppContainer) => new ListExamsUseCase(examesRepository),
   ).scoped(),
-
+  getExamDetailsUseCase: asFunction(
+    ({
+      examesRepository,
+      usuariosRepository,
+      imagemRepository,
+      resultadoIaRepository,
+      comorbidadeRepository,
+      storageService,
+      cryptographyService,
+    }: AppContainer) =>
+      new GetExamDetailsUseCase(
+        examesRepository,
+        usuariosRepository,
+        imagemRepository,
+        resultadoIaRepository,
+        comorbidadeRepository,
+        storageService,
+        cryptographyService,
+      ),
+  ).scoped(),
   registerExamAiResultUseCase: asFunction(
     ({
       examesRepository,

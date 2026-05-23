@@ -4,6 +4,7 @@ import { ListExamsUseCase } from '@/modules/exam/use-cases/list-exams-usecase';
 
 class FakeExamesRepository implements ExamesRepository {
   create = vi.fn();
+  createWithComorbidity = vi.fn();
   findOne = vi.fn();
   findMany = vi.fn();
   update = vi.fn();

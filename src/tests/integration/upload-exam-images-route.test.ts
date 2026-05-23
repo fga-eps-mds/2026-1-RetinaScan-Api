@@ -28,6 +28,7 @@ describe('POST /api/exams/:id/images (integration)', () => {
     uploadPrivate: uploadPrivateMock,
     deleteByUrl: vi.fn(),
     deleteByKey: deleteByKeyMock,
+    getPresignedUrl: vi.fn(),
   };
   const stubMessageBroker: MessageBroker = {
     publish: publishMock,
