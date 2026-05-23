@@ -36,6 +36,13 @@
       "when": 1778371670577,
       "tag": "0004_add_olho_to_exame",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1779548355483,
+      "tag": "0005_add_password_reset_token",
+      "breakpoints": true
     }
   ]
 }

@@ -7,7 +7,7 @@ import type {
   UsuarioUpdateOutput,
   UsuariosRepository,
 } from '@/modules/users/repositories';
-import { usuario } from '@/infra/database/drizzle/schema';
+import { usuario, account } from '@/infra/database/drizzle/schema';
 import { eq, or, type SQL } from 'drizzle-orm';
 
 export class DrizzleUsuariosRepository implements UsuariosRepository {
@@ -71,5 +71,13 @@ export class DrizzleUsuariosRepository implements UsuariosRepository {
     const result = await db.select().from(usuario).orderBy(usuario.createdAt);
 
     return result;
+  }
+
+  async updatePassword(userId: string, passwordHash: string): Promise<void> {
+    // Atualizamos a senha na tabela account, pois é onde o better-auth a gerencia
+    await db
+      .update(account)
+      .set({ password: passwordHash, updatedAt: new Date() })
+      .where(eq(account.userId, userId));
   }
 }

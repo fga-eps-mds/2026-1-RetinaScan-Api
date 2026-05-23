@@ -20,6 +20,36 @@ export const solicitacaoStatusEnum = pgEnum('solicitacao_status', [
   'REJEITADA',
 ]);
 
+export const passwordResetToken = pgTable(
+  'password_reset_token',
+  {
+    id: text('id').primaryKey(),
+
+    idUsuario: text('id_usuario')
+      .notNull()
+      .references(() => usuario.id, {
+        onDelete: 'cascade',
+      }),
+
+    tokenHash: text('token_hash').notNull(),
+
+    expiresAt: timestamp('expires_at').notNull(),
+
+    usedAt: timestamp('used_at'),
+
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => [
+    index('password_reset_token_usuario_idx').on(table.idUsuario),
+    uniqueIndex('password_reset_token_hash_unique').on(table.tokenHash),
+  ],
+);
+
 export const usuario = pgTable(
   'usuario',
   {
@@ -188,6 +218,7 @@ export const solicitacaoCpfCrm = pgTable(
 export const usuarioRelations = relations(usuario, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
+  passwordResetTokens: many(passwordResetToken),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -200,6 +231,13 @@ export const sessionRelations = relations(session, ({ one }) => ({
 export const accountRelations = relations(account, ({ one }) => ({
   usuario: one(usuario, {
     fields: [account.userId],
+    references: [usuario.id],
+  }),
+}));
+
+export const passwordResetTokenRelations = relations(passwordResetToken, ({ one }) => ({
+  usuario: one(usuario, {
+    fields: [passwordResetToken.idUsuario],
     references: [usuario.id],
   }),
 }));
