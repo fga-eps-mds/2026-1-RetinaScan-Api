@@ -36,8 +36,29 @@ services:
       - retina-scan-network
     restart: unless-stopped
 
+  redis:
+    image: redis:7.2.4
+    env_file:
+      - ./env/.env.prod
+    container_name: retina-scan-redis-homolog
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - retina-scan-prod-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redispw", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    command: redis-server --requirepass redispw
+    restart: always
+
 volumes:
   postgres_data_homolog:
+  redis_data:
 
 networks:
   retina-scan-network:
