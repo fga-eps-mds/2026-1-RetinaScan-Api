@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { eq, sql } from 'drizzle-orm';
 
@@ -9,6 +9,9 @@ import { ExameBuilder } from '@/tests/helpers/builders/exame-builder';
 import { ExamIaErrorBuilder } from '@/tests/helpers/builders/exam-ia-error-builder';
 import { ExameStatus } from '@/modules/exam/exam';
 import { buildApp } from '@/api/index';
+import { container } from '@/infra/container';
+import { NotificationService } from '@/modules/notification/services';
+import { asValue } from 'awilix';
 
 interface WebhookErrorPayload {
   exam_id: string;
@@ -19,7 +22,10 @@ interface WebhookErrorPayload {
   args?: Record<string, unknown>;
 }
 
-function makeErrorBody(examId: string, overrides: Partial<WebhookErrorPayload> = {}): WebhookErrorPayload {
+function makeErrorBody(
+  examId: string,
+  overrides: Partial<WebhookErrorPayload> = {},
+): WebhookErrorPayload {
   return {
     exam_id: examId,
     error: "TimeoutError('Connection timed out')",
@@ -34,9 +40,25 @@ function makeErrorBody(examId: string, overrides: Partial<WebhookErrorPayload> =
 
 describe('POST /api/exams/:examId/webhook/error (integration)', () => {
   let app: FastifyInstance;
+  let notificarSpy: ReturnType<typeof vi.fn>;
 
   beforeAll(async () => {
     await connectDatabase();
+
+    vi.doMock('@/modules/notifications/services/notification-service', () => {
+      const mockService = {
+        notificar: vi.fn().mockResolvedValue(undefined),
+      };
+      notificarSpy = mockService.notificar;
+      return { NotificationService: mockService as unknown as typeof NotificationService };
+    });
+
+    container.register({
+      notificationService: asValue({
+        notificar: vi.fn().mockResolvedValue(undefined),
+      }),
+    });
+
     app = await buildApp();
     await app.ready();
   });
@@ -51,6 +73,8 @@ describe('POST /api/exams/:examId/webhook/error (integration)', () => {
     await db.execute(sql`TRUNCATE TABLE ${imagem} RESTART IDENTITY CASCADE`);
     await db.execute(sql`TRUNCATE TABLE ${exam} RESTART IDENTITY CASCADE`);
     await db.execute(sql`TRUNCATE TABLE ${usuario} RESTART IDENTITY CASCADE`);
+
+    notificarSpy?.mockClear();
   });
 
   it('returns 204, marks exam as ERRO_PROCESSAMENTO and persists error row on happy path', async () => {
@@ -62,6 +86,10 @@ describe('POST /api/exams/:examId/webhook/error (integration)', () => {
       url: `/api/exams/${exame.id}/webhook/error`,
       payload: body,
     });
+
+    if (res.statusCode !== 204) {
+      console.error('Unexpected response:', res.statusCode, res.body);
+    }
 
     expect(res.statusCode).toBe(204);
 
@@ -86,6 +114,10 @@ describe('POST /api/exams/:examId/webhook/error (integration)', () => {
       url: `/api/exams/${exame.id}/webhook/error`,
       payload: { exam_id: exame.id, error: 'minimal failure' },
     });
+
+    if (res.statusCode !== 204) {
+      console.error('Unexpected response:', res.statusCode, res.body);
+    }
 
     expect(res.statusCode).toBe(204);
 

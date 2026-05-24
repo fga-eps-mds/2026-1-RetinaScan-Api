@@ -1,4 +1,13 @@
-import { asClass, asFunction, createContainer, InjectionMode, type AwilixContainer } from 'awilix';
+import {
+  asClass,
+  asFunction,
+  asValue,
+  createContainer,
+  InjectionMode,
+  type AwilixContainer,
+} from 'awilix';
+import type { FastifyInstance } from 'fastify';
+
 import {
   DrizzleSolicitacaoCpfCrmRepository,
   DrizzleUsuariosRepository,
@@ -6,13 +15,16 @@ import {
   DrizzleImagemRepository,
   DrizzleResultadoIaRepository,
   DrizzleExamIaErrorRepository,
+  DrizzleNotificationRepository,
   DrizzleComorbidadeRepository,
 } from '@/infra/database/drizzle/repositories';
+
 import { BetterAuthService } from '@/infra/auth/better-auth-service';
 import { BullMQMessageBroker } from '@/infra/queue/notify-bullmq-service';
 import { MinioStorageService } from '@/infra/storage/minio-storage-service';
 import { NodeCryptoCryptographyService } from '@/infra/shared/node-cryptography-service';
 import { DefaultMaskingService } from '@/infra/shared/default-masking-service';
+
 import { CreateUserByAdmin } from '@/modules/users/use-cases/create-user-by-admin';
 import { UpdateUserUsecase } from '@/modules/users/use-cases/update-user-usecase';
 import { UpdateUserImageUsecase } from '@/modules/users/use-cases/update-user-image-usecase';
@@ -20,13 +32,16 @@ import { SolicitarAlteracaoCpfCrmUsecase } from '@/modules/users/use-cases/solic
 import { AprovarSolicitacaoCpfCrmUsecase } from '@/modules/users/use-cases/aprovar-solicitacao-cpf-crm';
 import { RejeitarSolicitacaoCpfCrmUsecase } from '@/modules/users/use-cases/rejeitar-solicitacao-cpf-crm';
 import { ListarSolicitacoesCpfCrmUsecase } from '@/modules/users/use-cases/listar-solicitacoes-cpf-crm';
+
 import type { UsuariosRepository, SolicitacaoCpfCrmRepository } from '@/modules/users/repositories';
+
 import { CreateExamUseCase } from '@/modules/exam/use-cases/create-exam-usecase';
 import { UploadExamImagesUseCase } from '@/modules/exam/use-cases/upload-exam-images-usecase';
 import { ListExamsUseCase } from '@/modules/exam/use-cases/list-exams-usecase';
 import { GetExamDetailsUseCase } from '@/modules/exam/use-cases/get-exam-details-usecase';
 import { RegisterExamAiResultUseCase } from '@/modules/exam/use-cases/register-exam-ai-result-usecase';
 import { RegisterExamAiErrorUseCase } from '@/modules/exam/use-cases/register-exam-ai-error-usecase';
+
 import type { ExamesRepository } from '@/modules/exam/exam-repository';
 import type { ImagemRepository } from '@/modules/exam/imagem-repository';
 import type { ResultadoIaRepository } from '@/modules/exam/resultado-ia-repository';
@@ -37,10 +52,18 @@ import type { StorageService } from '@/shared/services/storage-service';
 import type { CryptographyService } from '@/shared/services/cryptography-service';
 import type { MaskingService } from '@/shared/services/masking-service';
 import type { MessageBroker } from '@/shared/services/message-broker';
+import type { NotificationsRepository } from '@/modules/notification/repositories';
+import { NotificationService } from '@/modules/notification/services';
+import { ListMyNotificationsUsecase } from '@/modules/notification/use-case/list-my-notifications-use-case';
+import { DeleteNotificationUseCase } from '@/modules/notification/use-case/delete-notification-use-case';
+import { MarkNotificationAsReadUseCase } from '@/modules/notification/use-case/mark-notification-as-read-use-case';
+import { NodemailerEmailProvider } from '../mail/providers/nodemailer-email-provider';
 
 export interface AppContainer {
+  app: FastifyInstance;
   usuariosRepository: UsuariosRepository;
   solicitacaoCpfCrmRepository: SolicitacaoCpfCrmRepository;
+  notificationRepository: NotificationsRepository;
   examesRepository: ExamesRepository;
   imagemRepository: ImagemRepository;
   resultadoIaRepository: ResultadoIaRepository;
@@ -64,6 +87,11 @@ export interface AppContainer {
   getExamDetailsUseCase: GetExamDetailsUseCase;
   registerExamAiResultUseCase: RegisterExamAiResultUseCase;
   registerExamAiErrorUseCase: RegisterExamAiErrorUseCase;
+  notificationService: NotificationService;
+  listMyNotificationsUsecase: ListMyNotificationsUsecase;
+  deleteNotificationUseCase: DeleteNotificationUseCase;
+  markNotificationAsReadUseCase: MarkNotificationAsReadUseCase;
+  nodeMailerEmailProvider: NodemailerEmailProvider;
 }
 
 export const container: AwilixContainer<AppContainer> = createContainer<AppContainer>({
@@ -72,8 +100,11 @@ export const container: AwilixContainer<AppContainer> = createContainer<AppConta
 });
 
 container.register({
+  app: asValue({} as FastifyInstance),
+  nodeMailerEmailProvider: asClass(NodemailerEmailProvider).singleton(),
   usuariosRepository: asClass(DrizzleUsuariosRepository).singleton(),
   solicitacaoCpfCrmRepository: asClass(DrizzleSolicitacaoCpfCrmRepository).singleton(),
+  notificationRepository: asClass(DrizzleNotificationRepository).singleton(),
   examesRepository: asClass(DrizzleExamesRepository).singleton(),
   imagemRepository: asClass(DrizzleImagemRepository).singleton(),
   resultadoIaRepository: asClass(DrizzleResultadoIaRepository).singleton(),
@@ -84,37 +115,73 @@ container.register({
   cryptographyService: asClass(NodeCryptoCryptographyService).singleton(),
   maskingService: asClass(DefaultMaskingService).singleton(),
   messageBroker: asClass(BullMQMessageBroker).singleton(),
+
+  markNotificationAsReadUseCase: asFunction(
+    ({ notificationRepository }: AppContainer) =>
+      new MarkNotificationAsReadUseCase(notificationRepository),
+  ).scoped(),
+
+  deleteNotificationUseCase: asFunction(
+    ({ notificationRepository }: AppContainer) =>
+      new DeleteNotificationUseCase(notificationRepository),
+  ).scoped(),
+  notificationService: asFunction(
+    ({ app, notificationRepository, nodeMailerEmailProvider, usuariosRepository }: AppContainer) =>
+      new NotificationService({
+        app,
+        notificationRepository,
+        nodeMailerEmailProvider,
+        usuarioRepository: usuariosRepository,
+      }),
+  ).scoped(),
+
   createUserByAdmin: asFunction(
     ({ usuariosRepository }: AppContainer) => new CreateUserByAdmin(usuariosRepository),
   ).scoped(),
+
   updateUserUsecase: asFunction(
     ({ usuariosRepository, authService }: AppContainer) =>
       new UpdateUserUsecase(usuariosRepository, authService),
   ).scoped(),
+
   updateUserImageUsecase: asFunction(
     ({ usuariosRepository, storageService }: AppContainer) =>
       new UpdateUserImageUsecase(usuariosRepository, storageService),
   ).scoped(),
+
   solicitarAlteracaoCpfCrmUsecase: asFunction(
     ({ usuariosRepository, solicitacaoCpfCrmRepository }: AppContainer) =>
       new SolicitarAlteracaoCpfCrmUsecase(usuariosRepository, solicitacaoCpfCrmRepository),
   ).scoped(),
+
   aprovarSolicitacaoCpfCrmUsecase: asFunction(
-    ({ usuariosRepository, solicitacaoCpfCrmRepository }: AppContainer) =>
-      new AprovarSolicitacaoCpfCrmUsecase(usuariosRepository, solicitacaoCpfCrmRepository),
+    ({ usuariosRepository, solicitacaoCpfCrmRepository, notificationService }: AppContainer) =>
+      new AprovarSolicitacaoCpfCrmUsecase(
+        usuariosRepository,
+        solicitacaoCpfCrmRepository,
+        notificationService,
+      ),
   ).scoped(),
+
   rejeitarSolicitacaoCpfCrmUsecase: asFunction(
-    ({ usuariosRepository, solicitacaoCpfCrmRepository }: AppContainer) =>
-      new RejeitarSolicitacaoCpfCrmUsecase(usuariosRepository, solicitacaoCpfCrmRepository),
+    ({ usuariosRepository, solicitacaoCpfCrmRepository, notificationService }: AppContainer) =>
+      new RejeitarSolicitacaoCpfCrmUsecase(
+        usuariosRepository,
+        solicitacaoCpfCrmRepository,
+        notificationService,
+      ),
   ).scoped(),
+
   listarSolicitacoesCpfCrmUsecase: asFunction(
     ({ solicitacaoCpfCrmRepository }: AppContainer) =>
       new ListarSolicitacoesCpfCrmUsecase(solicitacaoCpfCrmRepository),
   ).scoped(),
+
   createExamUseCase: asFunction(
     ({ usuariosRepository, examesRepository, cryptographyService }: AppContainer) =>
       new CreateExamUseCase(usuariosRepository, examesRepository, cryptographyService),
   ).scoped(),
+
   uploadExamImagesUseCase: asFunction(
     ({ examesRepository, imagemRepository, storageService, messageBroker }: AppContainer) =>
       new UploadExamImagesUseCase(
@@ -124,6 +191,7 @@ container.register({
         messageBroker,
       ),
   ).scoped(),
+
   listExamsUseCase: asFunction(
     ({ examesRepository }: AppContainer) => new ListExamsUseCase(examesRepository),
   ).scoped(),
@@ -148,11 +216,32 @@ container.register({
       ),
   ).scoped(),
   registerExamAiResultUseCase: asFunction(
-    ({ examesRepository, imagemRepository, resultadoIaRepository }: AppContainer) =>
-      new RegisterExamAiResultUseCase(examesRepository, imagemRepository, resultadoIaRepository),
+    ({
+      examesRepository,
+      imagemRepository,
+      resultadoIaRepository,
+      notificationService,
+    }: AppContainer) =>
+      new RegisterExamAiResultUseCase(
+        examesRepository,
+        imagemRepository,
+        resultadoIaRepository,
+        notificationService,
+      ),
   ).scoped(),
+
   registerExamAiErrorUseCase: asFunction(
-    ({ examesRepository, examIaErrorRepository }: AppContainer) =>
-      new RegisterExamAiErrorUseCase(examesRepository, examIaErrorRepository),
+    ({ examesRepository, examIaErrorRepository, notificationService }: AppContainer) =>
+      new RegisterExamAiErrorUseCase(examesRepository, examIaErrorRepository, notificationService),
+  ).scoped(),
+  listMyNotificationsUsecase: asFunction(
+    ({ notificationRepository }: AppContainer) =>
+      new ListMyNotificationsUsecase(notificationRepository),
   ).scoped(),
 });
+
+export function registerAppOnContainer(app: FastifyInstance): void {
+  container.register({
+    app: asValue(app),
+  });
+}

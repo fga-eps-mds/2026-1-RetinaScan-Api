@@ -46,6 +46,7 @@ export default defineConfig({
         'src/infra/database/drizzle/connection.ts',
         'src/infra/database/drizzle/schema/**',
         'src/infra/database/drizzle/migrate.ts',
+        '/src/modules/notification/domain/notification.ts',
       ],
     },
     projects: [

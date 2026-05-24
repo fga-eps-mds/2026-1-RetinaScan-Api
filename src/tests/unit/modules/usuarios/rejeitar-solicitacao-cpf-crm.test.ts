@@ -11,6 +11,7 @@ import { RejeitarSolicitacaoCpfCrmUsecase } from '@/modules/users/use-cases';
 import { NotFoundError, ValidationError } from '@/shared/errors';
 import { UnauthorizedError } from '@/shared/errors/unauthorized-error';
 import { UsuarioBuilder } from '@/tests/helpers/builders/usuario-builder';
+import { NotificationService } from '@/modules/notification/services';
 
 class FakeUsuariosRepository implements UsuariosRepository {
   findByEmail = vi.fn();
@@ -29,9 +30,21 @@ class FakeSolicitacaoCpfCrmRepository implements SolicitacaoCpfCrmRepository {
   rejeitar = vi.fn();
 }
 
+type NotificationServiceMethods = Pick<
+  NotificationService,
+  'notificar' | 'listarPorUsuario' | 'marcarTodasComoLidas'
+>;
+
+class FakeNotificationService implements NotificationServiceMethods {
+  notificar = vi.fn();
+  listarPorUsuario = vi.fn();
+  marcarTodasComoLidas = vi.fn();
+}
+
 describe('RejeitarSolicitacaoCpfCrmUsecase', () => {
   let usuariosRepository: FakeUsuariosRepository;
   let solicitacaoRepository: FakeSolicitacaoCpfCrmRepository;
+  let notificationService: FakeNotificationService;
   let usecase: RejeitarSolicitacaoCpfCrmUsecase;
 
   const admin: Usuario = UsuarioBuilder.anUser()
@@ -57,13 +70,19 @@ describe('RejeitarSolicitacaoCpfCrmUsecase', () => {
 
     usuariosRepository = new FakeUsuariosRepository();
     solicitacaoRepository = new FakeSolicitacaoCpfCrmRepository();
+    notificationService = new FakeNotificationService();
 
-    usecase = new RejeitarSolicitacaoCpfCrmUsecase(usuariosRepository, solicitacaoRepository);
+    usecase = new RejeitarSolicitacaoCpfCrmUsecase(
+      usuariosRepository,
+      solicitacaoRepository,
+      notificationService as unknown as NotificationService,
+    );
   });
 
   it('deve rejeitar solicitacao com motivo', async () => {
     usuariosRepository.findBy.mockResolvedValueOnce(admin);
     solicitacaoRepository.rejeitar.mockResolvedValueOnce(solicitacao);
+    notificationService.notificar.mockResolvedValueOnce(undefined);
 
     const result = await usecase.execute({
       idSolicitacao: solicitacao.id,
@@ -76,6 +95,7 @@ describe('RejeitarSolicitacaoCpfCrmUsecase', () => {
       analisadoPor: admin.id,
       motivoRejeicao: 'Dados divergentes',
     });
+    expect(notificationService.notificar).toHaveBeenCalled();
     expect(result.solicitacao).toEqual(solicitacao);
   });
 
@@ -102,7 +122,10 @@ describe('RejeitarSolicitacaoCpfCrmUsecase', () => {
   });
 
   it('deve lançar UnauthorizedError quando usuário não for admin', async () => {
-    usuariosRepository.findBy.mockResolvedValueOnce({ ...admin, tipoPerfil: tiposPerfil.MEDICO });
+    usuariosRepository.findBy.mockResolvedValueOnce({
+      ...admin,
+      tipoPerfil: tiposPerfil.MEDICO,
+    });
 
     await expect(
       usecase.execute({

@@ -10,6 +10,7 @@ import {
   RegisterExamAiErrorUseCase,
   type RegisterExamAiErrorUseCaseInput,
 } from '@/modules/exam/use-cases/register-exam-ai-error-usecase';
+import { NotificationService } from '@/modules/notification/services';
 
 class FakeExamesRepository implements ExamesRepository {
   create = vi.fn();
@@ -24,8 +25,20 @@ class FakeExamIaErrorRepository implements ExamIaErrorRepository {
   existsByExamId = vi.fn();
 }
 
+type NotificationServiceMethods = Pick<
+  NotificationService,
+  'notificar' | 'listarPorUsuario' | 'marcarTodasComoLidas'
+>;
+
+class FakeNotificationService implements NotificationServiceMethods {
+  notificar = vi.fn();
+  listarPorUsuario = vi.fn();
+  marcarTodasComoLidas = vi.fn();
+}
+
 let examRepository: FakeExamesRepository;
 let examIaErrorRepository: FakeExamIaErrorRepository;
+let notificationService: FakeNotificationService;
 let usecase: RegisterExamAiErrorUseCase;
 
 const buildInput = (
@@ -48,7 +61,12 @@ describe('RegisterExamAiErrorUseCase', () => {
   beforeEach(() => {
     examRepository = new FakeExamesRepository();
     examIaErrorRepository = new FakeExamIaErrorRepository();
-    usecase = new RegisterExamAiErrorUseCase(examRepository, examIaErrorRepository);
+    notificationService = new FakeNotificationService();
+    usecase = new RegisterExamAiErrorUseCase(
+      examRepository,
+      examIaErrorRepository,
+      notificationService as unknown as NotificationService,
+    );
     vi.clearAllMocks();
   });
 

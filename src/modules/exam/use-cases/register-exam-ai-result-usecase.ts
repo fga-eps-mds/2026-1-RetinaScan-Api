@@ -9,6 +9,7 @@ import type { Imagem } from '@/modules/exam/imagem';
 import type { ResultadoIa } from '@/modules/exam/resultado-ia';
 import { ConflictError, NotFoundError, ValidationError } from '@/shared/errors';
 import logger from '@/infra/logger';
+import type { NotificationService } from '@/modules/notification/services';
 
 export interface AiResultProbabilities {
   [label: string]: number;
@@ -35,6 +36,7 @@ export class RegisterExamAiResultUseCase {
     private readonly examesRepository: ExamesRepository,
     private readonly imagemRepository: ImagemRepository,
     private readonly resultadoIaRepository: ResultadoIaRepository,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async execute(input: RegisterExamAiResultUseCaseInput): Promise<void> {
@@ -43,7 +45,7 @@ export class RegisterExamAiResultUseCase {
     this.assertPayloadExamMatches(examId, payloadExamId);
     this.assertTotalImagesConsistent(totalImages, results);
 
-    await this.getExam(examId);
+    const exam = await this.getExam(examId);
     await this.assertNoPreviousResults(examId);
 
     const imagens = await this.loadExamImages(examId);
@@ -52,6 +54,14 @@ export class RegisterExamAiResultUseCase {
     const resultados = this.buildResultPayloads(results, imagemIdsByResult);
     await this.persistResults(resultados);
     await this.markExamAsCompleted(examId);
+
+    await this.notificationService.notificar({
+      usuarioId: exam.idUsuario,
+      tipo: 'avaliacao_ia_atualizada',
+      titulo: 'Avaliação de IA concluída',
+      mensagem: `Os resultados da avaliação de IA para o exame ${exam.id} estão disponíveis.`,
+      chaveDedupe: `avaliacao_ia:${exam.id}`,
+    });
   }
 
   private assertPayloadExamMatches(examId: string, payloadExamId: string): void {

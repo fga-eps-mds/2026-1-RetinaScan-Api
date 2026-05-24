@@ -9,14 +9,15 @@ import { LateralidadeOlho, type Imagem } from '@/modules/exam/imagem';
 import { ConflictError, NotFoundError, ValidationError } from '@/shared/errors';
 import { ExameBuilder } from '@/tests/helpers/builders/exame-builder';
 import { ImagemBuilder } from '@/tests/helpers/builders/imagem-builder';
+import { NotificationService } from '@/modules/notification/services';
 import {
   RegisterExamAiResultUseCase,
-  type RegisterExamAiResultItem,
+  RegisterExamAiResultItem,
 } from '@/modules/exam/use-cases/register-exam-ai-result-usecase';
 
 class FakeExamesRepository implements ExamesRepository {
-  create = vi.fn();
   createWithComorbidity = vi.fn();
+  create = vi.fn();
   findOne = vi.fn();
   findMany = vi.fn();
   update = vi.fn();
@@ -33,10 +34,22 @@ class FakeResultadoIaRepository implements ResultadoIaRepository {
   findByExamId = vi.fn();
 }
 
+type NotificationServiceMethods = Pick<
+  NotificationService,
+  'notificar' | 'listarPorUsuario' | 'marcarTodasComoLidas'
+>;
+
+class FakeNotificationService implements NotificationServiceMethods {
+  notificar = vi.fn();
+  listarPorUsuario = vi.fn();
+  marcarTodasComoLidas = vi.fn();
+}
+
 let examRepository: FakeExamesRepository;
 let imagemRepository: FakeImagemRepository;
 let resultadoIaRepository: FakeResultadoIaRepository;
 let usecase: RegisterExamAiResultUseCase;
+let notificationService: FakeNotificationService;
 
 const buildResult = (
   filename: string,
@@ -63,10 +76,13 @@ describe('RegisterExamAiResultUseCase', () => {
     examRepository = new FakeExamesRepository();
     imagemRepository = new FakeImagemRepository();
     resultadoIaRepository = new FakeResultadoIaRepository();
+    notificationService = new FakeNotificationService();
+
     usecase = new RegisterExamAiResultUseCase(
       examRepository,
       imagemRepository,
       resultadoIaRepository,
+      notificationService as unknown as NotificationService,
     );
 
     vi.clearAllMocks();

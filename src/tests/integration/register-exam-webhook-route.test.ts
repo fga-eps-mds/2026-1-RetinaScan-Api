@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { eq, sql } from 'drizzle-orm';
 import { connectDatabase, db } from '@/infra/database/drizzle/connection';
@@ -10,6 +10,7 @@ import { ImagemBuilder } from '@/tests/helpers/builders/imagem-builder';
 import { ExameStatus } from '@/modules/exam/exam';
 import { LateralidadeOlho } from '@/modules/exam/imagem';
 import { buildApp } from '@/api/index';
+import { NotificationService } from '@/modules/notification/services';
 
 interface WebhookResultPayload {
   filename: string;
@@ -49,7 +50,10 @@ function makeResult(
   };
 }
 
-function makeBody(fixture: ExamFixture, overrides: Partial<WebhookBodyPayload> = {}): WebhookBodyPayload {
+function makeBody(
+  fixture: ExamFixture,
+  overrides: Partial<WebhookBodyPayload> = {},
+): WebhookBodyPayload {
   return {
     total_images: 2,
     exam_id: fixture.examId,
@@ -68,6 +72,7 @@ function makeBody(fixture: ExamFixture, overrides: Partial<WebhookBodyPayload> =
 
 async function seedExamWithBothEyes(): Promise<ExamFixture> {
   const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+
   const exame = await ExameBuilder.anExame()
     .withIdUsuario(user.id)
     .withStatus(ExameStatus.CRIADO)
@@ -92,23 +97,37 @@ async function seedExamWithBothEyes(): Promise<ExamFixture> {
     .withCaminhoImg(caminhoOe)
     .build();
 
-  return { examId: exame.id, imagemOdId: odId, imagemOeId: oeId, caminhoOd, caminhoOe };
+  return {
+    examId: exame.id,
+    imagemOdId: odId,
+    imagemOeId: oeId,
+    caminhoOd,
+    caminhoOe,
+  };
 }
 
 describe('POST /api/exams/:examId/webhook (integration)', () => {
   let app: FastifyInstance;
+  let notificarSpy: ReturnType<typeof vi.spyOn>;
 
   beforeAll(async () => {
+    notificarSpy = vi
+      .spyOn(NotificationService.prototype, 'notificar')
+      .mockResolvedValue(undefined as never);
+
     await connectDatabase();
     app = await buildApp();
     await app.ready();
   });
 
   afterAll(async () => {
+    notificarSpy.mockRestore();
     await app.close();
   });
 
   beforeEach(async () => {
+    notificarSpy.mockClear();
+
     await db.execute(sql`TRUNCATE TABLE ${resultadoIa} RESTART IDENTITY CASCADE`);
     await db.execute(sql`TRUNCATE TABLE ${imagem} RESTART IDENTITY CASCADE`);
     await db.execute(sql`TRUNCATE TABLE ${exam} RESTART IDENTITY CASCADE`);
@@ -131,12 +150,23 @@ describe('POST /api/exams/:examId/webhook (integration)', () => {
 
     const resultRows = await db.select().from(resultadoIa);
     expect(resultRows).toHaveLength(2);
+
     const imagemIds = resultRows.map((r) => r.idImagem).sort();
     expect(imagemIds).toEqual([fixture.imagemOdId, fixture.imagemOeId].sort());
+
+    expect(notificarSpy).toHaveBeenCalledTimes(1);
+    expect(notificarSpy).toHaveBeenCalledWith({
+      usuarioId: expect.any(String),
+      tipo: 'avaliacao_ia_atualizada',
+      titulo: 'Avaliação de IA concluída',
+      mensagem: expect.stringContaining(fixture.examId),
+      chaveDedupe: `avaliacao_ia:${fixture.examId}`,
+    });
   });
 
   it('returns 404 when exam does not exist', async () => {
     const missingExamId = randomUUID();
+
     const res = await app.inject({
       method: 'POST',
       url: `/api/exams/${missingExamId}/webhook`,
@@ -148,6 +178,7 @@ describe('POST /api/exams/:examId/webhook (integration)', () => {
     });
 
     expect(res.statusCode).toBe(404);
+    expect(notificarSpy).not.toHaveBeenCalled();
   });
 
   it('returns 409 when webhook is called twice for the same exam', async () => {
@@ -167,6 +198,8 @@ describe('POST /api/exams/:examId/webhook (integration)', () => {
       payload: body,
     });
     expect(second.statusCode).toBe(409);
+
+    expect(notificarSpy).toHaveBeenCalledTimes(1);
   });
 
   it('returns 400 when total_images is missing', async () => {
@@ -181,6 +214,7 @@ describe('POST /api/exams/:examId/webhook (integration)', () => {
     });
 
     expect(res.statusCode).toBe(400);
+    expect(notificarSpy).not.toHaveBeenCalled();
   });
 
   it('returns 400 when exam_id of body diverges from path', async () => {
@@ -194,6 +228,7 @@ describe('POST /api/exams/:examId/webhook (integration)', () => {
     });
 
     expect(res.statusCode).toBe(400);
+    expect(notificarSpy).not.toHaveBeenCalled();
   });
 
   it('returns 400 when examId in path is not a valid UUID', async () => {
@@ -208,6 +243,7 @@ describe('POST /api/exams/:examId/webhook (integration)', () => {
     });
 
     expect(res.statusCode).toBe(400);
+    expect(notificarSpy).not.toHaveBeenCalled();
   });
 
   it('returns 400 when filename does not match any exam image caminhoImg', async () => {
@@ -222,5 +258,6 @@ describe('POST /api/exams/:examId/webhook (integration)', () => {
     });
 
     expect(res.statusCode).toBe(400);
+    expect(notificarSpy).not.toHaveBeenCalled();
   });
 });
