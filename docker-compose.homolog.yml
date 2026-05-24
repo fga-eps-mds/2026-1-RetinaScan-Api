@@ -46,7 +46,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - retina-scan-prod-net
+      - retina-scan-network
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "redispw", "ping"]
       interval: 10s
