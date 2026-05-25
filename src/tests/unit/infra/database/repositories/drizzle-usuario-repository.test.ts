@@ -193,6 +193,19 @@ describe('DrizzleUsuariosRepository', () => {
   });
 
   describe('update', () => {
+    it('deve retornar usuário atual quando update não recebe campos', async () => {
+      const currentUser = { id: '1', nomeCompleto: 'Nome Atual' } as Awaited<
+        ReturnType<DrizzleUsuariosRepository['findBy']>
+      >;
+      const findBySpy = vi.spyOn(repository, 'findBy').mockResolvedValueOnce(currentUser);
+
+      const result = await repository.update('1', {});
+
+      expect(mockUpdate).not.toHaveBeenCalled();
+      expect(findBySpy).toHaveBeenCalledWith({ id: '1' });
+      expect(result).toEqual(currentUser);
+    });
+
     it('deve atualizar o usuário e retornar os dados atualizados', async () => {
       const mockUser = { id: '1', nomeCompleto: 'Novo Nome' };
 

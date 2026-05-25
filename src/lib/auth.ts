@@ -76,6 +76,12 @@ export const auth = betterAuth({
         databaseName: 'imagem',
         returned: true,
       },
+      criadoPor: {
+        type: 'string',
+        databaseName: 'criado_por',
+        required: false,
+        returned: true,
+      },
     },
   },
 

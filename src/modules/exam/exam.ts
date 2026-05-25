@@ -10,6 +10,7 @@ export const ExameStatus = {
   CRIADO: 'CRIADO',
   CONCLUIDO: 'CONCLUIDO',
   EM_PROCESSAMENTO: 'EM_PROCESSAMENTO',
+  ERRO_PROCESSAMENTO: 'ERRO_PROCESSAMENTO',
 } as const;
 
 export type ExameStatus = keyof typeof ExameStatus;
@@ -34,4 +35,43 @@ export type Exame = {
   olho?: OlhoExame | null;
   comorbidades?: string | null;
   descricao?: string | null;
+};
+
+export type Comorbidade = {
+  idExame: string;
+  diabetes: boolean;
+  diabetesAnos?: number | null;
+  diabetesUsoInsulina: boolean;
+  diabetesControlado: boolean;
+  hipertensao: boolean;
+  hipertensaoControlada: boolean;
+  altaMiopia: boolean;
+  glaucoma: boolean;
+  usoHidroxicloroquina: boolean;
+  uveite: boolean;
+  catarata: boolean;
+  outrasComorbidades: boolean;
+  outrasComorbidadesDescricao?: string | null;
+  qualidadeTecnicaDificuldade: boolean;
+};
+
+export type CreateWithComorbidityInput = {
+  exam: Exame;
+  comorbidades: {
+    idExame: string;
+    diabetes: boolean;
+    diabetesAnos?: number;
+    diabetesUsoInsulina: boolean;
+    diabetesControlado: boolean;
+    hipertensao: boolean;
+    hipertensaoControlada: boolean;
+    altaMiopia: boolean;
+    glaucoma: boolean;
+    usoHidroxicloroquina: boolean;
+    uveite: boolean;
+    catarata: boolean;
+    outrasComorbidades: boolean;
+    outrasComorbidadesDescricao?: string;
+    qualidadeTecnicaDificuldade: boolean;
+  };
 };

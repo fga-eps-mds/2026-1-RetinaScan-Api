@@ -35,6 +35,17 @@ const envSchema = z.object({
     .default('http://localhost:3000'),
   BETTER_AUTH_SECRET: z.string().min(1, 'BETTER_AUTH_SECRET is required'),
   CRYPTOGRAPHY_SECRET: z.string().min(1, 'CRYPTOGRAPHY_SECRET is required'),
+  REDIS_URL: z.string().min(1, 'REDIS_URL is required'),
+  AI_SERVICE_URL: z
+    .string()
+    .url('AI_SERVICE_URL must be a valid URL')
+    .min(1, 'AI_SERVICE_URL is required'),
+  SMTP_HOST: z.string().min(1, 'SMTP_HOST is required'),
+  SMTP_PORT: z.coerce.number().default(587),
+  SMTP_USER: z.string().min(1, 'SMTP_USER is required'),
+  SMTP_PASSWORD: z.string().min(1, 'SMTP_PASSWORD is required'),
+  SMTP_FROM: z.string().min(1, 'SMTP_FROM is required'),
+  SMTP_REPLY_TO: z.string().min(1, 'SMTP_REPLY_TO is required'),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

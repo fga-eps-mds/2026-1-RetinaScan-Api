@@ -20,13 +20,16 @@ class FakeUsuariosRepository implements UsuariosRepository {
 
 class FakeExamesRepository implements ExamesRepository {
   create = vi.fn();
+  createWithComorbidity = vi.fn();
   findOne = vi.fn();
   findMany = vi.fn();
   update = vi.fn();
 }
 
 class FakeCryptographyService implements CryptographyService {
-  encrypt = vi.fn(({ text }: { text: string }) => ({ encryptedText: `enc(${text})` }));
+  encrypt = vi.fn(({ text }: { text: string }) => ({
+    encryptedText: `enc(${text})`,
+  }));
   decrypt = vi.fn();
 }
 
@@ -48,11 +51,28 @@ describe('CreateExamUseCase', () => {
   it('should create an exam encrypting sensitive data without masking the name or cpf', async () => {
     const usuario = UsuarioBuilder.anUser().getData();
     const exame = ExameBuilder.anExame().withIdUsuario(usuario.id).getData();
-    const comorbidades = faker.lorem.words(3);
+    const outrasComorbidadesDescricao = faker.lorem.words(3);
     const descricao = faker.lorem.sentence();
 
+    const comorbidades = {
+      diabetes: true,
+      diabetesAnos: 10,
+      diabetesUsoInsulina: true,
+      diabetesControlado: false,
+      hipertensao: true,
+      hipertensaoControlada: true,
+      altaMiopia: false,
+      glaucoma: true,
+      usoHidroxicloroquina: false,
+      uveite: false,
+      catarata: true,
+      outrasComorbidades: true,
+      outrasComorbidadesDescricao,
+      qualidadeTecnicaDificuldade: false,
+    };
+
     userRepository.findBy.mockResolvedValue(usuario);
-    examRepository.create.mockImplementation(async (input) => input);
+    examRepository.createWithComorbidity.mockImplementation(async ({ exam }) => exam);
 
     const result = await usecase.execute({
       idUsuario: usuario.id,
@@ -66,23 +86,47 @@ describe('CreateExamUseCase', () => {
     });
 
     expect(userRepository.findBy).toHaveBeenCalledWith({ id: usuario.id });
-    expect(cryptographyService.encrypt).toHaveBeenCalledWith({ text: exame.dtNascimento });
-    expect(cryptographyService.encrypt).toHaveBeenCalledWith({ text: comorbidades });
-    expect(cryptographyService.encrypt).toHaveBeenCalledWith({ text: descricao });
+    expect(cryptographyService.encrypt).toHaveBeenCalledWith({
+      text: exame.dtNascimento,
+    });
+    expect(cryptographyService.encrypt).toHaveBeenCalledWith({
+      text: descricao,
+    });
+    expect(cryptographyService.encrypt).toHaveBeenCalledWith({
+      text: outrasComorbidadesDescricao,
+    });
 
-    expect(examRepository.create).toHaveBeenCalledWith(
+    expect(examRepository.createWithComorbidity).toHaveBeenCalledWith(
       expect.objectContaining({
-        idUsuario: usuario.id,
-        nomeCompleto: exame.nomeCompleto,
-        cpf: exame.cpf,
-        sexo: exame.sexo,
-        dtNascimento: `enc(${exame.dtNascimento})`,
-        dtHora: exame.dtHora,
-        status: ExameStatus.CRIADO,
-        comorbidades: `enc(${comorbidades})`,
-        descricao: `enc(${descricao})`,
+        exam: expect.objectContaining({
+          idUsuario: usuario.id,
+          nomeCompleto: exame.nomeCompleto,
+          cpf: exame.cpf,
+          sexo: exame.sexo,
+          dtNascimento: `enc(${exame.dtNascimento})`,
+          dtHora: exame.dtHora,
+          status: ExameStatus.CRIADO,
+          descricao: `enc(${descricao})`,
+        }),
+        comorbidades: expect.objectContaining({
+          diabetes: true,
+          diabetesAnos: 10,
+          diabetesUsoInsulina: true,
+          diabetesControlado: false,
+          hipertensao: true,
+          hipertensaoControlada: true,
+          altaMiopia: false,
+          glaucoma: true,
+          usoHidroxicloroquina: false,
+          uveite: false,
+          catarata: true,
+          outrasComorbidades: true,
+          outrasComorbidadesDescricao: `enc(${outrasComorbidadesDescricao})`,
+          qualidadeTecnicaDificuldade: false,
+        }),
       }),
     );
+
     expect(result.nomeCompleto).toBe(exame.nomeCompleto);
     expect(result.cpf).toBe(exame.cpf);
   });
@@ -92,7 +136,7 @@ describe('CreateExamUseCase', () => {
     const exame = ExameBuilder.anExame().withIdUsuario(usuario.id).getData();
 
     userRepository.findBy.mockResolvedValue(usuario);
-    examRepository.create.mockImplementation(async (input) => input);
+    examRepository.createWithComorbidity.mockImplementation(async ({ exam }) => exam);
 
     await usecase.execute({
       idUsuario: usuario.id,
@@ -101,14 +145,37 @@ describe('CreateExamUseCase', () => {
       sexo: exame.sexo,
       dtNascimento: exame.dtNascimento,
       dtHora: exame.dtHora,
+      comorbidades: {
+        diabetes: false,
+        diabetesUsoInsulina: false,
+        diabetesControlado: false,
+        hipertensao: false,
+        hipertensaoControlada: false,
+        altaMiopia: false,
+        glaucoma: false,
+        usoHidroxicloroquina: false,
+        uveite: false,
+        catarata: false,
+        outrasComorbidades: false,
+        qualidadeTecnicaDificuldade: false,
+      },
     });
 
-    expect(cryptographyService.encrypt).not.toHaveBeenCalledWith({ text: undefined });
-    expect(examRepository.create).toHaveBeenCalledWith(
+    expect(cryptographyService.encrypt).toHaveBeenCalledTimes(1);
+    expect(cryptographyService.encrypt).toHaveBeenCalledWith({
+      text: exame.dtNascimento,
+    });
+
+    expect(examRepository.createWithComorbidity).toHaveBeenCalledWith(
       expect.objectContaining({
-        comorbidades: undefined,
-        descricao: undefined,
-        status: ExameStatus.CRIADO,
+        exam: expect.objectContaining({
+          descricao: undefined,
+          status: ExameStatus.CRIADO,
+        }),
+        comorbidades: expect.objectContaining({
+          outrasComorbidades: false,
+          outrasComorbidadesDescricao: undefined,
+        }),
       }),
     );
   });
@@ -118,7 +185,7 @@ describe('CreateExamUseCase', () => {
     const exame = ExameBuilder.anExame().withIdUsuario(usuario.id).getData();
 
     userRepository.findBy.mockResolvedValue(usuario);
-    examRepository.create.mockImplementation(async (input) => input);
+    examRepository.createWithComorbidity.mockImplementation(async ({ exam }) => exam);
 
     await usecase.execute({
       idUsuario: usuario.id,
@@ -127,11 +194,27 @@ describe('CreateExamUseCase', () => {
       sexo: exame.sexo,
       dtNascimento: exame.dtNascimento,
       dtHora: exame.dtHora,
+      comorbidades: {
+        diabetes: false,
+        diabetesUsoInsulina: false,
+        diabetesControlado: false,
+        hipertensao: false,
+        hipertensaoControlada: false,
+        altaMiopia: false,
+        glaucoma: false,
+        usoHidroxicloroquina: false,
+        uveite: false,
+        catarata: false,
+        outrasComorbidades: false,
+        qualidadeTecnicaDificuldade: false,
+      },
     });
 
-    const [arg] = examRepository.create.mock.calls[0];
-    expect(arg.id).toEqual(expect.any(String));
-    expect(arg.id).toHaveLength(36);
+    const [arg] = examRepository.createWithComorbidity.mock.calls[0];
+
+    expect(arg.exam.id).toEqual(expect.any(String));
+    expect(arg.exam.id).toHaveLength(36);
+    expect(arg.comorbidades.idExame).toBe(arg.exam.id);
   });
 
   it('should throw NotFoundError when user does not exist', async () => {
@@ -147,10 +230,24 @@ describe('CreateExamUseCase', () => {
         sexo: exame.sexo,
         dtNascimento: exame.dtNascimento,
         dtHora: exame.dtHora,
+        comorbidades: {
+          diabetes: false,
+          diabetesUsoInsulina: false,
+          diabetesControlado: false,
+          hipertensao: false,
+          hipertensaoControlada: false,
+          altaMiopia: false,
+          glaucoma: false,
+          usoHidroxicloroquina: false,
+          uveite: false,
+          catarata: false,
+          outrasComorbidades: false,
+          qualidadeTecnicaDificuldade: false,
+        },
       }),
     ).rejects.toBeInstanceOf(NotFoundError);
 
-    expect(examRepository.create).not.toHaveBeenCalled();
+    expect(examRepository.createWithComorbidity).not.toHaveBeenCalled();
     expect(cryptographyService.encrypt).not.toHaveBeenCalled();
   });
 });
