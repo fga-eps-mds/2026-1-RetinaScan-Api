@@ -4,7 +4,14 @@ import { eq } from 'drizzle-orm';
 import { db } from '@/infra/database/drizzle/connection';
 import { exam, usuario } from '@/infra/database/drizzle/schema';
 import { ExameStatus, type OlhoExame, Sexo, type Exame } from '@/modules/exam/exam';
+import { NodeCryptoCryptographyService } from '@/infra/shared/node-cryptography-service';
 import { UsuarioBuilder } from './usuario-builder';
+
+const cryptographyService = new NodeCryptoCryptographyService();
+
+function encrypt(text: string): string {
+  return cryptographyService.encrypt({ text }).encryptedText;
+}
 
 export class ExameBuilder {
   private readonly data: Exame;
@@ -90,12 +97,12 @@ export class ExameBuilder {
       nomeCompleto: this.data.nomeCompleto,
       cpf: this.data.cpf,
       sexo: this.data.sexo,
-      dtNascimento: this.data.dtNascimento,
+      dtNascimento: encrypt(this.data.dtNascimento),
       dtHora: this.data.dtHora,
       status: this.data.status,
       olho: this.data.olho ?? null,
-      comorbidades: this.data.comorbidades ?? null,
-      descricao: this.data.descricao ?? null,
+      comorbidades: this.data.comorbidades ? encrypt(this.data.comorbidades) : null,
+      descricao: this.data.descricao ? encrypt(this.data.descricao) : null,
     });
 
     return this.data;

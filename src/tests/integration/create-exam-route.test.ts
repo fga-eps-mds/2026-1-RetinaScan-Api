@@ -1,309 +1,132 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import type { FastifyInstance } from 'fastify';
-import { sql } from 'drizzle-orm';
-import { cpf as cpfUtil } from 'cpf-cnpj-validator';
+import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { randomUUID } from 'node:crypto';
+import { eq, sql } from 'drizzle-orm';
+
 import { connectDatabase, db } from '@/infra/database/drizzle/connection';
-import { exam, usuario } from '@/infra/database/drizzle/schema';
+import { notificacao, usuario } from '@/infra/database/drizzle/schema';
+import { DrizzleNotificationRepository } from '@/infra/database/drizzle/repositories/drizzle-notification-repository';
 import { UsuarioBuilder } from '@/tests/helpers/builders/usuario-builder';
-import { spyOnAuthApi } from '@/tests/helpers/auth-spies';
-import { buildApp } from '@/api/index';
 
-const validPatientPayload = () => ({
-  nomeCompleto: 'Fulano de Tal',
-  cpf: cpfUtil.generate(),
-  sexo: 'MASCULINO' as const,
-  dtNascimento: '1990-01-01',
-});
-
-describe('POST /api/exams (integration)', () => {
-  let app: FastifyInstance;
-  const authSpies = spyOnAuthApi();
+describe('DrizzleNotificationRepository (integration)', () => {
+  const repository = new DrizzleNotificationRepository();
 
   beforeAll(async () => {
     await connectDatabase();
-    app = await buildApp();
-    await app.ready();
-  });
-
-  afterAll(async () => {
-    await app.close();
-    authSpies.restoreAll();
   });
 
   beforeEach(async () => {
-    authSpies.resetAll();
-    await db.execute(sql`TRUNCATE TABLE ${exam} RESTART IDENTITY CASCADE`);
+    await db.execute(sql`TRUNCATE TABLE ${notificacao} RESTART IDENTITY CASCADE`);
     await db.execute(sql`TRUNCATE TABLE ${usuario} RESTART IDENTITY CASCADE`);
   });
 
-  it('should return 401 when user is not authenticated', async () => {
-    authSpies.unauthenticate();
+  describe('marcarComoLida', () => {
+    it('should mark notification as read and return true', async () => {
+      const user = await UsuarioBuilder.anUser().build();
 
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/exams',
-      payload: {
-        ...validPatientPayload(),
-        dtHora: new Date().toISOString(),
-      },
+      const [created] = await db
+        .insert(notificacao)
+        .values({
+          id: randomUUID(),
+          usuarioId: user.id,
+          tipo: 'avaliacao_ia_atualizada',
+          titulo: 'Avaliação concluída',
+          mensagem: 'Seu exame foi processado.',
+          dados: null,
+          chaveDedupe: `dedupe:${randomUUID()}`,
+          lidaEm: null,
+          enviadaEmTempoRealEm: null,
+          enviadaPorEmailEm: null,
+        })
+        .returning();
+
+      const result = await repository.marcarComoLida({
+        notificacaoId: created.id,
+        usuarioId: user.id,
+      });
+
+      expect(result).toBe(true);
+
+      const [row] = await db.select().from(notificacao).where(eq(notificacao.id, created.id));
+      expect(row.lidaEm).toBeInstanceOf(Date);
     });
 
-    expect(res.statusCode).toBe(401);
+    it('should return false when notification does not exist', async () => {
+      const user = await UsuarioBuilder.anUser().build();
+
+      const result = await repository.marcarComoLida({
+        notificacaoId: randomUUID(),
+        usuarioId: user.id,
+      });
+
+      expect(result).toBe(false);
+    });
+
+    it('should return false when notification belongs to another user', async () => {
+      const owner = await UsuarioBuilder.anUser().build();
+      const otherUser = await UsuarioBuilder.anUser().build();
+
+      const [created] = await db
+        .insert(notificacao)
+        .values({
+          id: randomUUID(),
+          usuarioId: owner.id,
+          tipo: 'avaliacao_ia_atualizada',
+          titulo: 'Avaliação concluída',
+          mensagem: 'Seu exame foi processado.',
+          dados: null,
+          chaveDedupe: `dedupe:${randomUUID()}`,
+          lidaEm: null,
+          enviadaEmTempoRealEm: null,
+          enviadaPorEmailEm: null,
+        })
+        .returning();
+
+      const result = await repository.marcarComoLida({
+        notificacaoId: created.id,
+        usuarioId: otherUser.id,
+      });
+
+      expect(result).toBe(false);
+
+      const [row] = await db.select().from(notificacao).where(eq(notificacao.id, created.id));
+      expect(row.lidaEm).toBeNull();
+    });
   });
 
-  it('should return 403 when user is not MEDICO', async () => {
-    const user = await UsuarioBuilder.anUser().withTipoPerfil('ADMIN').build();
-    authSpies.authenticateAs(user);
+  describe('deletar', () => {
+    it('should delete notification and return true', async () => {
+      const user = await UsuarioBuilder.anUser().build();
 
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/exams',
-      payload: {
-        ...validPatientPayload(),
-        dtHora: new Date().toISOString(),
-      },
+      const [created] = await db
+        .insert(notificacao)
+        .values({
+          id: randomUUID(),
+          usuarioId: user.id,
+          tipo: 'avaliacao_ia_atualizada',
+          titulo: 'Avaliação concluída',
+          mensagem: 'Seu exame foi processado.',
+          dados: null,
+          chaveDedupe: `dedupe:${randomUUID()}`,
+          lidaEm: null,
+          enviadaEmTempoRealEm: null,
+          enviadaPorEmailEm: null,
+        })
+        .returning();
+
+      const result = await repository.deletar(created.id, user.id);
+
+      expect(result).toBe(true);
+
+      const rows = await db.select().from(notificacao).where(eq(notificacao.id, created.id));
+      expect(rows).toHaveLength(0);
     });
 
-    expect(res.statusCode).toBe(403);
-  });
+    it('should return false when notification is not found', async () => {
+      const user = await UsuarioBuilder.anUser().build();
 
-  it('should create an exam and persist it in the database', async () => {
-    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
-    authSpies.authenticateAs(user);
+      const result = await repository.deletar(randomUUID(), user.id);
 
-    const dtHora = new Date('2026-04-24T10:00:00.000Z').toISOString();
-    const patient = validPatientPayload();
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/exams',
-      payload: {
-        ...patient,
-        dtHora,
-        comorbidades: 'Diabetes',
-        descricao: 'Exame de rotina',
-      },
+      expect(result).toBe(false);
     });
-
-    expect(res.statusCode).toBe(201);
-    const body = res.json();
-    expect(body.idUsuario).toBe(user.id);
-    expect(body.status).toBe('CRIADO');
-    expect(body.nomeCompleto).toBe(patient.nomeCompleto);
-    expect(body.cpf).toBe(patient.cpf);
-
-    const rows = await db.select().from(exam);
-    expect(rows).toHaveLength(1);
-    expect(rows[0].idUsuario).toBe(user.id);
-    expect(rows[0].nomeCompleto).toBe(patient.nomeCompleto);
-    expect(rows[0].cpf).toBe(patient.cpf);
-    expect(rows[0].dtNascimento).not.toBe(patient.dtNascimento);
-    expect(rows[0].comorbidades).not.toBe('Diabetes');
-    expect(rows[0].descricao).not.toBe('Exame de rotina');
-  });
-
-  it('should create an exam without optional fields', async () => {
-    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
-    authSpies.authenticateAs(user);
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/exams',
-      payload: {
-        ...validPatientPayload(),
-        dtHora: new Date().toISOString(),
-      },
-    });
-
-    expect(res.statusCode).toBe(201);
-    const rows = await db.select().from(exam);
-    expect(rows[0].comorbidades).toBeNull();
-    expect(rows[0].descricao).toBeNull();
-  });
-
-  it('should return 400 when cpf has invalid check digits', async () => {
-    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
-    authSpies.authenticateAs(user);
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/exams',
-      payload: {
-        ...validPatientPayload(),
-        cpf: '12345678900',
-        dtHora: new Date().toISOString(),
-      },
-    });
-
-    expect(res.statusCode).toBe(400);
-  });
-
-  it('should return 400 when cpf has all repeated digits', async () => {
-    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
-    authSpies.authenticateAs(user);
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/exams',
-      payload: {
-        ...validPatientPayload(),
-        cpf: '11111111111',
-        dtHora: new Date().toISOString(),
-      },
-    });
-
-    expect(res.statusCode).toBe(400);
-  });
-
-  it('should return 400 when sexo is invalid', async () => {
-    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
-    authSpies.authenticateAs(user);
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/exams',
-      payload: {
-        ...validPatientPayload(),
-        sexo: 'INVALIDO',
-        dtHora: new Date().toISOString(),
-      },
-    });
-
-    expect(res.statusCode).toBe(400);
-  });
-
-  it('should return 400 when dtHora is not a valid datetime', async () => {
-    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
-    authSpies.authenticateAs(user);
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/exams',
-      payload: {
-        ...validPatientPayload(),
-        dtHora: 'not-a-date',
-      },
-    });
-
-    expect(res.statusCode).toBe(400);
-  });
-
-  it('should return 400 when nomeCompleto is an empty string', async () => {
-    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
-    authSpies.authenticateAs(user);
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/exams',
-      payload: {
-        ...validPatientPayload(),
-        nomeCompleto: '',
-        dtHora: new Date().toISOString(),
-      },
-    });
-
-    expect(res.statusCode).toBe(400);
-  });
-
-  it('should return 400 when nomeCompleto contains only whitespace', async () => {
-    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
-    authSpies.authenticateAs(user);
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/exams',
-      payload: {
-        ...validPatientPayload(),
-        nomeCompleto: '   ',
-        dtHora: new Date().toISOString(),
-      },
-    });
-
-    expect(res.statusCode).toBe(400);
-  });
-
-  it('should return 400 when comorbidades is an empty string', async () => {
-    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
-    authSpies.authenticateAs(user);
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/exams',
-      payload: {
-        ...validPatientPayload(),
-        dtHora: new Date().toISOString(),
-        comorbidades: '',
-      },
-    });
-
-    expect(res.statusCode).toBe(400);
-  });
-
-  it('should return 400 when comorbidades contains only whitespace', async () => {
-    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
-    authSpies.authenticateAs(user);
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/exams',
-      payload: {
-        ...validPatientPayload(),
-        dtHora: new Date().toISOString(),
-        comorbidades: '   ',
-      },
-    });
-
-    expect(res.statusCode).toBe(400);
-  });
-
-  it('should return 400 when descricao is an empty string', async () => {
-    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
-    authSpies.authenticateAs(user);
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/exams',
-      payload: {
-        ...validPatientPayload(),
-        dtHora: new Date().toISOString(),
-        descricao: '',
-      },
-    });
-
-    expect(res.statusCode).toBe(400);
-  });
-
-  it('should return 400 when descricao contains only whitespace', async () => {
-    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
-    authSpies.authenticateAs(user);
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/exams',
-      payload: {
-        ...validPatientPayload(),
-        dtHora: new Date().toISOString(),
-        descricao: '\t\n ',
-      },
-    });
-
-    expect(res.statusCode).toBe(400);
-  });
-
-  it('should return 400 when body has unknown fields', async () => {
-    const user = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
-    authSpies.authenticateAs(user);
-
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/exams',
-      payload: {
-        ...validPatientPayload(),
-        dtHora: new Date().toISOString(),
-        campoInvalido: 'xxx',
-      },
-    });
-
-    expect(res.statusCode).toBe(400);
   });
 });

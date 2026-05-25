@@ -1,5 +1,5 @@
 {
-  "id": "371cf512-feb7-43b1-acd9-cbd2d66afd7d",
+  "id": "01575663-2e62-4738-a2fe-86cc9fed1a5d",
   "prevId": "d4fca972-0eab-423b-a3e2-386ee5eddcd5",
   "version": "7",
   "dialect": "postgresql",
@@ -113,108 +113,6 @@
           "tableTo": "usuario",
           "columnsFrom": [
             "user_id"
-          ],
-          "columnsTo": [
-            "id_usuario"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.password_reset_token": {
-      "name": "password_reset_token",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "id_usuario": {
-          "name": "id_usuario",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "token_hash": {
-          "name": "token_hash",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "expires_at": {
-          "name": "expires_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "used_at": {
-          "name": "used_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "password_reset_token_usuario_idx": {
-          "name": "password_reset_token_usuario_idx",
-          "columns": [
-            {
-              "expression": "id_usuario",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "password_reset_token_hash_unique": {
-          "name": "password_reset_token_hash_unique",
-          "columns": [
-            {
-              "expression": "token_hash",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "password_reset_token_id_usuario_usuario_id_usuario_fk": {
-          "name": "password_reset_token_id_usuario_usuario_id_usuario_fk",
-          "tableFrom": "password_reset_token",
-          "tableTo": "usuario",
-          "columnsFrom": [
-            "id_usuario"
           ],
           "columnsTo": [
             "id_usuario"
@@ -903,6 +801,91 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.resultado_ia": {
+      "name": "resultado_ia",
+      "schema": "",
+      "columns": {
+        "id_resultado_ia": {
+          "name": "id_resultado_ia",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "id_imagem": {
+          "name": "id_imagem",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "predicted_class": {
+          "name": "predicted_class",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "predicted_label": {
+          "name": "predicted_label",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "confidence": {
+          "name": "confidence",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "probabilities": {
+          "name": "probabilities",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "resultado_ia_id_imagem_imagem_id_imagem_fk": {
+          "name": "resultado_ia_id_imagem_imagem_id_imagem_fk",
+          "tableFrom": "resultado_ia",
+          "tableTo": "imagem",
+          "columnsFrom": [
+            "id_imagem"
+          ],
+          "columnsTo": [
+            "id_imagem"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "resultado_ia_id_imagem_unique": {
+          "name": "resultado_ia_id_imagem_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id_imagem"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false

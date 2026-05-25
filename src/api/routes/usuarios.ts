@@ -12,6 +12,7 @@ import { listarSolicitacoesCpfCrmAdminRoute } from './users/listar-solicitacoes-
 import { listarMinhasSolicitacoesCpfCrmRoute } from './users/listar-minhas-solicitacoes-cpf-crm';
 import { forgotPasswordRoute } from './users/forgot-password-route';
 import { resetPasswordRoute } from './users/reset-password-route';
+import { searchMedicosByAdmin } from './users/seach-users-created-by-admin';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
@@ -82,8 +83,15 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
     },
     listarMinhasSolicitacoesCpfCrmRoute,
   );
-
   app.post('/usuarios/forgot-password', forgotPasswordRoute);
 
   app.post('/usuarios/reset-password', resetPasswordRoute);
+
+  app.get(
+    '/medicos/search',
+    {
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
+    },
+    searchMedicosByAdmin,
+  );
 }

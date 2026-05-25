@@ -21,6 +21,7 @@ class FakeStorageService implements StorageService {
   deleteByUrl = vi.fn();
   deleteByKey = vi.fn();
   uploadPrivate = vi.fn();
+  getPresignedUrl = vi.fn();
 }
 
 const existingUser: Usuario = UsuarioBuilder.anUser().getData();
