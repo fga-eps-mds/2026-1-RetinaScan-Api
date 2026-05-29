@@ -12,7 +12,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async (data, request) => {
-      // Import the mock service inline to avoid circular dependencies issues during auth init if any
+      //Serviço Mock para envio de email de recuperação de senha temporariamente até integração com envio de notificações
       const { MockMessageService } = await import('@/shared/services/message-service.js');
       const messageService = new MockMessageService();
       await messageService.sendPasswordResetLink(data.user.email, data.url);
