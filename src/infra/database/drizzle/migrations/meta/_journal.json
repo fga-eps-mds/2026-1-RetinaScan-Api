@@ -71,13 +71,6 @@
       "when": 1779484934703,
       "tag": "0009_add_notifications_table",
       "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "7",
-      "when": 1779548355483,
-      "tag": "0010_add_password_reset_token",
-      "breakpoints": true
     }
   ]
 }

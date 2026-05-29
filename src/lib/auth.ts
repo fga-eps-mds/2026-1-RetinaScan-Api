@@ -11,6 +11,12 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async (data, request) => {
+      // Import the mock service inline to avoid circular dependencies issues during auth init if any
+      const { MockMessageService } = await import('@/shared/services/message-service.js');
+      const messageService = new MockMessageService();
+      await messageService.sendPasswordResetLink(data.user.email, data.url);
+    },
   },
 
   database: drizzleAdapter(db, {

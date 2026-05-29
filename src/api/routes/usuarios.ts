@@ -10,8 +10,6 @@ import { aprovarSolicitacaoCpfCrmRoute } from './users/aprovar-solicitacao-cpf-c
 import { rejeitarSolicitacaoCpfCrmRoute } from './users/rejeitar-solicitacao-cpf-crm';
 import { listarSolicitacoesCpfCrmAdminRoute } from './users/listar-solicitacoes-cpf-crm-admin';
 import { listarMinhasSolicitacoesCpfCrmRoute } from './users/listar-minhas-solicitacoes-cpf-crm';
-import { forgotPasswordRoute } from './users/forgot-password-route';
-import { resetPasswordRoute } from './users/reset-password-route';
 import { searchMedicosByAdmin } from './users/seach-users-created-by-admin';
 
 // eslint-disable-next-line @typescript-eslint/require-await
@@ -83,10 +81,6 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
     },
     listarMinhasSolicitacoesCpfCrmRoute,
   );
-  app.post('/usuarios/forgot-password', forgotPasswordRoute);
-
-  app.post('/usuarios/reset-password', resetPasswordRoute);
-
   app.get(
     '/medicos/search',
     {
