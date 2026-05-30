@@ -58,7 +58,7 @@ import { ListMyNotificationsUsecase } from '@/modules/notification/use-case/list
 import { DeleteNotificationUseCase } from '@/modules/notification/use-case/delete-notification-use-case';
 import { MarkNotificationAsReadUseCase } from '@/modules/notification/use-case/mark-notification-as-read-use-case';
 import { NodemailerEmailProvider } from '../mail/providers/nodemailer-email-provider';
-import type { IAuthMessageService } from '@/shared/services/message-service';
+import type { IMessageService } from '@/shared/services/message-service';
 import { AuthEmailMessageService } from '@/shared/services/message-service';
 
 export interface AppContainer {
@@ -94,7 +94,7 @@ export interface AppContainer {
   deleteNotificationUseCase: DeleteNotificationUseCase;
   markNotificationAsReadUseCase: MarkNotificationAsReadUseCase;
   nodeMailerEmailProvider: NodemailerEmailProvider;
-  authMessageService: IAuthMessageService;
+  authMessageService: IMessageService;
 }
 
 export const container: AwilixContainer<AppContainer> = createContainer<AppContainer>({

@@ -2,11 +2,11 @@ import logger from '@/infra/logger';
 import type { EmailSender } from '@/modules/mail/domain/email-sender';
 import { notificationEmailTemplate } from '@/infra/mail/templates/notification-email-template';
 
-export interface IAuthMessageService {
+export interface IMessageService {
   sendPasswordResetLink(destination: string, link: string): Promise<void>;
 }
 
-export class AuthEmailMessageService implements IAuthMessageService {
+export class AuthEmailMessageService implements IMessageService {
   constructor(private readonly emailProvider: EmailSender) {}
 
   async sendPasswordResetLink(destination: string, link: string): Promise<void> {
