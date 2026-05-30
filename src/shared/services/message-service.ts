@@ -1,4 +1,3 @@
-import logger from '@/infra/logger';
 import type { EmailSender } from '@/modules/mail/domain/email-sender';
 import { notificationEmailTemplate } from '@/infra/mail/templates/notification-email-template';
 

@@ -12,7 +12,7 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
-    sendResetPassword: async (data, request) => {
+    sendResetPassword: async (data) => {
       const authMessageService = container.resolve('authMessageService');
       await authMessageService.sendPasswordResetLink(data.user.email, data.url);
     },
