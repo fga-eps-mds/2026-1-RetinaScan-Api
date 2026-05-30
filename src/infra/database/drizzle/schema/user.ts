@@ -8,6 +8,7 @@ import {
   index,
   date,
   uniqueIndex,
+  AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 
 export const tipoPerfilEnum = pgEnum('tipo_perfil', ['ADMIN', 'MEDICO']);
@@ -42,6 +43,10 @@ export const usuario = pgTable(
     emailVerified: boolean('email_verified').default(false).notNull(),
 
     image: text('image'),
+
+    criadoPor: text('criado_por').references((): AnyPgColumn => usuario.id, {
+      onDelete: 'set null',
+    }),
 
     createdAt: timestamp('created_at').defaultNow().notNull(),
 
