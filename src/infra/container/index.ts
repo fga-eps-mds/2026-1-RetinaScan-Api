@@ -58,6 +58,8 @@ import { ListMyNotificationsUsecase } from '@/modules/notification/use-case/list
 import { DeleteNotificationUseCase } from '@/modules/notification/use-case/delete-notification-use-case';
 import { MarkNotificationAsReadUseCase } from '@/modules/notification/use-case/mark-notification-as-read-use-case';
 import { NodemailerEmailProvider } from '../mail/providers/nodemailer-email-provider';
+import type { IAuthMessageService } from '@/shared/services/message-service';
+import { AuthEmailMessageService } from '@/shared/services/message-service';
 
 export interface AppContainer {
   app: FastifyInstance;
@@ -92,6 +94,7 @@ export interface AppContainer {
   deleteNotificationUseCase: DeleteNotificationUseCase;
   markNotificationAsReadUseCase: MarkNotificationAsReadUseCase;
   nodeMailerEmailProvider: NodemailerEmailProvider;
+  authMessageService: IAuthMessageService;
 }
 
 export const container: AwilixContainer<AppContainer> = createContainer<AppContainer>({
@@ -115,6 +118,11 @@ container.register({
   cryptographyService: asClass(NodeCryptoCryptographyService).singleton(),
   maskingService: asClass(DefaultMaskingService).singleton(),
   messageBroker: asClass(BullMQMessageBroker).singleton(),
+
+  authMessageService: asFunction(
+    ({ nodeMailerEmailProvider }: AppContainer) =>
+      new AuthEmailMessageService(nodeMailerEmailProvider),
+  ).singleton(),
 
   markNotificationAsReadUseCase: asFunction(
     ({ notificationRepository }: AppContainer) =>

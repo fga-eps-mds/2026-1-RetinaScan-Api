@@ -1,4 +1,5 @@
 import { relations } from 'drizzle-orm';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import {
   pgEnum,
   pgTable,
@@ -8,7 +9,6 @@ import {
   index,
   date,
   uniqueIndex,
-  AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 
 export const tipoPerfilEnum = pgEnum('tipo_perfil', ['ADMIN', 'MEDICO']);
@@ -208,4 +208,3 @@ export const accountRelations = relations(account, ({ one }) => ({
     references: [usuario.id],
   }),
 }));
-
