@@ -3,6 +3,7 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import * as schema from '../infra/database/drizzle/schema/index.js';
 import { env } from '../env.js';
+import { container } from '../infra/container/index.js';
 
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
@@ -12,10 +13,8 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     sendResetPassword: async (data, request) => {
-      //Serviço Mock para envio de email de recuperação de senha temporariamente até integração com envio de notificações
-      const { MockMessageService } = await import('@/shared/services/message-service.js');
-      const messageService = new MockMessageService();
-      await messageService.sendPasswordResetLink(data.user.email, data.url);
+      const authMessageService = container.resolve('authMessageService');
+      await authMessageService.sendPasswordResetLink(data.user.email, data.url);
     },
   },
 
