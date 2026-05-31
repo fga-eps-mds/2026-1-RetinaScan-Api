@@ -28,23 +28,5 @@ export async function updateUserImageRoute(request: FastifyRequest, reply: Fasti
     contentType: file.mimetype,
   });
 
-  // await auditLogService.register({
-  //   action: 'UPDATE_IMAGE',
-  //   category: 'USER_MANAGEMENT',
-  //   description: `Usuário ${request.user!.id} atualizou sua imagem de perfil`,
-  //   actorName: session?.user.name,
-  //   actorUserId: session?.user.id,
-  //   actorEmail: session?.user.email,
-  //   targetEntityType: 'USER',
-  //   targetEntityId: request.user!.id,
-  //   targetDisplay: request.user!.id,
-  //   ipAddress: session?.session.ipAddress,
-  //   userAgent: session?.session.userAgent,
-  //   requestId: request.id,
-  //   changes: {
-  //     imageUrl: url,
-  //   },
-  // });
-
   return reply.status(200).send({ url });
 }

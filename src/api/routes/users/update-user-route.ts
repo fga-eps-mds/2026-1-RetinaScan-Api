@@ -37,25 +37,5 @@ export async function updateUserRoute(request: FastifyRequest, reply: FastifyRep
     headers: fromNodeHeaders(request.headers),
   });
 
-  // await auditLogService.register({
-  //   action: 'UPDATE',
-  //   category: 'USER_MANAGEMENT',
-  //   description: `Usuário ${request.user!.id} atualizou seu perfil`,
-  //   actorName: session?.user.name,
-  //   actorUserId: session?.user.id,
-  //   actorEmail: session?.user.email,
-  //   targetEntityType: 'USER',
-  //   targetEntityId: request.user!.id,
-  //   targetDisplay: request.user!.id,
-  //   ipAddress: session?.session.ipAddress,
-  //   userAgent: session?.session.userAgent,
-  //   requestId: request.id,
-  //   changes: {
-  //     nomeCompleto: response.usuario.nomeCompleto,
-  //     email: response.usuario.email,
-  //     dtNascimento: response.usuario.dtNascimento,
-  //   },
-  // });
-
   return reply.status(200).send(response);
 }
