@@ -19,8 +19,9 @@ describe('AuthEmailMessageService', () => {
 
     const destination = 'test@example.com';
     const link = 'http://localhost/reset?token=123';
+    const userName = 'João';
 
-    await service.sendPasswordResetLink(destination, link);
+    await service.sendPasswordResetLink(destination, link, userName);
 
     expect(templateSpy).toHaveBeenCalledTimes(1);
     expect(templateSpy).toHaveBeenCalledWith(

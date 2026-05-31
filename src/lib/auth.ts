@@ -12,9 +12,10 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
+    revokeSessionsOnPasswordReset: true,
     sendResetPassword: async (data) => {
       const authMessageService = container.resolve('authMessageService');
-      await authMessageService.sendPasswordResetLink(data.user.email, data.url);
+      await authMessageService.sendPasswordResetLink(data.user.email, data.url, data.user.name);
     },
   },
 
