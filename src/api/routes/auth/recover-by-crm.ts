@@ -10,10 +10,7 @@ const recoverByCrmSchema = z.object({
   redirectTo: z.string().url('A URL de redirecionamento deve ser válida').optional(),
 });
 
-export async function recoverByCrmHandler(
-  request: FastifyRequest,
-  reply: FastifyReply,
-) {
+export async function recoverByCrmHandler(request: FastifyRequest, reply: FastifyReply) {
   const parseResult = recoverByCrmSchema.safeParse(request.body);
 
   if (!parseResult.success) {
@@ -35,7 +32,8 @@ export async function recoverByCrmHandler(
   await auth.api.requestPasswordReset({
     body: {
       email,
-      redirectTo: redirectTo || `${env.BETTER_AUTH_URL || `http://localhost:${env.PORT}`}/reset-password`,
+      redirectTo:
+        redirectTo || `${env.BETTER_AUTH_URL || `http://localhost:${env.PORT}`}/reset-password`,
     },
     headers,
   });
