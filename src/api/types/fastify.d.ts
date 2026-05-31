@@ -1,4 +1,4 @@
-import 'fastify';
+import type { FastifyRequest } from 'fastify';
 import type { TipoPerfil } from '@/modules/users/domain';
 import type { Server as SocketIOServer } from 'socket.io';
 
@@ -19,16 +19,10 @@ export interface AuditRouteConfig {
   enabled: boolean;
   action: string;
   category: string;
-  getDescription?: (request: import('fastify').FastifyRequest, payload?: unknown) => string;
-  getTarget?: (request: import('fastify').FastifyRequest, payload?: unknown) => AuditTarget;
-  getChanges?: (
-    request: import('fastify').FastifyRequest,
-    payload?: unknown,
-  ) => Record<string, unknown> | null;
-  getMetadata?: (
-    request: import('fastify').FastifyRequest,
-    payload?: unknown,
-  ) => Record<string, unknown> | null;
+  getDescription?: (request: FastifyRequest, payload?: unknown) => string;
+  getTarget?: (request: FastifyRequest, payload?: unknown) => AuditTarget;
+  getChanges?: (request: FastifyRequest, payload?: unknown) => Record<string, unknown> | null;
+  getMetadata?: (request: FastifyRequest, payload?: unknown) => Record<string, unknown> | null;
 }
 
 declare module 'fastify' {
