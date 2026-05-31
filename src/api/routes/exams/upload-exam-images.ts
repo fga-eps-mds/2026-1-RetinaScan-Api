@@ -75,23 +75,5 @@ export async function uploadExamImages(
     imagens,
   });
 
-  // await auditLogService.register({
-  //   action: 'UPLOAD_EXAM_IMAGES',
-  //   category: 'EXAM',
-  //   description: `Usuário ${request.user!.id} enviou imagens para o exame ${examId}`,
-  //   actorName: session?.user.name,
-  //   actorUserId: session?.user.id,
-  //   actorEmail: session?.user.email,
-  //   targetEntityType: 'EXAM',
-  //   targetEntityId: examId,
-  //   targetDisplay: examId,
-  //   ipAddress: session?.session.ipAddress,
-  //   userAgent: session?.session.userAgent,
-  //   requestId: request.id,
-  //   changes: {
-  //     imagens: response.imagens,
-  //   },
-  // });
-
   return reply.status(201).send(response);
 }
