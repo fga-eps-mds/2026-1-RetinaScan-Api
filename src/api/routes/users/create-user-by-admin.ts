@@ -1,4 +1,7 @@
 import { DrizzleUsuariosRepository } from '@/infra/database/drizzle/repositories';
+import { DrizzleAuditLogsRepository } from '@/infra/database/drizzle/repositories/drizzle-audit-logs-repository';
+import { auth } from '@/lib/auth';
+import { AuditLogService } from '@/modules/audit-log/services/audit-log-service';
 import { CreateUserByAdmin } from '@/modules/users/use-cases';
 import { better_auth_errors } from '@/shared/errors/better-auth-errors';
 import { ConflictError } from '@/shared/errors/conflict-error';
@@ -36,6 +39,8 @@ function getErrorCode(error: unknown): string | null {
 
 export async function createUserByAdmin(request: FastifyRequest, reply: FastifyReply) {
   const result = bodySchema.safeParse(request.body);
+  const session = await auth.api.getSession({ headers: request.headers });
+  const auditLogService = new AuditLogService(new DrizzleAuditLogsRepository());
 
   if (!result.success) {
     const { fieldErrors } = result.error.flatten();
@@ -55,6 +60,29 @@ export async function createUserByAdmin(request: FastifyRequest, reply: FastifyR
     const useCase = new CreateUserByAdmin(new DrizzleUsuariosRepository());
 
     await useCase.execute({ ...body, adminId });
+
+    await auditLogService.register({
+      action: 'CREATE',
+      category: 'USER_MANAGEMENT',
+      description: `Admin ${session?.user.email} criou o usuário ${body.email}`,
+      actorName: session?.user.name,
+      actorUserId: session?.user.id,
+      actorEmail: session?.user.email,
+      targetEntityType: 'USER',
+      targetEntityId: body.email,
+      targetDisplay: body.email,
+      ipAddress: session?.session.ipAddress,
+      userAgent: session?.session.userAgent,
+      requestId: request.id,
+      changes: {
+        nomeCompleto: body.nomeCompleto,
+        email: body.email,
+        cpf: body.cpf,
+        crm: body.crm,
+        dtNascimento: body.dtNascimento,
+        tipoPerfil: body.tipoPerfil,
+      },
+    });
 
     return reply.status(201).send({
       message: 'Usuário criado com sucesso.',

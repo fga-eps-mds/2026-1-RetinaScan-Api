@@ -4,6 +4,9 @@ import { container } from '@/infra/container';
 import { ValidationError } from '@/shared/errors';
 import { Sexo } from '@/modules/exam';
 import { cpf } from 'cpf-cnpj-validator';
+import { DrizzleAuditLogsRepository } from '@/infra/database/drizzle/repositories/drizzle-audit-logs-repository';
+import { auth } from '@/lib/auth';
+import { AuditLogService } from '@/modules/audit-log/services/audit-log-service';
 
 const comorbidadesSchema = z
   .object({
@@ -63,6 +66,8 @@ const bodySchema = z
 
 export async function createExam(request: FastifyRequest, reply: FastifyReply) {
   const result = bodySchema.safeParse(request.body);
+  const session = await auth.api.getSession({ headers: request.headers });
+  const auditLogService = new AuditLogService(new DrizzleAuditLogsRepository());
 
   if (!result.success) {
     throw new ValidationError(result.error.issues, true);
@@ -73,6 +78,29 @@ export async function createExam(request: FastifyRequest, reply: FastifyReply) {
   const response = await usecase.execute({
     idUsuario: request.user!.id,
     ...result.data,
+  });
+
+  await auditLogService.register({
+    action: 'CREATE',
+    category: 'EXAM',
+    description: `Usuário ${request.user!.id} criou um novo exame`,
+    actorName: session?.user.name,
+    actorUserId: session?.user.id,
+    actorEmail: session?.user.email,
+    targetEntityType: 'EXAM',
+    targetEntityId: response.id,
+    targetDisplay: response.id,
+    ipAddress: session?.session.ipAddress,
+    userAgent: session?.session.userAgent,
+    requestId: request.id,
+    changes: {
+      nomeCompleto: result.data.nomeCompleto,
+      cpf: result.data.cpf,
+      sexo: result.data.sexo,
+      dtNascimento: result.data.dtNascimento,
+      dtHora: result.data.dtHora,
+      descricao: result.data.descricao,
+    },
   });
 
   return reply.status(201).send(response);

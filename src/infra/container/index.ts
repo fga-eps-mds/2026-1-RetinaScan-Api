@@ -52,12 +52,15 @@ import type { StorageService } from '@/shared/services/storage-service';
 import type { CryptographyService } from '@/shared/services/cryptography-service';
 import type { MaskingService } from '@/shared/services/masking-service';
 import type { MessageBroker } from '@/shared/services/message-broker';
+import type { AuditLogsRepository } from '@/modules/audit-log/audit-log-repository';
+import { ListLogsWithFiltersUseCase } from '@/modules/audit-log/use-case/list-logs-with-filters';
 import type { NotificationsRepository } from '@/modules/notification/repositories';
 import { NotificationService } from '@/modules/notification/services';
 import { ListMyNotificationsUsecase } from '@/modules/notification/use-case/list-my-notifications-use-case';
 import { DeleteNotificationUseCase } from '@/modules/notification/use-case/delete-notification-use-case';
 import { MarkNotificationAsReadUseCase } from '@/modules/notification/use-case/mark-notification-as-read-use-case';
 import { NodemailerEmailProvider } from '../mail/providers/nodemailer-email-provider';
+import { DrizzleAuditLogsRepository } from '../database/drizzle/repositories/drizzle-audit-logs-repository';
 
 export interface AppContainer {
   app: FastifyInstance;
@@ -69,6 +72,7 @@ export interface AppContainer {
   resultadoIaRepository: ResultadoIaRepository;
   examIaErrorRepository: ExamIaErrorRepository;
   comorbidadeRepository: ComorbidadeRepository;
+  auditLogRepository: AuditLogsRepository;
   authService: AuthService;
   storageService: StorageService;
   cryptographyService: CryptographyService;
@@ -92,6 +96,7 @@ export interface AppContainer {
   deleteNotificationUseCase: DeleteNotificationUseCase;
   markNotificationAsReadUseCase: MarkNotificationAsReadUseCase;
   nodeMailerEmailProvider: NodemailerEmailProvider;
+  listLogsWithFiltersUseCase: ListLogsWithFiltersUseCase;
 }
 
 export const container: AwilixContainer<AppContainer> = createContainer<AppContainer>({
@@ -115,6 +120,7 @@ container.register({
   cryptographyService: asClass(NodeCryptoCryptographyService).singleton(),
   maskingService: asClass(DefaultMaskingService).singleton(),
   messageBroker: asClass(BullMQMessageBroker).singleton(),
+  auditLogRepository: asClass(DrizzleAuditLogsRepository).singleton(),
 
   markNotificationAsReadUseCase: asFunction(
     ({ notificationRepository }: AppContainer) =>
@@ -237,6 +243,10 @@ container.register({
   listMyNotificationsUsecase: asFunction(
     ({ notificationRepository }: AppContainer) =>
       new ListMyNotificationsUsecase(notificationRepository),
+  ).scoped(),
+
+  listLogsWithFiltersUseCase: asFunction(
+    ({ auditLogRepository }: AppContainer) => new ListLogsWithFiltersUseCase(auditLogRepository),
   ).scoped(),
 });
 
