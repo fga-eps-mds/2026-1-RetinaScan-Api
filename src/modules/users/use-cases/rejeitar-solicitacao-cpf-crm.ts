@@ -1,4 +1,4 @@
-import { NotificationService } from '@/modules/notification/services';
+import type { NotificationService } from '@/modules/notification/services';
 import { tiposPerfil, type SolicitacaoCpfCrm } from '@/modules/users/domain';
 import type { SolicitacaoCpfCrmRepository, UsuariosRepository } from '@/modules/users/repositories';
 import { NotFoundError, ValidationError } from '@/shared/errors';
