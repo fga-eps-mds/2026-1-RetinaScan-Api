@@ -22,7 +22,7 @@ const healthResponseSchema = {
 } as const;
 
 export const healthSchema: FastifySchema = {
-  tags: ['health'],
+  tags: ['Health'],
   summary: 'Health check',
   description: 'Informa o status da saúde da API e de suas dependências.',
   response: {

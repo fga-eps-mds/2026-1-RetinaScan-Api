@@ -30,6 +30,9 @@ export async function buildApp(): Promise<FastifyInstance> {
     logger: loggerConfig,
   });
 
+  app.setValidatorCompiler(() => (data: unknown) => ({ value: data }));
+  app.setSerializerCompiler(() => (data) => JSON.stringify(data));
+
   await app.register(swagger, {
     openapi: {
       openapi: '3.1.0',
