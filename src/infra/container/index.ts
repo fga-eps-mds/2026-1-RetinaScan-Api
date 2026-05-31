@@ -58,7 +58,7 @@ import { ListMyNotificationsUsecase } from '@/modules/notification/use-case/list
 import { DeleteNotificationUseCase } from '@/modules/notification/use-case/delete-notification-use-case';
 import { MarkNotificationAsReadUseCase } from '@/modules/notification/use-case/mark-notification-as-read-use-case';
 import { NodemailerEmailProvider } from '../mail/providers/nodemailer-email-provider';
-import { AuthEmailMessageService, IMessageService } from '@/shared/services/message-service';
+import { AuthEmailMessageService, type IMessageService } from '@/shared/services/message-service';
 
 export interface AppContainer {
   app: FastifyInstance;

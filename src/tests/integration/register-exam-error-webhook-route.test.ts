@@ -9,9 +9,7 @@ import { ExameBuilder } from '@/tests/helpers/builders/exame-builder';
 import { ExamIaErrorBuilder } from '@/tests/helpers/builders/exam-ia-error-builder';
 import { ExameStatus } from '@/modules/exam/exam';
 import { buildApp } from '@/api/index';
-import { container } from '@/infra/container';
 import { NotificationService } from '@/modules/notification/services';
-import { asValue } from 'awilix';
 
 interface WebhookErrorPayload {
   exam_id: string;
@@ -40,30 +38,20 @@ function makeErrorBody(
 
 describe('POST /api/exams/:examId/webhook/error (integration)', () => {
   let app: FastifyInstance;
-  let notificarSpy: ReturnType<typeof vi.fn>;
+  let notificarSpy: ReturnType<typeof vi.spyOn>;
 
   beforeAll(async () => {
+    notificarSpy = vi
+      .spyOn(NotificationService.prototype, 'notificar')
+      .mockResolvedValue(undefined as never);
+
     await connectDatabase();
-
-    vi.doMock('@/modules/notifications/services/notification-service', () => {
-      const mockService = {
-        notificar: vi.fn().mockResolvedValue(undefined),
-      };
-      notificarSpy = mockService.notificar;
-      return { NotificationService: mockService as unknown as typeof NotificationService };
-    });
-
-    container.register({
-      notificationService: asValue({
-        notificar: vi.fn().mockResolvedValue(undefined),
-      }),
-    });
-
     app = await buildApp();
     await app.ready();
   });
 
   afterAll(async () => {
+    notificarSpy.mockRestore();
     await app.close();
   });
 

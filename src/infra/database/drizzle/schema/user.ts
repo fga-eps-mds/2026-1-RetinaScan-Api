@@ -8,7 +8,7 @@ import {
   index,
   date,
   uniqueIndex,
-  AnyPgColumn,
+  type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 
 export const tipoPerfilEnum = pgEnum('tipo_perfil', ['ADMIN', 'MEDICO']);

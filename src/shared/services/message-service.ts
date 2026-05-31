@@ -8,9 +8,13 @@ export interface IMessageService {
 export class AuthEmailMessageService implements IMessageService {
   constructor(private readonly emailProvider: EmailSender) {}
 
-  async sendPasswordResetLink(destination: string, link: string, userName?: string | null): Promise<void> {
+  async sendPasswordResetLink(
+    destination: string,
+    link: string,
+    userName?: string | null,
+  ): Promise<void> {
     const greeting = userName ? `Olá, ${userName}! ` : 'Olá! ';
-    
+
     const template = notificationEmailTemplate({
       title: 'Recuperação de Senha',
       description: `${greeting}Você solicitou a recuperação da sua senha no RetinaScan. Clique no botão abaixo para criar uma nova senha. Caso você não tenha solicitado, pode ignorar este e-mail de forma segura.`,
