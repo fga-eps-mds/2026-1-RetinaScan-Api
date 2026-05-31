@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { listLogsWithFilters } from './logs/list-logs-with-filters';
+import { listLogsWithFilters } from './log/list-logs-with-filters';
 import { authenticationMiddleware, authorizationMiddleware } from '../middlewares';
 
 export async function logsRoute(app: FastifyInstance) {

@@ -14,11 +14,44 @@ import { searchMedicosByAdmin } from './users/seach-users-created-by-admin';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
-  app.post(
-    '/usuarios',
-    { preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])] },
-    createUserByAdmin,
-  );
+  app.route({
+    method: 'POST',
+    url: '/usuarios',
+    preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
+    config: {
+      audit: {
+        enabled: true,
+        action: 'CREATE',
+        category: 'USER_MANAGEMENT',
+        getDescription: (request) => `Admin ${request.user?.email} criou um novo usuário`,
+        getTarget: (request) => {
+          const body = request.body as Record<string, unknown>;
+
+          return {
+            targetEntityType: 'USER',
+            targetEntityId: typeof body.email === 'string' ? body.email : null,
+            targetDisplay: typeof body.email === 'string' ? body.email : null,
+          };
+        },
+        getChanges: (request) => {
+          const body = request.body as Record<string, unknown>;
+
+          return {
+            nomeCompleto: body.nomeCompleto,
+            email: body.email,
+            cpf: typeof body.cpf === 'string' ? `${body.cpf.slice(0, 3)}***` : body.cpf,
+            crm: body.crm,
+            dtNascimento: body.dtNascimento,
+            tipoPerfil: body.tipoPerfil,
+          };
+        },
+        getMetadata: () => ({
+          source: 'usuarioRoutes.createUserByAdmin',
+        }),
+      },
+    },
+    handler: createUserByAdmin,
+  });
 
   app.get(
     '/usuarios',
@@ -26,45 +59,237 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
     getAllUsers,
   );
 
-  app.put(
-    '/usuarios',
-    {
-      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
-    },
-    updateUserRoute,
-  );
+  app.route({
+    method: 'PUT',
+    url: '/usuarios',
+    preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
+    config: {
+      audit: {
+        enabled: true,
+        action: 'UPDATE',
+        category: 'USER_MANAGEMENT',
+        getDescription: (request) => `Usuário ${request.user?.id} atualizou seu perfil`,
+        getTarget: (request) => ({
+          targetEntityType: 'USER',
+          targetEntityId: request.user?.id ?? null,
+          targetDisplay: request.user?.email ?? null,
+        }),
+        getChanges: (_request, payload) => {
+          const response = payload as
+            | {
+                usuario?: {
+                  nomeCompleto?: string | null;
+                  email?: string | null;
+                  dtNascimento?: string | Date | null;
+                };
+              }
+            | undefined;
 
-  app.patch(
-    '/usuarios/imagem',
-    {
-      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
-    },
-    updateUserImageRoute,
-  );
+          return {
+            nomeCompleto: response?.usuario?.nomeCompleto ?? null,
+            email: response?.usuario?.email ?? null,
+            dtNascimento: response?.usuario?.dtNascimento ?? null,
+          };
+        },
+        getMetadata: (request) => {
+          const body = request.body as {
+            senhaAtual?: string;
+            novaSenha?: string;
+          };
 
-  app.post(
-    '/usuarios/solicitacoes-cpf-crm',
-    {
-      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
+          return {
+            source: 'usuarioRoutes.updateUserRoute',
+            changedPassword: Boolean(body.senhaAtual && body.novaSenha),
+          };
+        },
+      },
     },
-    solicitarAlteracaoCpfCrmRoute,
-  );
+    handler: updateUserRoute,
+  });
 
-  app.patch(
-    '/usuarios/solicitacoes-cpf-crm/:id/aprovar',
-    {
-      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
-    },
-    aprovarSolicitacaoCpfCrmRoute,
-  );
+  app.route({
+    method: 'PATCH',
+    url: '/usuarios/imagem',
+    preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
+    config: {
+      audit: {
+        enabled: true,
+        action: 'UPDATE_IMAGE',
+        category: 'USER_MANAGEMENT',
+        getDescription: (request) => `Usuário ${request.user?.id} atualizou sua imagem de perfil`,
+        getTarget: (request) => ({
+          targetEntityType: 'USER',
+          targetEntityId: request.user?.id ?? null,
+          targetDisplay: request.user?.email ?? request.user?.id ?? null,
+        }),
+        getChanges: (_request, payload) => {
+          const response = payload as { url?: string } | undefined;
 
-  app.patch(
-    '/usuarios/solicitacoes-cpf-crm/:id/rejeitar',
-    {
-      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
+          return {
+            imageUrl: response?.url ?? null,
+          };
+        },
+        getMetadata: () => ({
+          source: 'usuarioRoutes.updateUserImageRoute',
+        }),
+      },
     },
-    rejeitarSolicitacaoCpfCrmRoute,
-  );
+    handler: updateUserImageRoute,
+  });
+
+  app.route({
+    method: 'POST',
+    url: '/usuarios/solicitacoes-cpf-crm',
+    preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
+    config: {
+      audit: {
+        enabled: true,
+        action: 'REQUEST_CHANGE',
+        category: 'USER_MANAGEMENT',
+        getDescription: (request) => `Usuário ${request.user?.id} solicitou alteração de CPF/CRM`,
+        getTarget: (request) => ({
+          targetEntityType: 'USER',
+          targetEntityId: request.user?.id ?? null,
+          targetDisplay: request.user?.email ?? request.user?.id ?? null,
+        }),
+        getChanges: (request) => {
+          const body = request.body as {
+            cpfNovo?: string;
+            crmNovo?: string;
+          };
+
+          return {
+            cpfNovo: body.cpfNovo ? `${body.cpfNovo.slice(0, 3)}***` : null,
+            crmNovo: body.crmNovo ?? null,
+          };
+        },
+        getMetadata: (request) => {
+          const body = request.body as {
+            cpfNovo?: string;
+            crmNovo?: string;
+          };
+
+          return {
+            source: 'usuarioRoutes.solicitarAlteracaoCpfCrmRoute',
+            requestedFields: [
+              ...(body.cpfNovo ? ['cpfNovo'] : []),
+              ...(body.crmNovo ? ['crmNovo'] : []),
+            ],
+          };
+        },
+      },
+    },
+    handler: solicitarAlteracaoCpfCrmRoute,
+  });
+
+  app.route({
+    method: 'PATCH',
+    url: '/usuarios/solicitacoes-cpf-crm/:id/aprovar',
+    preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
+    config: {
+      audit: {
+        enabled: true,
+        action: 'APPROVE',
+        category: 'USER_MANAGEMENT',
+        getDescription: (request, payload) => {
+          const params = request.params as { id: string };
+          const response = payload as { solicitacao?: unknown } | undefined;
+          const isSuccess = Boolean(response?.solicitacao);
+
+          return isSuccess
+            ? `Solicitação de CPF/CRM ${params.id} aprovada por admin ${request.user?.email}`
+            : `Falha ao aprovar solicitação de CPF/CRM ${params.id}`;
+        },
+        getTarget: (request) => {
+          const params = request.params as { id: string };
+
+          return {
+            targetEntityType: 'SOLICITATION',
+            targetEntityId: params.id,
+            targetDisplay: params.id,
+          };
+        },
+        getChanges: (_request, payload) => {
+          const response = payload as
+            | {
+                solicitacao?: unknown;
+                notificacaoEnviada?: boolean;
+                message?: string;
+              }
+            | undefined;
+
+          return {
+            solicitacao: response?.solicitacao ?? null,
+            notificacaoEnviada: response?.notificacaoEnviada ?? null,
+          };
+        },
+        getMetadata: (request, payload) => {
+          const params = request.params as { id: string };
+          const response = payload as
+            | {
+                statusCode?: number;
+                error?: string;
+                message?: string;
+              }
+            | undefined;
+
+          return {
+            source: 'usuarioRoutes.aprovarSolicitacaoCpfCrmRoute',
+            idSolicitacao: params.id,
+            statusCode: response?.statusCode ?? null,
+            error: response?.error ?? null,
+            message: response?.message ?? null,
+          };
+        },
+      },
+    },
+    handler: aprovarSolicitacaoCpfCrmRoute,
+  });
+
+  app.route({
+    method: 'PATCH',
+    url: '/usuarios/solicitacoes-cpf-crm/:id/rejeitar',
+    preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
+    config: {
+      audit: {
+        enabled: true,
+        action: 'REJECT',
+        category: 'USER_MANAGEMENT',
+        getDescription: (request) => {
+          const params = request.params as { id: string };
+
+          return `Solicitação de CPF/CRM ${params.id} rejeitada por admin ${request.user?.email}`;
+        },
+        getTarget: (request) => {
+          const params = request.params as { id: string };
+
+          return {
+            targetEntityType: 'SOLICITATION',
+            targetEntityId: params.id,
+            targetDisplay: params.id,
+          };
+        },
+        getChanges: (request, payload) => {
+          const body = request.body as { motivoRejeicao?: string };
+          const response = payload as { solicitacao?: unknown } | undefined;
+
+          return {
+            solicitacao: response?.solicitacao ?? null,
+            motivoRejeicao: body.motivoRejeicao ?? null,
+          };
+        },
+        getMetadata: (request) => {
+          const params = request.params as { id: string };
+
+          return {
+            source: 'usuarioRoutes.rejeitarSolicitacaoCpfCrmRoute',
+            idSolicitacao: params.id,
+          };
+        },
+      },
+    },
+    handler: rejeitarSolicitacaoCpfCrmRoute,
+  });
 
   app.get(
     '/usuarios/solicitacoes-cpf-crm',

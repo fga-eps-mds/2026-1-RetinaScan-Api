@@ -6,6 +6,7 @@ import { type FastifyInstance, fastify } from 'fastify';
 import { env } from '@/env';
 import { errorHandler } from './middlewares/error-handler';
 import routes from './routes';
+import { auditHooks } from '@/modules/audit-log/audit-hooks';
 
 export async function buildApp(): Promise<FastifyInstance> {
   const loggerConfig = (() => {
@@ -54,6 +55,8 @@ export async function buildApp(): Promise<FastifyInstance> {
   await app.register(multipart, {
     limits: { fileSize: 5 * 1024 * 1024 },
   });
+
+  await app.register(auditHooks);
 
   app.setErrorHandler(errorHandler);
 

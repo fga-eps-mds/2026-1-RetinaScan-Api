@@ -6,9 +6,6 @@ import type {
   UploadExamImageInput,
   UploadExamImagesUseCase,
 } from '@/modules/exam/use-cases/upload-exam-images-usecase';
-import { DrizzleAuditLogsRepository } from '@/infra/database/drizzle/repositories/drizzle-audit-logs-repository';
-import { auth } from '@/lib/auth';
-import { AuditLogService } from '@/modules/audit-log/services/audit-log-service';
 
 const FIELD_TO_LATERALIDADE: Record<string, LateralidadeOlho | undefined> = {
   olhoDireito: LateralidadeOlho.OD,
@@ -30,8 +27,6 @@ export async function uploadExamImages(
 ) {
   const { examId } = request.params;
   const imagens: UploadExamImageInput[] = [];
-  const session = await auth.api.getSession({ headers: request.headers });
-  const auditLogService = new AuditLogService(new DrizzleAuditLogsRepository());
 
   for await (const part of request.parts()) {
     if (part.type !== 'file') continue;
@@ -80,23 +75,23 @@ export async function uploadExamImages(
     imagens,
   });
 
-  await auditLogService.register({
-    action: 'UPLOAD_EXAM_IMAGES',
-    category: 'EXAM',
-    description: `Usuário ${request.user!.id} enviou imagens para o exame ${examId}`,
-    actorName: session?.user.name,
-    actorUserId: session?.user.id,
-    actorEmail: session?.user.email,
-    targetEntityType: 'EXAM',
-    targetEntityId: examId,
-    targetDisplay: examId,
-    ipAddress: session?.session.ipAddress,
-    userAgent: session?.session.userAgent,
-    requestId: request.id,
-    changes: {
-      imagens: response.imagens,
-    },
-  });
+  // await auditLogService.register({
+  //   action: 'UPLOAD_EXAM_IMAGES',
+  //   category: 'EXAM',
+  //   description: `Usuário ${request.user!.id} enviou imagens para o exame ${examId}`,
+  //   actorName: session?.user.name,
+  //   actorUserId: session?.user.id,
+  //   actorEmail: session?.user.email,
+  //   targetEntityType: 'EXAM',
+  //   targetEntityId: examId,
+  //   targetDisplay: examId,
+  //   ipAddress: session?.session.ipAddress,
+  //   userAgent: session?.session.userAgent,
+  //   requestId: request.id,
+  //   changes: {
+  //     imagens: response.imagens,
+  //   },
+  // });
 
   return reply.status(201).send(response);
 }
