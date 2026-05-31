@@ -11,12 +11,25 @@ import { rejeitarSolicitacaoCpfCrmRoute } from './users/rejeitar-solicitacao-cpf
 import { listarSolicitacoesCpfCrmAdminRoute } from './users/listar-solicitacoes-cpf-crm-admin';
 import { listarMinhasSolicitacoesCpfCrmRoute } from './users/listar-minhas-solicitacoes-cpf-crm';
 import { searchMedicosByAdmin } from './users/seach-users-created-by-admin';
+import {
+  createUserByAdminSchema,
+  getAllUsersSchema,
+  updateUserSchema,
+  updateUserImageSchema,
+  solicitarAlteracaoCpfCrmSchema,
+  aprovarSolicitacaoCpfCrmSchema,
+  rejeitarSolicitacaoCpfCrmSchema,
+  listarSolicitacoesCpfCrmAdminSchema,
+  listarMinhasSolicitacoesCpfCrmSchema,
+  searchMedicosSchema,
+} from '../docs/users';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
   app.route({
     method: 'POST',
     url: '/usuarios',
+    schema: createUserByAdminSchema,
     preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
     config: {
       audit: {
@@ -55,13 +68,17 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
 
   app.get(
     '/usuarios',
-    { preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])] },
+    {
+      schema: getAllUsersSchema,
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
+    },
     getAllUsers,
   );
 
   app.route({
     method: 'PUT',
     url: '/usuarios',
+    schema: updateUserSchema,
     preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
     config: {
       audit: {
@@ -110,6 +127,7 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
   app.route({
     method: 'PATCH',
     url: '/usuarios/imagem',
+    schema: updateUserImageSchema,
     preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
     config: {
       audit: {
@@ -140,6 +158,7 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
   app.route({
     method: 'POST',
     url: '/usuarios/solicitacoes-cpf-crm',
+    schema: solicitarAlteracaoCpfCrmSchema,
     preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
     config: {
       audit: {
@@ -185,6 +204,7 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
   app.route({
     method: 'PATCH',
     url: '/usuarios/solicitacoes-cpf-crm/:id/aprovar',
+    schema: aprovarSolicitacaoCpfCrmSchema,
     preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
     config: {
       audit: {
@@ -249,6 +269,7 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
   app.route({
     method: 'PATCH',
     url: '/usuarios/solicitacoes-cpf-crm/:id/rejeitar',
+    schema: rejeitarSolicitacaoCpfCrmSchema,
     preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
     config: {
       audit: {
@@ -294,6 +315,7 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
   app.get(
     '/usuarios/solicitacoes-cpf-crm',
     {
+      schema: listarSolicitacoesCpfCrmAdminSchema,
       preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
     },
     listarSolicitacoesCpfCrmAdminRoute,
@@ -302,13 +324,16 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
   app.get(
     '/usuarios/minhas-solicitacoes-cpf-crm',
     {
+      schema: listarMinhasSolicitacoesCpfCrmSchema,
       preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
     },
     listarMinhasSolicitacoesCpfCrmRoute,
   );
+
   app.get(
     '/medicos/search',
     {
+      schema: searchMedicosSchema,
       preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
     },
     searchMedicosByAdmin,

@@ -1,11 +1,13 @@
 import { auth } from '@/lib/auth';
 import type { FastifyRequest, FastifyReply, FastifyPluginAsync } from 'fastify';
+import { recoverByCrmHandler } from './auth/recover-by-crm';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export const authRoutes: FastifyPluginAsync = async (app) => {
   app.route({
     method: ['GET', 'POST'],
     url: '/auth/*',
+    schema: { hide: true },
     async handler(request: FastifyRequest, reply: FastifyReply) {
       const url = new URL(request.url, `http://${request.headers.host}`);
 
@@ -32,4 +34,6 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
       reply.send(body || null);
     },
   });
+
+  app.post('/auth/recover-by-crm', recoverByCrmHandler);
 };

@@ -1,6 +1,5 @@
 import { relations } from 'drizzle-orm';
 import {
-  foreignKey,
   pgEnum,
   pgTable,
   text,
@@ -9,6 +8,7 @@ import {
   index,
   date,
   uniqueIndex,
+  type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 
 export const tipoPerfilEnum = pgEnum('tipo_perfil', ['ADMIN', 'MEDICO']);
@@ -44,7 +44,9 @@ export const usuario = pgTable(
 
     image: text('image'),
 
-    criadoPor: text('criado_por'),
+    criadoPor: text('criado_por').references((): AnyPgColumn => usuario.id, {
+      onDelete: 'set null',
+    }),
 
     createdAt: timestamp('created_at').defaultNow().notNull(),
 
@@ -54,11 +56,6 @@ export const usuario = pgTable(
       .notNull(),
   },
   (table) => [
-    foreignKey({
-      columns: [table.criadoPor],
-      foreignColumns: [table.id],
-      name: 'usuario_criado_por_fk',
-    }).onDelete('set null'),
     uniqueIndex('usuario_email_unique').on(table.email),
     uniqueIndex('usuario_cpf_unique').on(table.cpf),
     uniqueIndex('usuario_crm_unique').on(table.crm),

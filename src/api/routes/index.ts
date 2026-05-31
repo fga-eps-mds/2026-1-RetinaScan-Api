@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from 'fastify';
 import healthHandler from './health';
+import { healthSchema } from '../docs';
 import { authRoutes } from './auth';
 import { usuarioRoutes } from './usuarios';
 import { examRoutes } from './exams';
@@ -7,7 +8,7 @@ import notificationRoutes from './notifications';
 import { logsRoute } from './logs';
 
 const registerRoutes: FastifyPluginAsync = async (app) => {
-  app.get('/health', healthHandler);
+  app.get('/health', { schema: healthSchema }, healthHandler);
 
   await app.register(authRoutes);
   await app.register(examRoutes);

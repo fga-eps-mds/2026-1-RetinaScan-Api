@@ -4,6 +4,11 @@ import { tiposPerfil } from '@/modules/users/domain';
 import { listNotifications } from './notification/list-notifications';
 import { markNotificationAsRead } from './notification/mark-notification-as-read';
 import { deleteNotification } from './notification/delete-notification';
+import {
+  listNotificationsSchema,
+  markNotificationAsReadSchema,
+  deleteNotificationSchema,
+} from '../docs/notification';
 
 export type ListNotificationsQuery = {
   status?: 'todas' | 'nao-lidas' | 'lidas';
@@ -22,6 +27,7 @@ export default async function notificationRoutes(app: FastifyInstance): Promise<
   }>(
     '/notifications/me',
     {
+      schema: listNotificationsSchema,
       preHandler: [
         authenticationMiddleware,
         authorizationMiddleware([tiposPerfil.ADMIN, tiposPerfil.MEDICO]),
@@ -33,6 +39,7 @@ export default async function notificationRoutes(app: FastifyInstance): Promise<
   app.patch<{ Params: NotificationParams }>(
     '/notifications/:id/read',
     {
+      schema: markNotificationAsReadSchema,
       preHandler: [
         authenticationMiddleware,
         authorizationMiddleware([tiposPerfil.ADMIN, tiposPerfil.MEDICO]),
@@ -44,6 +51,7 @@ export default async function notificationRoutes(app: FastifyInstance): Promise<
   app.delete<{ Params: NotificationParams }>(
     '/notifications/:id',
     {
+      schema: deleteNotificationSchema,
       preHandler: [
         authenticationMiddleware,
         authorizationMiddleware([tiposPerfil.ADMIN, tiposPerfil.MEDICO]),
