@@ -1,4 +1,5 @@
-import Fastify, { type FastifyInstance } from 'fastify';
+import { type FastifyInstance } from 'fastify';
+import { createRouteTestApp } from '@/tests/helpers/route-test-app';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { usuarioRoutes } from '@/api/routes/usuarios';
 
@@ -79,10 +80,7 @@ describe('POST /usuarios', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    app = Fastify();
-
-    await app.register(usuarioRoutes);
-    await app.ready();
+    app = await createRouteTestApp(usuarioRoutes);
   });
 
   afterEach(async () => {
