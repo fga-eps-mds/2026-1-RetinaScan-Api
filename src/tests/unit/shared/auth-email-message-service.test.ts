@@ -43,4 +43,37 @@ describe('AuthEmailMessageService', () => {
 
     templateSpy.mockRestore();
   });
+
+  it('should format the template without username when userName is not provided', async () => {
+    const mockSend = vi.fn().mockResolvedValue(undefined);
+    const mockEmailSender: EmailSender = {
+      send: mockSend,
+    };
+
+    const service = new AuthEmailMessageService(mockEmailSender);
+
+    const templateSpy = vi.spyOn(templateModule, 'notificationEmailTemplate').mockReturnValue({
+      html: '<html>test html</html>',
+      text: 'test text',
+    });
+
+    const destination = 'test@example.com';
+    const link = 'http://localhost/reset?token=123';
+
+    await service.sendPasswordResetLink(destination, link);
+
+    expect(templateSpy).toHaveBeenCalledTimes(1);
+    expect(templateSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Recuperação de Senha',
+        actionUrl: link,
+        categoryLabel: 'Segurança da Conta',
+        actionLabel: 'Redefinir Senha',
+      })
+    );
+
+    expect(mockSend).toHaveBeenCalledTimes(1);
+
+    templateSpy.mockRestore();
+  });
 });

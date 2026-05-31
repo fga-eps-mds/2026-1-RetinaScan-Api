@@ -17,7 +17,6 @@ const paramsSchema = z.object({
   examId: z.string().uuid(),
 });
 
-
 export async function registerExamErrorWebhook(
   request: FastifyRequest<{ Params: { examId: string } }>,
   reply: FastifyReply,
