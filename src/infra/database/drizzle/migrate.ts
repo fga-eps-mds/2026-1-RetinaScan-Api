@@ -11,7 +11,7 @@ async function run() {
   const db = drizzle(pool);
 
   await migrate(db, {
-    migrationsFolder: './src/infra/database/drizzle/migrations',
+    migrationsFolder: './dist/infra/database/drizzle/migrations',
   });
 
   await pool.end();
