@@ -17,7 +17,6 @@ const bodySchema = z
 
 export async function solicitarAlteracaoCpfCrmRoute(request: FastifyRequest, reply: FastifyReply) {
   const result = bodySchema.safeParse(request.body);
-
   if (!result.success) {
     throw new ValidationError(result.error.issues, true);
   }

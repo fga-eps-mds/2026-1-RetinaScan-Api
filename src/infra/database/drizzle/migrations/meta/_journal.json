@@ -71,6 +71,13 @@
       "when": 1779484934703,
       "tag": "0009_add_notifications_table",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1780119518318,
+      "tag": "0010_add_audit_logs_table",
+      "breakpoints": true
     }
   ]
 }
