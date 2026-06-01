@@ -1,1 +1,0 @@
-ALTER TYPE "public"."tipo_perfil" ADD VALUE 'ESPECIALISTA';
