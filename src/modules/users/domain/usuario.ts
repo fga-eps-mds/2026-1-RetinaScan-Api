@@ -13,6 +13,7 @@ export type Usuario = {
 export const tiposPerfil = {
   ADMIN: 'ADMIN',
   MEDICO: 'MEDICO',
+  ESPECIALISTA: 'ESPECIALISTA',
 } as const;
 
 export type TipoPerfil = keyof typeof tiposPerfil;

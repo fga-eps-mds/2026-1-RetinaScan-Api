@@ -11,7 +11,7 @@ import {
   type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 
-export const tipoPerfilEnum = pgEnum('tipo_perfil', ['ADMIN', 'MEDICO']);
+export const tipoPerfilEnum = pgEnum('tipo_perfil', ['ADMIN', 'MEDICO', 'ESPECIALISTA']);
 
 export const statusUsuarioEnum = pgEnum('status_usuario', ['ATIVO', 'INATIVO', 'BLOQUEADO']);
 

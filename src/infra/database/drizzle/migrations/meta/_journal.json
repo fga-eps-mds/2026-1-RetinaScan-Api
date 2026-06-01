@@ -78,6 +78,13 @@
       "when": 1780119518318,
       "tag": "0010_add_audit_logs_table",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1780277762114,
+      "tag": "0011_windy_katie_power",
+      "breakpoints": true
     }
   ]
 }

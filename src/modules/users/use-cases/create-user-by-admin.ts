@@ -9,7 +9,7 @@ type Request = {
   crm: string;
   dtNascimento: Date;
   senha: string;
-  tipoPerfil: 'ADMIN' | 'MEDICO';
+  tipoPerfil: 'ADMIN' | 'MEDICO' | 'ESPECIALISTA';
   adminId?: string;
 };
 
