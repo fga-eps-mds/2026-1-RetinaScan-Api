@@ -43,5 +43,5 @@ jobs:
             -Dsonar.testExecutionReportPaths=coverage/sonar-report.xml
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
             -Dsonar.typescript.lcov.reportPaths=coverage/lcov.info
-            -Dsonar.inclusions=src/modules/**,src/api/routes/**,src/api/middlewares/**,src/infra/database/drizzle/repositories/**,src/shared/validators/**,src/shared/errors/**
+            -Dsonar.inclusions=src/modules/**,src/api/routes/**,src/api/middlewares/**,src/infra/database/drizzle/repositories/**,src/shared/validators/**,src/shared/errors/**,src/shared/services/**,src/lib/**
             -Dsonar.exclusions=src/infra/database/drizzle/migrate.ts

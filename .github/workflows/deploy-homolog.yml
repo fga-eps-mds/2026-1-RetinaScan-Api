@@ -3,8 +3,10 @@ name: Deploy Homolog
 on:
   push:
     branches: [develop]
+
   pull_request:
     branches: [develop]
+    types: [closed]
 
 permissions:
   deployments: write

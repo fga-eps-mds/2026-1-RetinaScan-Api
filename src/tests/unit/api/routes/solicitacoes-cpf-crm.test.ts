@@ -1,4 +1,5 @@
-import Fastify, { type FastifyInstance } from 'fastify';
+import { type FastifyInstance } from 'fastify';
+import { createRouteTestApp } from '@/tests/helpers/route-test-app';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { usuarioRoutes } from '@/api/routes/usuarios';
 
@@ -102,9 +103,7 @@ describe('solicitação de CPF/CRM routes', () => {
       throw new Error(`Unknown resolve key: ${key}`);
     });
 
-    app = Fastify();
-    await app.register(usuarioRoutes);
-    await app.ready();
+    app = await createRouteTestApp(usuarioRoutes);
   });
 
   afterEach(async () => {

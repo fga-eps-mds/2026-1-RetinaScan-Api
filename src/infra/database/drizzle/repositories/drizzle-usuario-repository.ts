@@ -13,7 +13,7 @@ import type {
   UsuarioUpdateOutput,
   UsuariosRepository,
 } from '@/modules/users/repositories';
-import { usuario } from '@/infra/database/drizzle/schema';
+import { usuario, account } from '@/infra/database/drizzle/schema';
 import { and, count, eq, ilike, or, type SQL } from 'drizzle-orm';
 
 export class DrizzleUsuariosRepository implements UsuariosRepository, IdAdminSearchDoctors {
@@ -77,6 +77,13 @@ export class DrizzleUsuariosRepository implements UsuariosRepository, IdAdminSea
     const result = await db.select().from(usuario).orderBy(usuario.createdAt);
 
     return result;
+  }
+
+  async updatePassword(userId: string, passwordHash: string): Promise<void> {
+    await db
+      .update(account)
+      .set({ password: passwordHash, updatedAt: new Date() })
+      .where(eq(account.userId, userId));
   }
 
   async searchByAdmin(

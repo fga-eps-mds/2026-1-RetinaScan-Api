@@ -1,6 +1,7 @@
 import { env } from '@/env';
 import type {
   BucketName,
+  CopyObjectInput,
   GetPresignedUrlInput,
   StorageService,
   UploadInput,
@@ -37,5 +38,18 @@ export class MinioStorageService implements StorageService {
 
   async getPresignedUrl(input: GetPresignedUrlInput): Promise<string> {
     return minioClient.presignedGetObject(input.bucket, input.key, input.expiresInSeconds);
+  }
+
+  async objectExists(key: string, bucket: BucketName): Promise<boolean> {
+    try {
+      await minioClient.statObject(bucket, key);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async copy(input: CopyObjectInput, bucket: BucketName): Promise<void> {
+    await minioClient.copyObject(bucket, input.destinationKey, `/${bucket}/${input.sourceKey}`);
   }
 }

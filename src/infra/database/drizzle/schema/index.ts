@@ -5,3 +5,4 @@ export * from './resultado-ia';
 export * from './exam-ia-error';
 export * from './exam_comorbidity';
 export * from './notification';
+export * from './audit-log';

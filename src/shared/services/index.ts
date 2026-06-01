@@ -3,3 +3,4 @@ export * from './auth-service';
 export * from './cryptography-service';
 export * from './masking-service';
 export * from './message-broker';
+export * from './dicom-service';

@@ -3,6 +3,7 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import * as schema from '../infra/database/drizzle/schema/index.js';
 import { env } from '../env.js';
+import { container } from '../infra/container/index.js';
 
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
@@ -11,6 +12,11 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async (data) => {
+      const authMessageService = container.resolve('authMessageService');
+      await authMessageService.sendPasswordResetLink(data.user.email, data.url, data.user.name);
+    },
   },
 
   database: drizzleAdapter(db, {

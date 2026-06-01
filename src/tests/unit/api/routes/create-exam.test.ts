@@ -35,6 +35,7 @@ describe('createExam controller', () => {
         dtNascimento: '1990-01-01',
         dtHora: '2026-05-18T10:00:00.000Z',
         comorbidades: {},
+        imagens: [{ uploadId: '11111111-1111-4111-8111-111111111111', lateralidade: 'OD' }],
       },
     };
 
@@ -77,6 +78,7 @@ describe('createExam controller', () => {
         qualidadeTecnicaDificuldade: false,
       },
       descricao: undefined,
+      imagens: [{ uploadId: '11111111-1111-4111-8111-111111111111', lateralidade: 'OD' }],
     });
     expect(statusMock).toHaveBeenCalledWith(201);
     expect(sendMock).toHaveBeenCalledWith(output);
@@ -120,6 +122,23 @@ describe('createExam controller', () => {
       comorbidades: {
         outrasComorbidades: true,
       },
+    };
+
+    await expect(
+      createExam(request as FastifyRequest, reply as FastifyReply),
+    ).rejects.toBeInstanceOf(ValidationError);
+
+    expect(container.resolve).not.toHaveBeenCalled();
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('should throw ValidationError when two imagens share the same uploadId', async () => {
+    request.body = {
+      ...(request.body ?? {}),
+      imagens: [
+        { uploadId: '11111111-1111-4111-8111-111111111111', lateralidade: 'OD' },
+        { uploadId: '11111111-1111-4111-8111-111111111111', lateralidade: 'OE' },
+      ],
     };
 
     await expect(
