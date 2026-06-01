@@ -31,7 +31,7 @@ const comorbidadesSchema = {
 const createExamBody = {
   type: 'object',
   additionalProperties: false,
-  required: ['nomeCompleto', 'cpf', 'sexo', 'dtNascimento', 'dtHora', 'comorbidades'],
+  required: ['nomeCompleto', 'cpf', 'sexo', 'dtNascimento', 'dtHora', 'comorbidades', 'imagens'],
   properties: {
     nomeCompleto: { type: 'string', minLength: 1 },
     cpf: { type: 'string', description: 'CPF válido (com ou sem máscara).' },
@@ -48,6 +48,21 @@ const createExamBody = {
     },
     comorbidades: comorbidadesSchema,
     descricao: { type: 'string', minLength: 1 },
+    imagens: {
+      type: 'array',
+      minItems: 1,
+      maxItems: 2,
+      description: 'Imagens previamente processadas via `POST /api/exams/images`.',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        required: ['uploadId', 'lateralidade'],
+        properties: {
+          uploadId: { type: 'string', format: 'uuid' },
+          lateralidade: { type: 'string', enum: ['OD', 'OE'] },
+        },
+      },
+    },
   },
 } as const;
 

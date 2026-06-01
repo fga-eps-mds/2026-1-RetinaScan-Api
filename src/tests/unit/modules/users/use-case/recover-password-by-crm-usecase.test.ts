@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Mocked } from 'vitest';
 import { RecoverPasswordByCrmUseCase } from '@/modules/users/use-cases/recover-password-by-crm-usecase';
 import type { UsuariosRepository } from '@/modules/users/repositories';
 import type { MaskingService } from '@/shared/services';
@@ -6,18 +7,18 @@ import { NotFoundError } from '@/shared/errors';
 import type { Usuario } from '@/modules/users/domain/usuario';
 
 describe('RecoverPasswordByCrmUseCase', () => {
-  let usuariosRepository: vi.Mocked<UsuariosRepository>;
-  let maskingService: vi.Mocked<MaskingService>;
+  let usuariosRepository: Mocked<UsuariosRepository>;
+  let maskingService: Mocked<MaskingService>;
   let useCase: RecoverPasswordByCrmUseCase;
 
   beforeEach(() => {
     usuariosRepository = {
       findByCrm: vi.fn(),
-    } as unknown as vi.Mocked<UsuariosRepository>;
+    } as unknown as Mocked<UsuariosRepository>;
 
     maskingService = {
       maskEmail: vi.fn(),
-    } as unknown as vi.Mocked<MaskingService>;
+    } as unknown as Mocked<MaskingService>;
 
     useCase = new RecoverPasswordByCrmUseCase(usuariosRepository, maskingService);
   });

@@ -29,6 +29,20 @@ async function ensureBucket(bucket: BucketName): Promise<void> {
     await minioClient.setBucketPolicy(bucket, publicReadPolicy(bucket));
     logger.info(`Bucket "${bucket}" configurado com leitura pública`);
   }
+
+  if (bucket === Buckets.examImages) {
+    await minioClient.setBucketLifecycle(bucket, {
+      Rule: [
+        {
+          ID: 'expire-pending-uploads',
+          Status: 'Enabled',
+          Filter: { Prefix: 'pending/' },
+          Expiration: { Days: 1 },
+        },
+      ],
+    });
+    logger.info(`Lifecycle de "pending/" configurado em "${bucket}" (1 dia)`);
+  }
 }
 
 export async function setupMinio(): Promise<void> {
