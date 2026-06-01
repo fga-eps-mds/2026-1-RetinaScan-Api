@@ -21,6 +21,8 @@ describe('PATCH /api/usuarios/imagem (integration)', () => {
     deleteByUrl: vi.fn(),
     deleteByKey: vi.fn(),
     getPresignedUrl: vi.fn(),
+    objectExists: vi.fn().mockResolvedValue(true),
+    copy: vi.fn().mockResolvedValue(undefined),
   };
 
   beforeAll(async () => {
