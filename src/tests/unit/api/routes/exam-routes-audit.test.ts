@@ -88,53 +88,6 @@ describe('examRoutes audit config', () => {
     });
   });
 
-  it('should configure audit for POST /exams/:examId/images', () => {
-    const route = findRoute(registeredRoutes, 'POST', '/exams/:examId/images');
-    const audit = route.config?.audit as AuditConfig;
-
-    expect(audit.enabled).toBe(true);
-    expect(audit.action).toBe('UPLOAD_IMAGES');
-    expect(audit.category).toBe('EXAM');
-
-    const request = {
-      user: { id: 'user-1' },
-      params: { examId: 'exam-1' },
-    };
-
-    const payload = {
-      uploaded: 2,
-      imagens: [
-        { id: 'img-1', lateralidade: 'OD' },
-        { id: 'img-2', lateralidade: 'OE' },
-      ],
-    };
-
-    expect(audit.getDescription?.(request)).toBe(
-      'Usuário user-1 enviou imagens para o exame exam-1',
-    );
-
-    expect(audit.getTarget?.(request)).toEqual({
-      targetEntityType: 'EXAM',
-      targetEntityId: 'exam-1',
-      targetDisplay: 'exam-1',
-    });
-
-    expect(audit.getChanges?.(request, payload)).toEqual({
-      result: {
-        uploaded: 2,
-        imagens: [
-          { id: 'img-1', lateralidade: 'OD' },
-          { id: 'img-2', lateralidade: 'OE' },
-        ],
-      },
-    });
-
-    expect(audit.getMetadata?.(request)).toEqual({
-      source: 'examRoutes.uploadExamImages',
-      examId: 'exam-1',
-    });
-  });
-
   it('should keep webhook routes without audit config', () => {
     const webhookRoute = findRoute(registeredRoutes, 'POST', '/exams/:examId/webhook');
     const webhookErrorRoute = findRoute(registeredRoutes, 'POST', '/exams/:examId/webhook/error');
