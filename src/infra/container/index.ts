@@ -32,6 +32,7 @@ import { SolicitarAlteracaoCpfCrmUsecase } from '@/modules/users/use-cases/solic
 import { AprovarSolicitacaoCpfCrmUsecase } from '@/modules/users/use-cases/aprovar-solicitacao-cpf-crm';
 import { RejeitarSolicitacaoCpfCrmUsecase } from '@/modules/users/use-cases/rejeitar-solicitacao-cpf-crm';
 import { ListarSolicitacoesCpfCrmUsecase } from '@/modules/users/use-cases/listar-solicitacoes-cpf-crm';
+import { RecoverPasswordByCrmUseCase } from '@/modules/users/use-cases/recover-password-by-crm-usecase';
 
 import type { UsuariosRepository, SolicitacaoCpfCrmRepository } from '@/modules/users/repositories';
 
@@ -52,12 +53,16 @@ import type { StorageService } from '@/shared/services/storage-service';
 import type { CryptographyService } from '@/shared/services/cryptography-service';
 import type { MaskingService } from '@/shared/services/masking-service';
 import type { MessageBroker } from '@/shared/services/message-broker';
+import type { AuditLogsRepository } from '@/modules/audit-log/audit-log-repository';
+import { ListLogsWithFiltersUseCase } from '@/modules/audit-log/use-case/list-logs-with-filters';
 import type { NotificationsRepository } from '@/modules/notification/repositories';
 import { NotificationService } from '@/modules/notification/services';
 import { ListMyNotificationsUsecase } from '@/modules/notification/use-case/list-my-notifications-use-case';
 import { DeleteNotificationUseCase } from '@/modules/notification/use-case/delete-notification-use-case';
 import { MarkNotificationAsReadUseCase } from '@/modules/notification/use-case/mark-notification-as-read-use-case';
 import { NodemailerEmailProvider } from '../mail/providers/nodemailer-email-provider';
+import { DrizzleAuditLogsRepository } from '../database/drizzle/repositories/drizzle-audit-logs-repository';
+import { AuthEmailMessageService, type IMessageService } from '@/shared/services/message-service';
 
 export interface AppContainer {
   app: FastifyInstance;
@@ -69,6 +74,7 @@ export interface AppContainer {
   resultadoIaRepository: ResultadoIaRepository;
   examIaErrorRepository: ExamIaErrorRepository;
   comorbidadeRepository: ComorbidadeRepository;
+  auditLogRepository: AuditLogsRepository;
   authService: AuthService;
   storageService: StorageService;
   cryptographyService: CryptographyService;
@@ -81,6 +87,7 @@ export interface AppContainer {
   aprovarSolicitacaoCpfCrmUsecase: AprovarSolicitacaoCpfCrmUsecase;
   rejeitarSolicitacaoCpfCrmUsecase: RejeitarSolicitacaoCpfCrmUsecase;
   listarSolicitacoesCpfCrmUsecase: ListarSolicitacoesCpfCrmUsecase;
+  recoverPasswordByCrmUseCase: RecoverPasswordByCrmUseCase;
   createExamUseCase: CreateExamUseCase;
   uploadExamImagesUseCase: UploadExamImagesUseCase;
   listExamsUseCase: ListExamsUseCase;
@@ -92,6 +99,8 @@ export interface AppContainer {
   deleteNotificationUseCase: DeleteNotificationUseCase;
   markNotificationAsReadUseCase: MarkNotificationAsReadUseCase;
   nodeMailerEmailProvider: NodemailerEmailProvider;
+  listLogsWithFiltersUseCase: ListLogsWithFiltersUseCase;
+  authMessageService: IMessageService;
 }
 
 export const container: AwilixContainer<AppContainer> = createContainer<AppContainer>({
@@ -115,6 +124,12 @@ container.register({
   cryptographyService: asClass(NodeCryptoCryptographyService).singleton(),
   maskingService: asClass(DefaultMaskingService).singleton(),
   messageBroker: asClass(BullMQMessageBroker).singleton(),
+  auditLogRepository: asClass(DrizzleAuditLogsRepository).singleton(),
+
+  authMessageService: asFunction(
+    ({ nodeMailerEmailProvider }: AppContainer) =>
+      new AuthEmailMessageService(nodeMailerEmailProvider),
+  ).singleton(),
 
   markNotificationAsReadUseCase: asFunction(
     ({ notificationRepository }: AppContainer) =>
@@ -177,6 +192,11 @@ container.register({
       new ListarSolicitacoesCpfCrmUsecase(solicitacaoCpfCrmRepository),
   ).scoped(),
 
+  recoverPasswordByCrmUseCase: asFunction(
+    ({ usuariosRepository, maskingService }: AppContainer) =>
+      new RecoverPasswordByCrmUseCase(usuariosRepository, maskingService),
+  ).scoped(),
+
   createExamUseCase: asFunction(
     ({ usuariosRepository, examesRepository, cryptographyService }: AppContainer) =>
       new CreateExamUseCase(usuariosRepository, examesRepository, cryptographyService),
@@ -237,6 +257,10 @@ container.register({
   listMyNotificationsUsecase: asFunction(
     ({ notificationRepository }: AppContainer) =>
       new ListMyNotificationsUsecase(notificationRepository),
+  ).scoped(),
+
+  listLogsWithFiltersUseCase: asFunction(
+    ({ auditLogRepository }: AppContainer) => new ListLogsWithFiltersUseCase(auditLogRepository),
   ).scoped(),
 });
 
