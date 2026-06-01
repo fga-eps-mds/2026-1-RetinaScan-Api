@@ -2,14 +2,14 @@ import type { FastifyInstance } from 'fastify';
 import { authenticationMiddleware, authorizationMiddleware } from '../middlewares';
 import { tiposPerfil } from '@/modules/users/domain';
 import { createExam } from './exams/create-exam';
-import { uploadExamImages } from './exams/upload-exam-images';
+import { processExamUpload } from './exams/process-exam-upload';
 import { listExams } from './exams/list-exams';
 import { getExamDetails } from './exams/get-exam-details';
 import { registerExamWebhook } from './exams/register-exam-webhook';
 import { registerExamErrorWebhook } from './exams/register-exam-error-webhook';
 import {
   createExamSchema,
-  uploadExamImagesSchema,
+  processExamUploadSchema,
   listExamsSchema,
   getExamDetailsSchema,
   registerExamWebhookSchema,
@@ -58,46 +58,14 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
     handler: createExam,
   });
 
-  app.route({
-    method: 'POST',
-    url: '/exams/:examId/images',
-    schema: uploadExamImagesSchema,
-    preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
-    config: {
-      audit: {
-        enabled: true,
-        action: 'UPLOAD_IMAGES',
-        category: 'EXAM',
-        getDescription: (request) =>
-          `Usuário ${request.user?.id} enviou imagens para o exame ${(request.params as { examId: string }).examId}`,
-        getTarget: (request) => {
-          const { examId } = request.params as { examId: string };
-
-          return {
-            targetEntityType: 'EXAM',
-            targetEntityId: examId,
-            targetDisplay: examId,
-          };
-        },
-        getChanges: (_request, payload) => {
-          const response = payload as Record<string, unknown> | undefined;
-
-          return {
-            result: response ?? null,
-          };
-        },
-        getMetadata: (request) => {
-          const { examId } = request.params as { examId: string };
-
-          return {
-            source: 'examRoutes.uploadExamImages',
-            examId,
-          };
-        },
-      },
+  app.post(
+    '/exams/images',
+    {
+      schema: processExamUploadSchema,
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
     },
-    handler: uploadExamImages,
-  });
+    processExamUpload,
+  );
 
   app.get(
     '/exams',
