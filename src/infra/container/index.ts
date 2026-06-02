@@ -24,6 +24,7 @@ import { BullMQMessageBroker } from '@/infra/queue/notify-bullmq-service';
 import { MinioStorageService } from '@/infra/storage/minio-storage-service';
 import { NodeCryptoCryptographyService } from '@/infra/shared/node-cryptography-service';
 import { DefaultMaskingService } from '@/infra/shared/default-masking-service';
+import { DicomParserService } from '@/infra/dicom/dicom-parser-service';
 
 import { CreateUserByAdmin } from '@/modules/users/use-cases/create-user-by-admin';
 import { UpdateUserUsecase } from '@/modules/users/use-cases/update-user-usecase';
@@ -32,11 +33,12 @@ import { SolicitarAlteracaoCpfCrmUsecase } from '@/modules/users/use-cases/solic
 import { AprovarSolicitacaoCpfCrmUsecase } from '@/modules/users/use-cases/aprovar-solicitacao-cpf-crm';
 import { RejeitarSolicitacaoCpfCrmUsecase } from '@/modules/users/use-cases/rejeitar-solicitacao-cpf-crm';
 import { ListarSolicitacoesCpfCrmUsecase } from '@/modules/users/use-cases/listar-solicitacoes-cpf-crm';
+import { RecoverPasswordByCrmUseCase } from '@/modules/users/use-cases/recover-password-by-crm-usecase';
 
 import type { UsuariosRepository, SolicitacaoCpfCrmRepository } from '@/modules/users/repositories';
 
 import { CreateExamUseCase } from '@/modules/exam/use-cases/create-exam-usecase';
-import { UploadExamImagesUseCase } from '@/modules/exam/use-cases/upload-exam-images-usecase';
+import { ProcessExamUploadUseCase } from '@/modules/exam/use-cases/process-exam-upload-usecase';
 import { ListExamsUseCase } from '@/modules/exam/use-cases/list-exams-usecase';
 import { GetExamDetailsUseCase } from '@/modules/exam/use-cases/get-exam-details-usecase';
 import { RegisterExamAiResultUseCase } from '@/modules/exam/use-cases/register-exam-ai-result-usecase';
@@ -50,14 +52,19 @@ import type { ComorbidadeRepository } from '@/modules/exam/comorbidade-repositor
 import type { AuthService } from '@/shared/services/auth-service';
 import type { StorageService } from '@/shared/services/storage-service';
 import type { CryptographyService } from '@/shared/services/cryptography-service';
+import type { DicomService } from '@/shared/services/dicom-service';
 import type { MaskingService } from '@/shared/services/masking-service';
 import type { MessageBroker } from '@/shared/services/message-broker';
+import type { AuditLogsRepository } from '@/modules/audit-log/audit-log-repository';
+import { ListLogsWithFiltersUseCase } from '@/modules/audit-log/use-case/list-logs-with-filters';
 import type { NotificationsRepository } from '@/modules/notification/repositories';
 import { NotificationService } from '@/modules/notification/services';
 import { ListMyNotificationsUsecase } from '@/modules/notification/use-case/list-my-notifications-use-case';
 import { DeleteNotificationUseCase } from '@/modules/notification/use-case/delete-notification-use-case';
 import { MarkNotificationAsReadUseCase } from '@/modules/notification/use-case/mark-notification-as-read-use-case';
 import { NodemailerEmailProvider } from '../mail/providers/nodemailer-email-provider';
+import { DrizzleAuditLogsRepository } from '../database/drizzle/repositories/drizzle-audit-logs-repository';
+import { AuthEmailMessageService, type IMessageService } from '@/shared/services/message-service';
 
 export interface AppContainer {
   app: FastifyInstance;
@@ -69,8 +76,10 @@ export interface AppContainer {
   resultadoIaRepository: ResultadoIaRepository;
   examIaErrorRepository: ExamIaErrorRepository;
   comorbidadeRepository: ComorbidadeRepository;
+  auditLogRepository: AuditLogsRepository;
   authService: AuthService;
   storageService: StorageService;
+  dicomService: DicomService;
   cryptographyService: CryptographyService;
   maskingService: MaskingService;
   messageBroker: MessageBroker;
@@ -81,8 +90,9 @@ export interface AppContainer {
   aprovarSolicitacaoCpfCrmUsecase: AprovarSolicitacaoCpfCrmUsecase;
   rejeitarSolicitacaoCpfCrmUsecase: RejeitarSolicitacaoCpfCrmUsecase;
   listarSolicitacoesCpfCrmUsecase: ListarSolicitacoesCpfCrmUsecase;
+  recoverPasswordByCrmUseCase: RecoverPasswordByCrmUseCase;
   createExamUseCase: CreateExamUseCase;
-  uploadExamImagesUseCase: UploadExamImagesUseCase;
+  processExamUploadUseCase: ProcessExamUploadUseCase;
   listExamsUseCase: ListExamsUseCase;
   getExamDetailsUseCase: GetExamDetailsUseCase;
   registerExamAiResultUseCase: RegisterExamAiResultUseCase;
@@ -92,6 +102,8 @@ export interface AppContainer {
   deleteNotificationUseCase: DeleteNotificationUseCase;
   markNotificationAsReadUseCase: MarkNotificationAsReadUseCase;
   nodeMailerEmailProvider: NodemailerEmailProvider;
+  listLogsWithFiltersUseCase: ListLogsWithFiltersUseCase;
+  authMessageService: IMessageService;
 }
 
 export const container: AwilixContainer<AppContainer> = createContainer<AppContainer>({
@@ -112,9 +124,16 @@ container.register({
   comorbidadeRepository: asClass(DrizzleComorbidadeRepository).singleton(),
   authService: asClass(BetterAuthService).singleton(),
   storageService: asClass(MinioStorageService).singleton(),
+  dicomService: asClass(DicomParserService).singleton(),
   cryptographyService: asClass(NodeCryptoCryptographyService).singleton(),
   maskingService: asClass(DefaultMaskingService).singleton(),
   messageBroker: asClass(BullMQMessageBroker).singleton(),
+  auditLogRepository: asClass(DrizzleAuditLogsRepository).singleton(),
+
+  authMessageService: asFunction(
+    ({ nodeMailerEmailProvider }: AppContainer) =>
+      new AuthEmailMessageService(nodeMailerEmailProvider),
+  ).singleton(),
 
   markNotificationAsReadUseCase: asFunction(
     ({ notificationRepository }: AppContainer) =>
@@ -177,19 +196,33 @@ container.register({
       new ListarSolicitacoesCpfCrmUsecase(solicitacaoCpfCrmRepository),
   ).scoped(),
 
-  createExamUseCase: asFunction(
-    ({ usuariosRepository, examesRepository, cryptographyService }: AppContainer) =>
-      new CreateExamUseCase(usuariosRepository, examesRepository, cryptographyService),
+  recoverPasswordByCrmUseCase: asFunction(
+    ({ usuariosRepository, maskingService }: AppContainer) =>
+      new RecoverPasswordByCrmUseCase(usuariosRepository, maskingService),
   ).scoped(),
 
-  uploadExamImagesUseCase: asFunction(
-    ({ examesRepository, imagemRepository, storageService, messageBroker }: AppContainer) =>
-      new UploadExamImagesUseCase(
+  createExamUseCase: asFunction(
+    ({
+      usuariosRepository,
+      examesRepository,
+      cryptographyService,
+      imagemRepository,
+      storageService,
+      messageBroker,
+    }: AppContainer) =>
+      new CreateExamUseCase(
+        usuariosRepository,
         examesRepository,
+        cryptographyService,
         imagemRepository,
         storageService,
         messageBroker,
       ),
+  ).scoped(),
+
+  processExamUploadUseCase: asFunction(
+    ({ storageService, dicomService }: AppContainer) =>
+      new ProcessExamUploadUseCase(storageService, dicomService),
   ).scoped(),
 
   listExamsUseCase: asFunction(
@@ -237,6 +270,10 @@ container.register({
   listMyNotificationsUsecase: asFunction(
     ({ notificationRepository }: AppContainer) =>
       new ListMyNotificationsUsecase(notificationRepository),
+  ).scoped(),
+
+  listLogsWithFiltersUseCase: asFunction(
+    ({ auditLogRepository }: AppContainer) => new ListLogsWithFiltersUseCase(auditLogRepository),
   ).scoped(),
 });
 

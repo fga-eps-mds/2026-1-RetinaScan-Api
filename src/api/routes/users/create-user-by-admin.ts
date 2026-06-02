@@ -15,7 +15,7 @@ const bodySchema = z.object({
   crm: z.string().min(1, 'CRM obrigatório.'),
   dtNascimento: z.string().date().pipe(z.coerce.date()),
   senha: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres.'),
-  tipoPerfil: z.enum(['ADMIN', 'MEDICO']),
+  tipoPerfil: z.enum(['ADMIN', 'MEDICO', 'ESPECIALISTA']),
 });
 
 function getErrorCode(error: unknown): string | null {

@@ -3,6 +3,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { container } from '@/infra/container';
 import { ValidationError } from '@/shared/errors';
 import { Sexo } from '@/modules/exam';
+import { LateralidadeOlho } from '@/modules/exam/imagem';
 import { cpf } from 'cpf-cnpj-validator';
 
 const comorbidadesSchema = z
@@ -49,6 +50,22 @@ const comorbidadesSchema = z
     }
   });
 
+const imagensSchema = z
+  .array(
+    z.object({
+      uploadId: z.string().uuid('uploadId inválido.'),
+      lateralidade: z.nativeEnum(LateralidadeOlho, { message: 'lateralidade inválida.' }),
+    }),
+  )
+  .min(1, 'Envie pelo menos uma imagem.')
+  .max(2, 'No máximo duas imagens.')
+  .refine((imgs) => new Set(imgs.map((i) => i.lateralidade)).size === imgs.length, {
+    message: 'Lateralidade duplicada.',
+  })
+  .refine((imgs) => new Set(imgs.map((i) => i.uploadId)).size === imgs.length, {
+    message: 'uploadId duplicado.',
+  });
+
 const bodySchema = z
   .object({
     nomeCompleto: z.string().trim().min(1, 'nomeCompleto é obrigatório.'),
@@ -58,6 +75,7 @@ const bodySchema = z
     dtHora: z.string().datetime({ message: 'dtHora inválida.' }).pipe(z.coerce.date()),
     comorbidades: comorbidadesSchema,
     descricao: z.string().trim().min(1, 'descricao não pode ser vazio.').optional(),
+    imagens: imagensSchema,
   })
   .strict({ message: 'Campos inválidos.' });
 

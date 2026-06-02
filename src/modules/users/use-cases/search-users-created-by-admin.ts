@@ -12,7 +12,7 @@ interface Request {
 }
 
 export class SearchDoctorsUseCase {
-  constructor(private doctorsRepository: IdAdminSearchDoctors) {}
+  constructor(private readonly doctorsRepository: IdAdminSearchDoctors) {}
 
   async execute({
     adminId,
