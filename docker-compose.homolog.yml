@@ -40,7 +40,7 @@ services:
       - "traefik.http.routers.retina-api.rule=Host(`homologapi.retinascan.site`)"
       - "traefik.http.routers.retina-api.entrypoints=websecure"
       - "traefik.http.routers.retina-api.tls=true"
-      - "traefik.http.routers.retina-api.tls.certresolver=le"
+      - "traefik.http.routers.retina-api.tls.certresolver=lets-encrypt"
       - "traefik.http.routers.retina-api.service=retina-api-svc"
       - "traefik.http.services.retina-api-svc.loadbalancer.server.port=3000"
 
