@@ -34,7 +34,15 @@ services:
       - "3006:3000"
     networks:
       - retina-scan-network
+      - web 
     restart: unless-stopped
+    labels:
+      - "traefik.http.routers.retina-api.rule=Host(`homologapi.retinascan.site`)"
+      - "traefik.http.routers.retina-api.entrypoints=websecure"
+      - "traefik.http.routers.retina-api.tls=true"
+      - "traefik.http.routers.retina-api.tls.certresolver=le"
+      - "traefik.http.routers.retina-api.service=retina-api-svc"
+      - "traefik.http.services.retina-api-svc.loadbalancer.server.port=3000"
 
   redis:
     image: redis:7.2.4
@@ -47,6 +55,7 @@ services:
       - redis_data:/data
     networks:
       - retina-scan-network
+      - web
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "redispw", "ping"]
       interval: 10s
@@ -64,3 +73,6 @@ networks:
   retina-scan-network:
     driver: bridge
     name: retina-scan-prod-net
+
+  web:
+    external: true
