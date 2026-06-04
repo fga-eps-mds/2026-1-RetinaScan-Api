@@ -6,6 +6,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: retina-scan
+    env_file:
+      - env/.env.prod
     volumes:
       - postgres_data_homolog:/var/lib/postgresql/data
     healthcheck:
@@ -14,8 +16,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    env_file:
-      - env/.env.prod
     networks:
       - retina-scan-network
     restart: unless-stopped
@@ -32,9 +32,11 @@ services:
         condition: service_healthy
     networks:
       - retina-scan-network
-      - web 
+      - web
     restart: unless-stopped
     labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
       - "traefik.http.routers.retina-api.rule=Host(`homologapi.retinascan.site`)"
       - "traefik.http.routers.retina-api.entrypoints=websecure"
       - "traefik.http.routers.retina-api.tls=true"
@@ -44,14 +46,13 @@ services:
 
   redis:
     image: redis:7.2.4
+    container_name: retina-scan-redis-homolog
     env_file:
       - ./env/.env.prod
-    container_name: retina-scan-redis-homolog
     volumes:
       - redis_data:/data
     networks:
       - retina-scan-network
-      - web
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "redispw", "ping"]
       interval: 10s
@@ -72,3 +73,4 @@ networks:
 
   web:
     external: true
+    name: web
