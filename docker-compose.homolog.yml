@@ -37,7 +37,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=web"
-      - "traefik.http.routers.retina-api.rule=Host(`homologapi.retinascan.site`)"
+      - "traefik.http.routers.retina-api.rule=Host(`apihomolog.retinascan.site`)"
       - "traefik.http.routers.retina-api.entrypoints=websecure"
       - "traefik.http.routers.retina-api.tls=true"
       - "traefik.http.routers.retina-api.tls.certresolver=lets-encrypt"
