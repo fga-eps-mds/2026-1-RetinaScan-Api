@@ -7,7 +7,7 @@ import { container } from '../infra/container/index.js';
 
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
-  baseURL: env.BETTER_AUTH_URL || `http://localhost:${env.PORT}`,
+  baseURL: env.BETTER_AUTH_URL,
   trustedOrigins: env.ALLOWED_ORIGINS.split(',').map((origin) => origin.trim()),
 
   emailAndPassword: {
