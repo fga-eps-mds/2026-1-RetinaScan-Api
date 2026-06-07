@@ -26,7 +26,7 @@ export class DrizzleSpecialistReportRepository implements SpecialistReportReposi
         examId: data.examId,
         specialistId: data.especialistId,
         texto: data.texto,
-        resultadoIaValido: Boolean(data.resultadoIAValido),
+        resultadoIaValido: Boolean(data.resultadoIaValido),
       })
       .returning();
 
@@ -38,7 +38,7 @@ export class DrizzleSpecialistReportRepository implements SpecialistReportReposi
       .update(specialistReport)
       .set({
         texto: data.texto,
-        resultadoIaValido: Boolean(data.resultadoIAValido),
+        resultadoIaValido: Boolean(data.resultadoIaValido),
       })
       .where(eq(specialistReport.examId, examId))
       .returning();

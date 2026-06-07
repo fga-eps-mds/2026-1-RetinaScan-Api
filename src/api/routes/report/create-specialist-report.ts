@@ -43,7 +43,7 @@ export async function createSpecialistReport(request: FastifyRequest, reply: Fas
     examId: paramsResult.data.examId,
     specialistId: user.user.id,
     texto: bodyResult.data.texto,
-    resultadoIAValido: bodyResult.data.resultadoIaValido,
+    resultadoIaValido: bodyResult.data.resultadoIaValido,
   });
 
   return reply.status(201).send(response);

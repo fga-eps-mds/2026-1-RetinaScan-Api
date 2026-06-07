@@ -10,7 +10,7 @@ type UpdateSpecialistReportUseCaseRequest = {
   actorId: string;
   examId: string;
   texto: string;
-  resultadoIAValido: boolean;
+  resultadoIaValido: boolean;
 };
 
 type UpdateSpecialistReportUseCaseResponse = {
@@ -57,7 +57,7 @@ export class UpdateSpecialistReportUseCase {
 
     const report = await this.specialistReportRepository.update(existingReport.id, {
       texto: data.texto,
-      resultadoIAValido: data.resultadoIAValido,
+      resultadoIaValido: data.resultadoIaValido,
     });
 
     await this.notificationService.notificar({

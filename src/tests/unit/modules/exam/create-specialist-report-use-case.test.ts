@@ -66,7 +66,7 @@ describe('CreateSpecialistReportUseCase', () => {
       examId: 'exam-1',
       specialistId: 'specialist-1',
       texto: 'Laudo gerado',
-      resultadoIAValido: true,
+      resultadoIaValido: true,
     });
 
     await expect(promise).rejects.toBeInstanceOf(NotFoundError);
@@ -89,7 +89,7 @@ describe('CreateSpecialistReportUseCase', () => {
       examId: 'exam-1',
       specialistId: 'specialist-1',
       texto: 'Laudo gerado',
-      resultadoIAValido: true,
+      resultadoIaValido: true,
     });
 
     await expect(promise).rejects.toBeInstanceOf(UnauthorizedError);
@@ -114,7 +114,7 @@ describe('CreateSpecialistReportUseCase', () => {
       examId: 'exam-1',
       specialistId: 'specialist-1',
       texto: 'Laudo gerado',
-      resultadoIAValido: true,
+      resultadoIaValido: true,
     });
 
     await expect(promise).rejects.toBeInstanceOf(NotFoundError);
@@ -146,7 +146,7 @@ describe('CreateSpecialistReportUseCase', () => {
       examId: 'exam-1',
       specialistId: 'specialist-1',
       texto: 'Laudo gerado',
-      resultadoIAValido: true,
+      resultadoIaValido: true,
     });
 
     await expect(promise).rejects.toBeInstanceOf(ConflictError);
@@ -184,7 +184,7 @@ describe('CreateSpecialistReportUseCase', () => {
       examId: 'exam-1',
       specialistId: 'specialist-1',
       texto: 'Laudo gerado',
-      resultadoIAValido: true,
+      resultadoIaValido: true,
     });
 
     await expect(promise).rejects.toBeInstanceOf(ConflictError);
@@ -227,7 +227,7 @@ describe('CreateSpecialistReportUseCase', () => {
       examId: 'exam-1',
       specialistId: 'specialist-1',
       texto: 'Laudo final',
-      resultadoIAValido: true,
+      resultadoIaValido: true,
     });
 
     expect(usuariosRepository.findBy).toHaveBeenCalledWith({
@@ -245,7 +245,7 @@ describe('CreateSpecialistReportUseCase', () => {
       examId: 'exam-1',
       especialistId: 'specialist-1',
       texto: 'Laudo final',
-      resultadoIAValido: true,
+      resultadoIaValido: true,
     });
 
     expect(notificationService.notificar).toHaveBeenCalledWith({

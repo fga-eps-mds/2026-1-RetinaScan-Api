@@ -10,7 +10,7 @@ type createSpecialistUseCaseRequest = {
   examId: string;
   specialistId: string;
   texto: string;
-  resultadoIAValido: boolean;
+  resultadoIaValido: boolean;
 };
 
 type createSpecialistUseCaseResponse = {
@@ -60,7 +60,7 @@ export class CreateSpecialistReportUseCase {
       examId: data.examId,
       especialistId: data.specialistId,
       texto: data.texto,
-      resultadoIAValido: data.resultadoIAValido,
+      resultadoIaValido: data.resultadoIaValido,
     });
 
     await this.notificationService.notificar({

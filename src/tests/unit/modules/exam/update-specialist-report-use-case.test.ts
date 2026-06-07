@@ -64,7 +64,7 @@ describe('UpdateSpecialistReportUseCase', () => {
       actorId: 'specialist-1',
       examId: 'exam-1',
       texto: 'Laudo atualizado',
-      resultadoIAValido: true,
+      resultadoIaValido: true,
     });
 
     await expect(promise).rejects.toBeInstanceOf(NotFoundError);
@@ -84,7 +84,7 @@ describe('UpdateSpecialistReportUseCase', () => {
       actorId: 'specialist-1',
       examId: 'exam-1',
       texto: 'Laudo atualizado',
-      resultadoIAValido: true,
+      resultadoIaValido: true,
     });
 
     await expect(promise).rejects.toBeInstanceOf(NotFoundError);
@@ -109,7 +109,7 @@ describe('UpdateSpecialistReportUseCase', () => {
       actorId: 'specialist-1',
       examId: 'exam-1',
       texto: 'Laudo atualizado',
-      resultadoIAValido: true,
+      resultadoIaValido: true,
     });
 
     await expect(promise).rejects.toBeInstanceOf(NotFoundError);
@@ -140,7 +140,7 @@ describe('UpdateSpecialistReportUseCase', () => {
       actorId: 'specialist-1',
       examId: 'exam-1',
       texto: 'Laudo atualizado',
-      resultadoIAValido: true,
+      resultadoIaValido: true,
     });
 
     await expect(promise).rejects.toBeInstanceOf(UnauthorizedError);
@@ -178,7 +178,7 @@ describe('UpdateSpecialistReportUseCase', () => {
       actorId: 'specialist-1',
       examId: 'exam-1',
       texto: 'Laudo atualizado',
-      resultadoIAValido: false,
+      resultadoIaValido: false,
     });
 
     await expect(promise).rejects.toBeInstanceOf(UnauthorizedError);
@@ -213,7 +213,7 @@ describe('UpdateSpecialistReportUseCase', () => {
       examId: 'exam-1',
       specialistId: 'specialist-1',
       texto: 'Laudo atualizado',
-      resultadoIAValido: true,
+      resultadoIaValido: true,
     };
 
     specialistReportRepository.update.mockResolvedValue(updatedReport);
@@ -223,7 +223,7 @@ describe('UpdateSpecialistReportUseCase', () => {
       actorId: 'specialist-1',
       examId: 'exam-1',
       texto: 'Laudo atualizado',
-      resultadoIAValido: true,
+      resultadoIaValido: true,
     });
 
     expect(usuariosRepository.findBy).toHaveBeenCalledWith({
@@ -238,7 +238,7 @@ describe('UpdateSpecialistReportUseCase', () => {
 
     expect(specialistReportRepository.update).toHaveBeenCalledWith('report-1', {
       texto: 'Laudo atualizado',
-      resultadoIAValido: true,
+      resultadoIaValido: true,
     });
 
     expect(notificationService.notificar).toHaveBeenCalledWith({

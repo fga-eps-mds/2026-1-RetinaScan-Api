@@ -63,7 +63,7 @@ export async function reportRoutes(app: FastifyInstance): Promise<void> {
         }),
         getChanges: (request) => {
           const body = request.body as Record<string, unknown>;
-          return { texto: body.texto, resultadoIAValido: body.resultadoIAValido };
+          return { texto: body.texto, resultadoIaValido: body.resultadoIaValido };
         },
         getMetadata: () => ({ source: 'reportRoutes.createSpecialistReport' }),
       },
@@ -92,7 +92,7 @@ export async function reportRoutes(app: FastifyInstance): Promise<void> {
         }),
         getChanges: (request) => {
           const body = request.body as Record<string, unknown>;
-          return { texto: body.texto, resultadoIAValido: body.resultadoIAValido };
+          return { texto: body.texto, resultadoIaValido: body.resultadoIaValido };
         },
         getMetadata: () => ({ source: 'reportRoutes.updateSpecialistReport' }),
       },

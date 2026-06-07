@@ -4,12 +4,12 @@ export type CreateSpecialistReportInput = {
   examId: string;
   especialistId: string;
   texto: string;
-  resultadoIAValido: boolean;
+  resultadoIaValido: boolean;
 };
 
 export type UpdateSpecialistReportInput = {
   texto: string;
-  resultadoIAValido: boolean;
+  resultadoIaValido: boolean;
 };
 
 export interface SpecialistReportRepository {
