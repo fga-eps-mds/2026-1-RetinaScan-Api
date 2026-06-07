@@ -99,6 +99,9 @@ export class DrizzleUsuariosRepository implements UsuariosRepository, IdAdminSea
     if (criteria.name) conds.push(ilike(usuario.nomeCompleto, `%${criteria.name}%`));
     if (criteria.crm) conds.push(eq(usuario.crm, criteria.crm));
     if (criteria.email) conds.push(eq(usuario.email, criteria.email));
+    if (criteria.tipoPerfil) {
+      conds.push(eq(usuario.tipoPerfil, criteria.tipoPerfil as 'MEDICO' | 'ESPECIALISTA'));
+    }
 
     const whereClause = and(...conds);
     const offset = (pagination.page - 1) * pagination.pageSize;
