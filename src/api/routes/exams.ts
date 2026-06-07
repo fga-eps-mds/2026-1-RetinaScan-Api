@@ -73,7 +73,7 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
       schema: listExamsSchema,
       preHandler: [
         authenticationMiddleware,
-        authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ADMIN]),
+        authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ADMIN, tiposPerfil.ESPECIALISTA]),
       ],
     },
     listExams,
@@ -85,7 +85,7 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
       schema: getExamDetailsSchema,
       preHandler: [
         authenticationMiddleware,
-        authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ADMIN]),
+        authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ADMIN, tiposPerfil.ESPECIALISTA]),
       ],
     },
     getExamDetails,

@@ -46,6 +46,8 @@ const envSchema = z.object({
   SMTP_PASSWORD: z.string().min(1, 'SMTP_PASSWORD is required'),
   SMTP_FROM: z.string().min(1, 'SMTP_FROM is required'),
   SMTP_REPLY_TO: z.string().min(1, 'SMTP_REPLY_TO is required'),
+  SPECIALIST_REPORT_EDIT_WINDOW_DAYS: z.coerce.number().default(7),
+  SPECIALIST_REPORT_EDITING_TTL_SECONDS: z.coerce.number().int().min(5).default(30),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

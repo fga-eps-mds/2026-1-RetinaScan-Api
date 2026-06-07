@@ -4,6 +4,7 @@ import type { FastifyInstance } from 'fastify';
 import { setupWebSocket } from '@/infra/websocket/setup-websocket';
 import { authenticateSocket } from '@/infra/websocket/authenticate-socket';
 import logger from '@/infra/logger';
+import { container } from '@/infra/container';
 import { Server as SocketIOServer } from 'socket.io';
 
 vi.mock('@/infra/websocket/authenticate-socket', () => ({
@@ -14,6 +15,13 @@ vi.mock('@/infra/logger', () => ({
   default: {
     info: vi.fn(),
     warn: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
+vi.mock('@/infra/container', () => ({
+  container: {
+    resolve: vi.fn(),
   },
 }));
 
@@ -32,6 +40,9 @@ vi.mock('socket.io', () => {
       use = useMock;
       on = onMock;
       close = closeMock;
+      in = vi.fn(() => ({
+        fetchSockets: vi.fn().mockResolvedValue([]),
+      }));
     },
   );
 
@@ -42,14 +53,24 @@ vi.mock('socket.io', () => {
 
 describe('setupWebSocket', () => {
   const mockedAuthenticateSocket = vi.mocked(authenticateSocket);
+  const mockedContainer = vi.mocked(container);
   const mockedLogger = logger as unknown as {
     info: ReturnType<typeof vi.fn>;
     warn: ReturnType<typeof vi.fn>;
+    error: ReturnType<typeof vi.fn>;
   };
 
   let decorateMock: ReturnType<typeof vi.fn>;
   let addHookMock: ReturnType<typeof vi.fn>;
   let app: FastifyInstance;
+
+  const reportEditingPresenceServiceMock = {
+    acquire: vi.fn(),
+    heartbeat: vi.fn(),
+    release: vi.fn(),
+    get: vi.fn(),
+    releaseAllBySocket: vi.fn(),
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -62,6 +83,10 @@ describe('setupWebSocket', () => {
       decorate: decorateMock,
       addHook: addHookMock,
     } as unknown as FastifyInstance;
+
+    mockedContainer.resolve.mockReturnValue(reportEditingPresenceServiceMock);
+    reportEditingPresenceServiceMock.releaseAllBySocket.mockResolvedValue([]);
+    reportEditingPresenceServiceMock.get.mockResolvedValue(null);
   });
 
   it('deve criar o servidor socket.io com as opções esperadas e decorar o app', () => {
@@ -151,21 +176,24 @@ describe('setupWebSocket', () => {
 
     const connectionHandler = onMock.mock.calls.find(([event]) => event === 'connection')?.[1];
     const joinMock = vi.fn().mockResolvedValue(undefined);
-    const disconnectHandlerRegistry: Record<string, () => void> = {};
+    const disconnectHandlerRegistry: Record<string, () => Promise<void> | void> = {};
 
     const socket = {
       id: 'socket-1',
       data: {
         userId: 'user-1',
+        nome: 'Gustavo Costa',
       },
       join: joinMock,
-      on: vi.fn((event: string, handler: () => void) => {
+      leave: vi.fn(),
+      on: vi.fn((event: string, handler: () => Promise<void> | void) => {
         disconnectHandlerRegistry[event] = handler;
       }),
     };
 
     await connectionHandler(socket);
 
+    expect(mockedContainer.resolve).toHaveBeenCalledWith('reportEditingPresenceService');
     expect(joinMock).toHaveBeenCalledWith('user_user-1');
     expect(socket.on).toHaveBeenCalledWith('disconnect', expect.any(Function));
     expect(mockedLogger.info).toHaveBeenCalledWith('Novo cliente conectado ao WebSocket', {
@@ -173,8 +201,9 @@ describe('setupWebSocket', () => {
       userId: 'user-1',
     });
 
-    disconnectHandlerRegistry.disconnect();
+    await disconnectHandlerRegistry.disconnect();
 
+    expect(reportEditingPresenceServiceMock.releaseAllBySocket).toHaveBeenCalledWith('socket-1');
     expect(mockedLogger.info).toHaveBeenCalledWith('Cliente desconectado do WebSocket', {
       socketId: 'socket-1',
       userId: 'user-1',

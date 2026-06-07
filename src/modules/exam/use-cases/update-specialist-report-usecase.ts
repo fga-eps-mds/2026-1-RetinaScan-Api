@@ -1,0 +1,76 @@
+import type { UsuariosRepository } from '@/modules/users/repositories';
+import type { ExamesRepository } from '../exam-repository';
+import type { SpecialistReportRepository } from '../specialist-report-repository';
+import type { NotificationService } from '@/modules/notification/services';
+import type { SpecialistReport } from '../specialist-report';
+import { NotFoundError, UnauthorizedError } from '@/shared/errors';
+import { env } from '@/env';
+
+type UpdateSpecialistReportUseCaseRequest = {
+  actorId: string;
+  examId: string;
+  texto: string;
+  resultadoIAValido: boolean;
+};
+
+type UpdateSpecialistReportUseCaseResponse = {
+  report: SpecialistReport;
+  updated: boolean;
+};
+
+export class UpdateSpecialistReportUseCase {
+  constructor(
+    private readonly usuariosRepository: UsuariosRepository,
+    private readonly examesRepository: ExamesRepository,
+    private readonly specialistReportRepository: SpecialistReportRepository,
+    private readonly notificationService: NotificationService,
+  ) {}
+
+  async execute(
+    data: UpdateSpecialistReportUseCaseRequest,
+  ): Promise<UpdateSpecialistReportUseCaseResponse> {
+    const actor = await this.usuariosRepository.findBy({ id: data.actorId });
+
+    if (!actor) throw new NotFoundError('Usuário não encontrado');
+
+    const examDetails = await this.examesRepository.findOne({
+      examId: data.examId,
+    });
+    if (!examDetails) throw new NotFoundError('Exame não encontrado');
+
+    const existingReport = await this.specialistReportRepository.findByExamId(data.examId);
+
+    if (!existingReport) {
+      throw new NotFoundError('Laudo do especialista não encontrado para este exame');
+    }
+
+    if (actor.id !== existingReport.specialistId) {
+      throw new UnauthorizedError('Você não pode atualizar o laudo de outro especialista');
+    }
+
+    const deadline = new Date(existingReport.createdAt);
+    deadline.setHours(deadline.getHours() + env.SPECIALIST_REPORT_EDIT_WINDOW_DAYS);
+
+    if (new Date() > deadline) {
+      throw new UnauthorizedError('O prazo para editar este laudo expirou');
+    }
+
+    const report = await this.specialistReportRepository.update(existingReport.id, {
+      texto: data.texto,
+      resultadoIAValido: data.resultadoIAValido,
+    });
+
+    await this.notificationService.notificar({
+      usuarioId: examDetails.idUsuario,
+      tipo: 'laudo_especialista_atualizado',
+      titulo: 'Laudo de especialista atualizado',
+      mensagem: `O laudo do especialista para o seu exame "${examDetails.nomeCompleto}" foi atualizado.`,
+      chaveDedupe: `laudo_atualizado_${examDetails.id}`,
+    });
+
+    return {
+      report,
+      updated: true,
+    };
+  }
+}

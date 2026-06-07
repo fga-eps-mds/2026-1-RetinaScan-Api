@@ -7,6 +7,7 @@ import {
   type AwilixContainer,
 } from 'awilix';
 import type { FastifyInstance } from 'fastify';
+import type Redis from 'ioredis';
 
 import {
   DrizzleSolicitacaoCpfCrmRepository,
@@ -43,31 +44,43 @@ import { ListExamsUseCase } from '@/modules/exam/use-cases/list-exams-usecase';
 import { GetExamDetailsUseCase } from '@/modules/exam/use-cases/get-exam-details-usecase';
 import { RegisterExamAiResultUseCase } from '@/modules/exam/use-cases/register-exam-ai-result-usecase';
 import { RegisterExamAiErrorUseCase } from '@/modules/exam/use-cases/register-exam-ai-error-usecase';
+import { CreateSpecialistReportUseCase } from '@/modules/exam/use-cases/create-specialist-report-usecase';
+import { UpdateSpecialistReportUseCase } from '@/modules/exam/use-cases/update-specialist-report-usecase';
 
 import type { ExamesRepository } from '@/modules/exam/exam-repository';
 import type { ImagemRepository } from '@/modules/exam/imagem-repository';
 import type { ResultadoIaRepository } from '@/modules/exam/resultado-ia-repository';
 import type { ExamIaErrorRepository } from '@/modules/exam/exam-ia-error-repository';
 import type { ComorbidadeRepository } from '@/modules/exam/comorbidade-repository';
+import type { SpecialistReportRepository } from '@/modules/exam/specialist-report-repository';
+
 import type { AuthService } from '@/shared/services/auth-service';
 import type { StorageService } from '@/shared/services/storage-service';
 import type { CryptographyService } from '@/shared/services/cryptography-service';
 import type { DicomService } from '@/shared/services/dicom-service';
 import type { MaskingService } from '@/shared/services/masking-service';
 import type { MessageBroker } from '@/shared/services/message-broker';
+import { AuthEmailMessageService, type IMessageService } from '@/shared/services/message-service';
+
 import type { AuditLogsRepository } from '@/modules/audit-log/audit-log-repository';
 import { ListLogsWithFiltersUseCase } from '@/modules/audit-log/use-case/list-logs-with-filters';
+
 import type { NotificationsRepository } from '@/modules/notification/repositories';
 import { NotificationService } from '@/modules/notification/services';
 import { ListMyNotificationsUsecase } from '@/modules/notification/use-case/list-my-notifications-use-case';
 import { DeleteNotificationUseCase } from '@/modules/notification/use-case/delete-notification-use-case';
 import { MarkNotificationAsReadUseCase } from '@/modules/notification/use-case/mark-notification-as-read-use-case';
+
 import { NodemailerEmailProvider } from '../mail/providers/nodemailer-email-provider';
 import { DrizzleAuditLogsRepository } from '../database/drizzle/repositories/drizzle-audit-logs-repository';
-import { AuthEmailMessageService, type IMessageService } from '@/shared/services/message-service';
+import { DrizzleSpecialistReportRepository } from '../database/drizzle/repositories/drizzle-specialist-report-repository';
+import { RedisReportEditingPresenceService } from '../shared/redis-report-editing-presence-service';
+import { redisClient } from '../cache/redis-client';
 
 export interface AppContainer {
   app: FastifyInstance;
+  redis: Redis;
+
   usuariosRepository: UsuariosRepository;
   solicitacaoCpfCrmRepository: SolicitacaoCpfCrmRepository;
   notificationRepository: NotificationsRepository;
@@ -76,13 +89,16 @@ export interface AppContainer {
   resultadoIaRepository: ResultadoIaRepository;
   examIaErrorRepository: ExamIaErrorRepository;
   comorbidadeRepository: ComorbidadeRepository;
+  specialistReportRepository: SpecialistReportRepository;
   auditLogRepository: AuditLogsRepository;
+
   authService: AuthService;
   storageService: StorageService;
   dicomService: DicomService;
   cryptographyService: CryptographyService;
   maskingService: MaskingService;
   messageBroker: MessageBroker;
+
   createUserByAdmin: CreateUserByAdmin;
   updateUserUsecase: UpdateUserUsecase;
   updateUserImageUsecase: UpdateUserImageUsecase;
@@ -91,19 +107,25 @@ export interface AppContainer {
   rejeitarSolicitacaoCpfCrmUsecase: RejeitarSolicitacaoCpfCrmUsecase;
   listarSolicitacoesCpfCrmUsecase: ListarSolicitacoesCpfCrmUsecase;
   recoverPasswordByCrmUseCase: RecoverPasswordByCrmUseCase;
+
   createExamUseCase: CreateExamUseCase;
   processExamUploadUseCase: ProcessExamUploadUseCase;
   listExamsUseCase: ListExamsUseCase;
   getExamDetailsUseCase: GetExamDetailsUseCase;
   registerExamAiResultUseCase: RegisterExamAiResultUseCase;
   registerExamAiErrorUseCase: RegisterExamAiErrorUseCase;
+  createSpecialistReportUseCase: CreateSpecialistReportUseCase;
+  updateSpecialistReportUseCase: UpdateSpecialistReportUseCase;
+
   notificationService: NotificationService;
   listMyNotificationsUsecase: ListMyNotificationsUsecase;
   deleteNotificationUseCase: DeleteNotificationUseCase;
   markNotificationAsReadUseCase: MarkNotificationAsReadUseCase;
+
   nodeMailerEmailProvider: NodemailerEmailProvider;
   listLogsWithFiltersUseCase: ListLogsWithFiltersUseCase;
   authMessageService: IMessageService;
+  reportEditingPresenceService: RedisReportEditingPresenceService;
 }
 
 export const container: AwilixContainer<AppContainer> = createContainer<AppContainer>({
@@ -113,7 +135,10 @@ export const container: AwilixContainer<AppContainer> = createContainer<AppConta
 
 container.register({
   app: asValue({} as FastifyInstance),
+  redis: asValue(redisClient),
+
   nodeMailerEmailProvider: asClass(NodemailerEmailProvider).singleton(),
+
   usuariosRepository: asClass(DrizzleUsuariosRepository).singleton(),
   solicitacaoCpfCrmRepository: asClass(DrizzleSolicitacaoCpfCrmRepository).singleton(),
   notificationRepository: asClass(DrizzleNotificationRepository).singleton(),
@@ -122,13 +147,19 @@ container.register({
   resultadoIaRepository: asClass(DrizzleResultadoIaRepository).singleton(),
   examIaErrorRepository: asClass(DrizzleExamIaErrorRepository).singleton(),
   comorbidadeRepository: asClass(DrizzleComorbidadeRepository).singleton(),
+  auditLogRepository: asClass(DrizzleAuditLogsRepository).singleton(),
+  specialistReportRepository: asClass(DrizzleSpecialistReportRepository).singleton(),
+
   authService: asClass(BetterAuthService).singleton(),
   storageService: asClass(MinioStorageService).singleton(),
   dicomService: asClass(DicomParserService).singleton(),
   cryptographyService: asClass(NodeCryptoCryptographyService).singleton(),
   maskingService: asClass(DefaultMaskingService).singleton(),
   messageBroker: asClass(BullMQMessageBroker).singleton(),
-  auditLogRepository: asClass(DrizzleAuditLogsRepository).singleton(),
+
+  reportEditingPresenceService: asFunction(
+    ({ redis }: AppContainer) => new RedisReportEditingPresenceService(redis),
+  ).singleton(),
 
   authMessageService: asFunction(
     ({ nodeMailerEmailProvider }: AppContainer) =>
@@ -144,6 +175,7 @@ container.register({
     ({ notificationRepository }: AppContainer) =>
       new DeleteNotificationUseCase(notificationRepository),
   ).scoped(),
+
   notificationService: asFunction(
     ({ app, notificationRepository, nodeMailerEmailProvider, usuariosRepository }: AppContainer) =>
       new NotificationService({
@@ -228,6 +260,7 @@ container.register({
   listExamsUseCase: asFunction(
     ({ examesRepository }: AppContainer) => new ListExamsUseCase(examesRepository),
   ).scoped(),
+
   getExamDetailsUseCase: asFunction(
     ({
       examesRepository,
@@ -248,6 +281,7 @@ container.register({
         cryptographyService,
       ),
   ).scoped(),
+
   registerExamAiResultUseCase: asFunction(
     ({
       examesRepository,
@@ -267,6 +301,7 @@ container.register({
     ({ examesRepository, examIaErrorRepository, notificationService }: AppContainer) =>
       new RegisterExamAiErrorUseCase(examesRepository, examIaErrorRepository, notificationService),
   ).scoped(),
+
   listMyNotificationsUsecase: asFunction(
     ({ notificationRepository }: AppContainer) =>
       new ListMyNotificationsUsecase(notificationRepository),
@@ -274,6 +309,38 @@ container.register({
 
   listLogsWithFiltersUseCase: asFunction(
     ({ auditLogRepository }: AppContainer) => new ListLogsWithFiltersUseCase(auditLogRepository),
+  ).scoped(),
+
+  createSpecialistReportUseCase: asFunction(
+    ({
+      usuariosRepository,
+      examesRepository,
+      specialistReportRepository,
+      notificationService,
+      reportEditingPresenceService,
+    }: AppContainer) =>
+      new CreateSpecialistReportUseCase(
+        usuariosRepository,
+        examesRepository,
+        specialistReportRepository,
+        notificationService,
+        reportEditingPresenceService,
+      ),
+  ).scoped(),
+
+  updateSpecialistReportUseCase: asFunction(
+    ({
+      usuariosRepository,
+      examesRepository,
+      specialistReportRepository,
+      notificationService,
+    }: AppContainer) =>
+      new UpdateSpecialistReportUseCase(
+        usuariosRepository,
+        examesRepository,
+        specialistReportRepository,
+        notificationService,
+      ),
   ).scoped(),
 });
 
