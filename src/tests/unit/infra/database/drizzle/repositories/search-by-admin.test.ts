@@ -93,6 +93,24 @@ describe('DrizzleUsuariosRepository.searchByAdmin', () => {
     });
   });
 
+  it('deve buscar médicos filtrando opcionalmente por tipoPerfil (ESPECIALISTA)', async () => {
+    mockOffset.mockResolvedValueOnce([
+      { id: 'd3', nomeCompleto: 'Dr. C', tipoPerfil: 'ESPECIALISTA' },
+    ]);
+    mockWhereCount.mockResolvedValueOnce([{ value: 1 }]);
+
+    const result = await repository.searchByAdmin(
+      'admin-1',
+      { tipoPerfil: 'ESPECIALISTA' },
+      { page: 1, pageSize: 20 },
+    );
+
+    expect(mockSelect).toHaveBeenCalledTimes(2);
+    expect(mockWhereRows).toHaveBeenCalledTimes(1);
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0].tipoPerfil).toBe('ESPECIALISTA');
+  });
+
   it('deve calcular totalPages com arredondamento para cima', async () => {
     mockOffset.mockResolvedValueOnce([]);
     mockWhereCount.mockResolvedValueOnce([{ value: 21 }]);

@@ -103,6 +103,25 @@ describe('SearchDoctorsUseCase', () => {
     );
   });
 
+  it('passes tipoPerfil criteria correctly to repository', async () => {
+    repository.searchByAdmin.mockResolvedValue({
+      data: [{ id: 'd1', tipoPerfil: 'ESPECIALISTA' }],
+      pagination: { page: 1, pageSize: 20, total: 1, totalPages: 1 },
+    });
+
+    await sut.execute({
+      adminId: 'admin-1',
+      criteria: { tipoPerfil: 'ESPECIALISTA' },
+      pagination: { page: 1, pageSize: 20 },
+    });
+
+    expect(repository.searchByAdmin).toHaveBeenCalledWith(
+      'admin-1',
+      { tipoPerfil: 'ESPECIALISTA' },
+      { page: 1, pageSize: 20 },
+    );
+  });
+
   it('passes multiple criteria simultaneously to repository', async () => {
     repository.searchByAdmin.mockResolvedValue({
       data: [{ id: 'd1' }],
