@@ -39,6 +39,7 @@ export class CreateUserByAdmin {
         image: '',
         dtNascimento: data.dtNascimento,
         criadoPor: data.adminId,
+        tipoPerfil: data.tipoPerfil,
       },
     });
   }

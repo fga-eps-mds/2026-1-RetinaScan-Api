@@ -20,7 +20,7 @@ export const createUserByAdminSchema: FastifySchema = {
       crm: { type: 'string', minLength: 1 },
       dtNascimento: { type: 'string', format: 'date' },
       senha: { type: 'string', minLength: 6 },
-      tipoPerfil: { type: 'string', enum: ['ADMIN', 'MEDICO'] },
+      tipoPerfil: { type: 'string', enum: ['ADMIN', 'MEDICO', 'ESPECIALISTA'] },
     },
   },
   response: {
