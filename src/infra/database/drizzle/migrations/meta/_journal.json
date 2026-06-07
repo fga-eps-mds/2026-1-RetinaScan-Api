@@ -92,6 +92,13 @@
       "when": 1780790913089,
       "tag": "0012_add_specialist_report_table",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1780867257714,
+      "tag": "0013_add_html_json_fields_to_report",
+      "breakpoints": true
     }
   ]
 }

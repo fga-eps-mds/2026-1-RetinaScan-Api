@@ -10,6 +10,8 @@ type createSpecialistUseCaseRequest = {
   examId: string;
   specialistId: string;
   texto: string;
+  html: string;
+  conteudo: Record<string, unknown>;
   resultadoIaValido: boolean;
 };
 
@@ -42,6 +44,9 @@ export class CreateSpecialistReportUseCase {
     });
     if (!examDetails) throw new NotFoundError('Exame não encontrado');
 
+    if (examDetails.status !== 'CONCLUIDO')
+      throw new ConflictError('Laudo do especialista só pode ser criado para exames concluídos');
+
     const existingReport = await this.specialistReportRepository.findByExamId(data.examId);
 
     if (existingReport) {
@@ -50,7 +55,7 @@ export class CreateSpecialistReportUseCase {
 
     const editingPresence = await this.reportEditingPresenceService.get(data.examId);
 
-    if (editingPresence) {
+    if (editingPresence && editingPresence.userId !== data.specialistId) {
       throw new ConflictError(
         `O laudo deste exame está sendo editado por ${editingPresence.nome}. Tente novamente mais tarde.`,
       );
@@ -60,6 +65,8 @@ export class CreateSpecialistReportUseCase {
       examId: data.examId,
       especialistId: data.specialistId,
       texto: data.texto,
+      html: data.html,
+      conteudo: data.conteudo,
       resultadoIaValido: data.resultadoIaValido,
     });
 
@@ -67,7 +74,7 @@ export class CreateSpecialistReportUseCase {
       usuarioId: examDetails.idUsuario,
       tipo: 'laudo_especialista_criado',
       titulo: 'Laudo de especialista disponível',
-      mensagem: 'O laudo do especialista para o seu exame está disponível.',
+      mensagem: `O laudo do especialista para o seu exame ${examDetails.id} está disponível.`,
       chaveDedupe: `laudo_especialista_criado_${examDetails.id}`,
     });
 

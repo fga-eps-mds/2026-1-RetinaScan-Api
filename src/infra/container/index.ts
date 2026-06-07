@@ -270,6 +270,7 @@ container.register({
       comorbidadeRepository,
       storageService,
       cryptographyService,
+      specialistReportRepository,
     }: AppContainer) =>
       new GetExamDetailsUseCase(
         examesRepository,
@@ -279,6 +280,7 @@ container.register({
         comorbidadeRepository,
         storageService,
         cryptographyService,
+        specialistReportRepository,
       ),
   ).scoped(),
 

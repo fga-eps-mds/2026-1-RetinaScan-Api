@@ -4,11 +4,15 @@ export type CreateSpecialistReportInput = {
   examId: string;
   especialistId: string;
   texto: string;
+  html: string;
+  conteudo: Record<string, unknown>;
   resultadoIaValido: boolean;
 };
 
 export type UpdateSpecialistReportInput = {
   texto: string;
+  html: string;
+  conteudo: Record<string, unknown>;
   resultadoIaValido: boolean;
 };
 

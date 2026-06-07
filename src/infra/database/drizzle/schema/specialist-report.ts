@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, uniqueIndex, boolean } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, uniqueIndex, boolean, jsonb } from 'drizzle-orm/pg-core';
 import { exam } from './exam';
 import { usuario } from './user';
 import { relations } from 'drizzle-orm';
@@ -14,6 +14,8 @@ export const specialistReport = pgTable(
       .notNull()
       .references(() => usuario.id, { onDelete: 'restrict' }),
     texto: text('texto').notNull(),
+    html: text('html').notNull(),
+    conteudo: jsonb('conteudo').$type<Record<string, unknown>>().notNull(),
     resultadoIaValido: boolean('resultado_ia_valido').notNull().default(false),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')

@@ -3,13 +3,15 @@ import type { ExamesRepository } from '../exam-repository';
 import type { SpecialistReportRepository } from '../specialist-report-repository';
 import type { NotificationService } from '@/modules/notification/services';
 import type { SpecialistReport } from '../specialist-report';
-import { NotFoundError, UnauthorizedError } from '@/shared/errors';
+import { ConflictError, NotFoundError, UnauthorizedError } from '@/shared/errors';
 import { env } from '@/env';
 
 type UpdateSpecialistReportUseCaseRequest = {
   actorId: string;
   examId: string;
   texto: string;
+  html: string;
+  conteudo: Record<string, unknown>;
   resultadoIaValido: boolean;
 };
 
@@ -38,6 +40,9 @@ export class UpdateSpecialistReportUseCase {
     });
     if (!examDetails) throw new NotFoundError('Exame não encontrado');
 
+    if (examDetails.status !== 'CONCLUIDO')
+      throw new ConflictError('Exame não encontrado ou ainda não concluído');
+
     const existingReport = await this.specialistReportRepository.findByExamId(data.examId);
 
     if (!existingReport) {
@@ -58,13 +63,15 @@ export class UpdateSpecialistReportUseCase {
     const report = await this.specialistReportRepository.update(existingReport.id, {
       texto: data.texto,
       resultadoIaValido: data.resultadoIaValido,
+      html: data.html,
+      conteudo: data.conteudo,
     });
 
     await this.notificationService.notificar({
       usuarioId: examDetails.idUsuario,
       tipo: 'laudo_especialista_atualizado',
       titulo: 'Laudo de especialista atualizado',
-      mensagem: `O laudo do especialista para o seu exame "${examDetails.nomeCompleto}" foi atualizado.`,
+      mensagem: `O laudo do especialista para o seu exame "${examDetails.id}" foi atualizado.`,
       chaveDedupe: `laudo_atualizado_${examDetails.id}`,
     });
 

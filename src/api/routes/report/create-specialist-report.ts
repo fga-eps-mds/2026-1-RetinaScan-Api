@@ -14,6 +14,8 @@ const paramsSchema = z
 const bodySchema = z
   .object({
     texto: z.string().trim().min(1, 'texto é obrigatório.'),
+    html: z.string().trim().min(1, 'html é obrigatório.'),
+    json: z.record(z.string(), z.unknown()).nullable(),
     resultadoIaValido: z.boolean(),
   })
   .strict({ message: 'Campos inválidos.' });
@@ -43,6 +45,8 @@ export async function createSpecialistReport(request: FastifyRequest, reply: Fas
     examId: paramsResult.data.examId,
     specialistId: user.user.id,
     texto: bodyResult.data.texto,
+    html: bodyResult.data.html,
+    conteudo: bodyResult.data.json ?? {},
     resultadoIaValido: bodyResult.data.resultadoIaValido,
   });
 
