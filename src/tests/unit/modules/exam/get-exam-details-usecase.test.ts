@@ -13,6 +13,7 @@ import type { ComorbidadeRepository } from '@/modules/exam/comorbidade-repositor
 import type { UsuariosRepository } from '@/modules/users/repositories';
 import type { StorageService } from '@/shared/services/storage-service';
 import type { CryptographyService } from '@/shared/services/cryptography-service';
+import { SpecialistReportRepository } from '@/modules/exam/specialist-report-repository';
 
 const EXAM_ID = 'exam-1';
 const MEDICO_ID = 'medico-1';
@@ -102,6 +103,7 @@ describe('GetExamDetailsUseCase', () => {
   let comorbidadeRepository: { findByExamId: ReturnType<typeof vi.fn> };
   let storageService: { getPresignedUrl: ReturnType<typeof vi.fn> };
   let cryptographyService: { encrypt: ReturnType<typeof vi.fn>; decrypt: ReturnType<typeof vi.fn> };
+  let specialistReportRepository: { findByExamId: ReturnType<typeof vi.fn> };
   let useCase: GetExamDetailsUseCase;
 
   beforeEach(() => {
@@ -119,6 +121,7 @@ describe('GetExamDetailsUseCase', () => {
         text: input.encryptedText.replace(/^enc:/, ''),
       })),
     };
+    specialistReportRepository = { findByExamId: vi.fn() };
 
     useCase = new GetExamDetailsUseCase(
       examesRepository as unknown as ExamesRepository,
@@ -128,6 +131,7 @@ describe('GetExamDetailsUseCase', () => {
       comorbidadeRepository as unknown as ComorbidadeRepository,
       storageService as unknown as StorageService,
       cryptographyService as unknown as CryptographyService,
+      specialistReportRepository as unknown as SpecialistReportRepository,
     );
   });
 
@@ -176,9 +180,7 @@ describe('GetExamDetailsUseCase', () => {
   });
 
   it('não consulta ResultadoIa quando status é EM_PROCESSAMENTO', async () => {
-    examesRepository.findOne.mockResolvedValue(
-      buildExam({ status: ExameStatus.EM_PROCESSAMENTO }),
-    );
+    examesRepository.findOne.mockResolvedValue(buildExam({ status: ExameStatus.EM_PROCESSAMENTO }));
     usuariosRepository.findBy.mockResolvedValue(buildMedico());
     imagemRepository.findMany.mockResolvedValue([buildImagem()]);
 
@@ -357,9 +359,7 @@ describe('GetExamDetailsUseCase', () => {
       buildImagem({ id: IMG_OD_ID }),
       buildImagem({ id: IMG_OE_ID, lateralidadeOlho: LateralidadeOlho.OE }),
     ]);
-    resultadoIaRepository.findByExamId.mockResolvedValue([
-      buildResultado({ idImagem: IMG_OD_ID }),
-    ]);
+    resultadoIaRepository.findByExamId.mockResolvedValue([buildResultado({ idImagem: IMG_OD_ID })]);
 
     const output = await useCase.execute({
       examId: EXAM_ID,
