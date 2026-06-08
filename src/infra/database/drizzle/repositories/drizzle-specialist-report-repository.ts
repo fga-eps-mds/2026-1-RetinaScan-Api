@@ -69,6 +69,11 @@ export class DrizzleSpecialistReportRepository implements SpecialistReportReposi
       .where(eq(specialistReport.id, reportId))
       .returning();
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!report) {
+      throw new NotFoundError(`Specialist report com id ${reportId} não encontrado.`);
+    }
+
     return {
       ...report,
       conteudo: JSON.stringify(report.conteudo),

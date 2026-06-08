@@ -1,5 +1,5 @@
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import { NotFoundError, UnauthorizedError } from '@/shared/errors';
+import { ConflictError, NotFoundError, UnauthorizedError } from '@/shared/errors';
 import { env } from '@/env';
 import { UpdateSpecialistReportUseCase } from '@/modules/exam/use-cases/update-specialist-report-usecase';
 
@@ -60,15 +60,27 @@ describe('UpdateSpecialistReportUseCase', () => {
   it('deve lançar NotFoundError quando o usuário não for encontrado', async () => {
     usuariosRepository.findBy.mockResolvedValue(null);
 
-    const promise = sut.execute({
-      actorId: 'specialist-1',
-      examId: 'exam-1',
-      texto: 'Laudo atualizado',
-      resultadoIaValido: true,
-    });
+    await expect(
+      sut.execute({
+        actorId: 'specialist-1',
+        examId: 'exam-1',
+        texto: 'Laudo atualizado',
+        html: '<p>Laudo atualizado</p>',
+        conteudo: { type: 'doc' },
+        resultadoIaValido: true,
+      }),
+    ).rejects.toBeInstanceOf(NotFoundError);
 
-    await expect(promise).rejects.toBeInstanceOf(NotFoundError);
-    await expect(promise).rejects.toThrow('Usuário não encontrado');
+    await expect(
+      sut.execute({
+        actorId: 'specialist-1',
+        examId: 'exam-1',
+        texto: 'Laudo atualizado',
+        html: '<p>Laudo atualizado</p>',
+        conteudo: { type: 'doc' },
+        resultadoIaValido: true,
+      }),
+    ).rejects.toThrow('Usuário não encontrado');
 
     expect(examesRepository.findOne).not.toHaveBeenCalled();
   });
@@ -80,15 +92,63 @@ describe('UpdateSpecialistReportUseCase', () => {
     });
     examesRepository.findOne.mockResolvedValue(null);
 
-    const promise = sut.execute({
-      actorId: 'specialist-1',
-      examId: 'exam-1',
-      texto: 'Laudo atualizado',
-      resultadoIaValido: true,
+    await expect(
+      sut.execute({
+        actorId: 'specialist-1',
+        examId: 'exam-1',
+        texto: 'Laudo atualizado',
+        html: '<p>Laudo atualizado</p>',
+        conteudo: { type: 'doc' },
+        resultadoIaValido: true,
+      }),
+    ).rejects.toBeInstanceOf(NotFoundError);
+
+    await expect(
+      sut.execute({
+        actorId: 'specialist-1',
+        examId: 'exam-1',
+        texto: 'Laudo atualizado',
+        html: '<p>Laudo atualizado</p>',
+        conteudo: { type: 'doc' },
+        resultadoIaValido: true,
+      }),
+    ).rejects.toThrow('Exame não encontrado');
+
+    expect(specialistReportRepository.findByExamId).not.toHaveBeenCalled();
+  });
+
+  it('deve lançar ConflictError quando o exame não estiver concluído', async () => {
+    usuariosRepository.findBy.mockResolvedValue({
+      id: 'specialist-1',
+      tipoPerfil: 'ESPECIALISTA',
+    });
+    examesRepository.findOne.mockResolvedValue({
+      id: 'exam-db-1',
+      status: 'PENDENTE',
+      idUsuario: 'user-1',
     });
 
-    await expect(promise).rejects.toBeInstanceOf(NotFoundError);
-    await expect(promise).rejects.toThrow('Exame não encontrado');
+    await expect(
+      sut.execute({
+        actorId: 'specialist-1',
+        examId: 'exam-1',
+        texto: 'Laudo atualizado',
+        html: '<p>Laudo atualizado</p>',
+        conteudo: { type: 'doc' },
+        resultadoIaValido: true,
+      }),
+    ).rejects.toBeInstanceOf(ConflictError);
+
+    await expect(
+      sut.execute({
+        actorId: 'specialist-1',
+        examId: 'exam-1',
+        texto: 'Laudo atualizado',
+        html: '<p>Laudo atualizado</p>',
+        conteudo: { type: 'doc' },
+        resultadoIaValido: true,
+      }),
+    ).rejects.toThrow('Exame não encontrado ou ainda não concluído');
 
     expect(specialistReportRepository.findByExamId).not.toHaveBeenCalled();
   });
@@ -100,20 +160,33 @@ describe('UpdateSpecialistReportUseCase', () => {
     });
     examesRepository.findOne.mockResolvedValue({
       id: 'exam-db-1',
+      status: 'CONCLUIDO',
       idUsuario: 'user-1',
       nomeCompleto: 'Paciente Teste',
     });
     specialistReportRepository.findByExamId.mockResolvedValue(null);
 
-    const promise = sut.execute({
-      actorId: 'specialist-1',
-      examId: 'exam-1',
-      texto: 'Laudo atualizado',
-      resultadoIaValido: true,
-    });
+    await expect(
+      sut.execute({
+        actorId: 'specialist-1',
+        examId: 'exam-1',
+        texto: 'Laudo atualizado',
+        html: '<p>Laudo atualizado</p>',
+        conteudo: { type: 'doc' },
+        resultadoIaValido: true,
+      }),
+    ).rejects.toBeInstanceOf(NotFoundError);
 
-    await expect(promise).rejects.toBeInstanceOf(NotFoundError);
-    await expect(promise).rejects.toThrow('Laudo do especialista não encontrado para este exame');
+    await expect(
+      sut.execute({
+        actorId: 'specialist-1',
+        examId: 'exam-1',
+        texto: 'Laudo atualizado',
+        html: '<p>Laudo atualizado</p>',
+        conteudo: { type: 'doc' },
+        resultadoIaValido: true,
+      }),
+    ).rejects.toThrow('Laudo do especialista não encontrado para este exame');
 
     expect(specialistReportRepository.update).not.toHaveBeenCalled();
     expect(notificationService.notificar).not.toHaveBeenCalled();
@@ -126,6 +199,7 @@ describe('UpdateSpecialistReportUseCase', () => {
     });
     examesRepository.findOne.mockResolvedValue({
       id: 'exam-db-1',
+      status: 'CONCLUIDO',
       idUsuario: 'user-1',
       nomeCompleto: 'Paciente Teste',
     });
@@ -136,15 +210,27 @@ describe('UpdateSpecialistReportUseCase', () => {
       createdAt: '2026-06-07T02:00:00.000Z',
     });
 
-    const promise = sut.execute({
-      actorId: 'specialist-1',
-      examId: 'exam-1',
-      texto: 'Laudo atualizado',
-      resultadoIaValido: true,
-    });
+    await expect(
+      sut.execute({
+        actorId: 'specialist-1',
+        examId: 'exam-1',
+        texto: 'Laudo atualizado',
+        html: '<p>Laudo atualizado</p>',
+        conteudo: { type: 'doc' },
+        resultadoIaValido: true,
+      }),
+    ).rejects.toBeInstanceOf(UnauthorizedError);
 
-    await expect(promise).rejects.toBeInstanceOf(UnauthorizedError);
-    await expect(promise).rejects.toThrow('Você não pode atualizar o laudo de outro especialista');
+    await expect(
+      sut.execute({
+        actorId: 'specialist-1',
+        examId: 'exam-1',
+        texto: 'Laudo atualizado',
+        html: '<p>Laudo atualizado</p>',
+        conteudo: { type: 'doc' },
+        resultadoIaValido: true,
+      }),
+    ).rejects.toThrow('Você não pode atualizar o laudo de outro especialista');
 
     expect(specialistReportRepository.update).not.toHaveBeenCalled();
     expect(notificationService.notificar).not.toHaveBeenCalled();
@@ -157,12 +243,12 @@ describe('UpdateSpecialistReportUseCase', () => {
     });
     examesRepository.findOne.mockResolvedValue({
       id: 'exam-db-1',
+      status: 'CONCLUIDO',
       idUsuario: 'user-1',
       nomeCompleto: 'Paciente Teste',
     });
 
-    const createdAt = new Date('2026-06-01T00:00:00.000Z');
-    const expiredCreatedAt = new Date(createdAt);
+    const expiredCreatedAt = new Date('2026-06-01T00:00:00.000Z');
     expiredCreatedAt.setHours(
       expiredCreatedAt.getHours() - Number(env.SPECIALIST_REPORT_EDIT_WINDOW_DAYS) - 1,
     );
@@ -174,15 +260,27 @@ describe('UpdateSpecialistReportUseCase', () => {
       createdAt: expiredCreatedAt.toISOString(),
     });
 
-    const promise = sut.execute({
-      actorId: 'specialist-1',
-      examId: 'exam-1',
-      texto: 'Laudo atualizado',
-      resultadoIaValido: false,
-    });
+    await expect(
+      sut.execute({
+        actorId: 'specialist-1',
+        examId: 'exam-1',
+        texto: 'Laudo atualizado',
+        html: '<p>Laudo atualizado</p>',
+        conteudo: { type: 'doc' },
+        resultadoIaValido: false,
+      }),
+    ).rejects.toBeInstanceOf(UnauthorizedError);
 
-    await expect(promise).rejects.toBeInstanceOf(UnauthorizedError);
-    await expect(promise).rejects.toThrow('O prazo para editar este laudo expirou');
+    await expect(
+      sut.execute({
+        actorId: 'specialist-1',
+        examId: 'exam-1',
+        texto: 'Laudo atualizado',
+        html: '<p>Laudo atualizado</p>',
+        conteudo: { type: 'doc' },
+        resultadoIaValido: false,
+      }),
+    ).rejects.toThrow('O prazo para editar este laudo expirou');
 
     expect(specialistReportRepository.update).not.toHaveBeenCalled();
     expect(notificationService.notificar).not.toHaveBeenCalled();
@@ -196,6 +294,7 @@ describe('UpdateSpecialistReportUseCase', () => {
 
     examesRepository.findOne.mockResolvedValue({
       id: 'exam-db-1',
+      status: 'CONCLUIDO',
       examId: 'exam-1',
       idUsuario: 'user-1',
       nomeCompleto: 'Maria da Silva',
@@ -213,6 +312,8 @@ describe('UpdateSpecialistReportUseCase', () => {
       examId: 'exam-1',
       specialistId: 'specialist-1',
       texto: 'Laudo atualizado',
+      html: '<p>Laudo atualizado</p>',
+      conteudo: '{"type":"doc"}',
       resultadoIaValido: true,
     };
 
@@ -223,6 +324,8 @@ describe('UpdateSpecialistReportUseCase', () => {
       actorId: 'specialist-1',
       examId: 'exam-1',
       texto: 'Laudo atualizado',
+      html: '<p>Laudo atualizado</p>',
+      conteudo: { type: 'doc' },
       resultadoIaValido: true,
     });
 
@@ -239,13 +342,15 @@ describe('UpdateSpecialistReportUseCase', () => {
     expect(specialistReportRepository.update).toHaveBeenCalledWith('report-1', {
       texto: 'Laudo atualizado',
       resultadoIaValido: true,
+      html: '<p>Laudo atualizado</p>',
+      conteudo: { type: 'doc' },
     });
 
     expect(notificationService.notificar).toHaveBeenCalledWith({
       usuarioId: 'user-1',
       tipo: 'laudo_especialista_atualizado',
       titulo: 'Laudo de especialista atualizado',
-      mensagem: 'O laudo do especialista para o seu exame "Maria da Silva" foi atualizado.',
+      mensagem: 'O laudo do especialista para o seu exame "exam-db-1" foi atualizado.',
       chaveDedupe: 'laudo_atualizado_exam-db-1',
     });
 
