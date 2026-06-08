@@ -4,6 +4,7 @@ export interface SearchDoctorsCriteria {
   name?: string;
   crm?: string;
   email?: string;
+  tipoPerfil?: string;
 }
 
 export interface SearchDoctorsPagination {

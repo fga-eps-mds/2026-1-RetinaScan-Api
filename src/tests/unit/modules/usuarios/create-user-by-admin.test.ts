@@ -65,6 +65,38 @@ describe('Create User By Admin', () => {
       expect.objectContaining({
         body: expect.objectContaining({
           dtNascimento,
+          tipoPerfil: 'MEDICO',
+        }),
+      }),
+    );
+  });
+
+  it('should create user successfully as ESPECIALISTA', async () => {
+    repository.findByEmail.mockResolvedValue(null);
+    repository.findByCpf.mockResolvedValue(null);
+    repository.findByCrm.mockResolvedValue(null);
+
+    vi.mocked(auth.api.signUpEmail).mockResolvedValue({} as never);
+    const dtNascimento = new Date('1990-01-01');
+
+    await expect(
+      sut.execute({
+        nomeCompleto: 'Dra. Especialista',
+        email: 'especialista@email.com',
+        cpf: '12345678909',
+        crm: '54321',
+        dtNascimento,
+        senha: 'senhaforte',
+        tipoPerfil: 'ESPECIALISTA',
+        adminId: 'admin-123',
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(auth.api.signUpEmail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          tipoPerfil: 'ESPECIALISTA',
+          criadoPor: 'admin-123',
         }),
       }),
     );

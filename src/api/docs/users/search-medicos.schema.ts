@@ -20,6 +20,7 @@ export const searchMedicosSchema: FastifySchema = {
       email: { type: 'string', format: 'email' },
       page: { type: 'integer', minimum: 1, default: 1 },
       pageSize: { type: 'integer', minimum: 1, maximum: 100, default: 20 },
+      tipoPerfil: { type: 'string', enum: ['MEDICO', 'ESPECIALISTA'] },
     },
   },
   response: {
