@@ -190,6 +190,30 @@ export const solicitacaoCpfCrm = pgTable(
   ],
 );
 
+export const inscricaoStatusEnum = pgEnum('inscricao_status', [
+  'CONVITE_ENVIADO',
+  'PENDENTE',
+  'APROVADA',
+  'REJEITADA',
+  'EXPIRADA',
+]);
+
+export const inscricaoMedico = pgTable('inscricao_medico', {
+  id: text('id_inscricao').primaryKey(),
+  email: text('email').notNull(),
+  token: text('token').notNull(),
+  tokenExpiresAt: timestamp('token_expires_at').notNull(),
+  status: inscricaoStatusEnum('status').default('CONVITE_ENVIADO').notNull(),
+  invitedBy: text('invited_by').references((): AnyPgColumn => usuario.id, {
+    onDelete: 'set null',
+  }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at')
+    .defaultNow()
+    .$onUpdate(() => new Date())
+    .notNull(),
+});
+
 export const usuarioRelations = relations(usuario, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),

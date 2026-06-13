@@ -6,3 +6,4 @@ export * from './solicitar-alteracao-cpf-crm';
 export * from './aprovar-solicitacao-cpf-crm';
 export * from './rejeitar-solicitacao-cpf-crm';
 export * from './listar-solicitacoes-cpf-crm';
+export * from './enviar-convite-inscricao';

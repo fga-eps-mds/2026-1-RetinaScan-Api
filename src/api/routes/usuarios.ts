@@ -11,6 +11,7 @@ import { rejeitarSolicitacaoCpfCrmRoute } from './users/rejeitar-solicitacao-cpf
 import { listarSolicitacoesCpfCrmAdminRoute } from './users/listar-solicitacoes-cpf-crm-admin';
 import { listarMinhasSolicitacoesCpfCrmRoute } from './users/listar-minhas-solicitacoes-cpf-crm';
 import { searchMedicosByAdmin } from './users/seach-users-created-by-admin';
+import { enviarConviteInscricaoRoute } from './users/enviar-convite-inscricao';
 import {
   createUserByAdminSchema,
   getAllUsersSchema,
@@ -19,6 +20,7 @@ import {
   solicitarAlteracaoCpfCrmSchema,
   aprovarSolicitacaoCpfCrmSchema,
   rejeitarSolicitacaoCpfCrmSchema,
+  enviarConviteInscricaoSchema,
   listarSolicitacoesCpfCrmAdminSchema,
   listarMinhasSolicitacoesCpfCrmSchema,
   searchMedicosSchema,
@@ -64,6 +66,42 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     handler: createUserByAdmin,
+  });
+
+  app.route({
+    method: 'POST',
+    url: '/usuarios/enviar-convite-inscricao',
+    schema: enviarConviteInscricaoSchema,
+    preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
+    config: {
+      audit: {
+        enabled: true,
+        action: 'CREATE',
+        category: 'USER_MANAGEMENT',
+        getDescription: (request) => `Admin ${request.user?.email} enviou convite de inscrição por email`,
+        getTarget: (request) => {
+          const body = request.body as Record<string, unknown>;
+
+          return {
+            targetEntityType: 'INVITATION',
+            targetEntityId: typeof body.email === 'string' ? body.email : null,
+            targetDisplay: typeof body.email === 'string' ? body.email : null,
+          };
+        },
+        getChanges: (request) => {
+          const body = request.body as Record<string, unknown>;
+
+          return {
+            email: body.email,
+            tipoPerfil: body.tipoPerfil ?? null,
+          };
+        },
+        getMetadata: () => ({
+          source: 'usuarioRoutes.enviarConviteInscricao',
+        }),
+      },
+    },
+    handler: enviarConviteInscricaoRoute,
   });
 
   app.get(

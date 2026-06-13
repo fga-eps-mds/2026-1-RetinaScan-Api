@@ -18,6 +18,7 @@ import {
   DrizzleExamIaErrorRepository,
   DrizzleNotificationRepository,
   DrizzleComorbidadeRepository,
+  DrizzleInscricaoMedicoRepository,
 } from '@/infra/database/drizzle/repositories';
 
 import { BetterAuthService } from '@/infra/auth/better-auth-service';
@@ -28,6 +29,7 @@ import { DefaultMaskingService } from '@/infra/shared/default-masking-service';
 import { DicomParserService } from '@/infra/dicom/dicom-parser-service';
 
 import { CreateUserByAdmin } from '@/modules/users/use-cases/create-user-by-admin';
+import { EnviarConviteInscricaoUsecase } from '@/modules/users/use-cases/enviar-convite-inscricao';
 import { UpdateUserUsecase } from '@/modules/users/use-cases/update-user-usecase';
 import { UpdateUserImageUsecase } from '@/modules/users/use-cases/update-user-image-usecase';
 import { SolicitarAlteracaoCpfCrmUsecase } from '@/modules/users/use-cases/solicitar-alteracao-cpf-crm';
@@ -37,6 +39,7 @@ import { ListarSolicitacoesCpfCrmUsecase } from '@/modules/users/use-cases/lista
 import { RecoverPasswordByCrmUseCase } from '@/modules/users/use-cases/recover-password-by-crm-usecase';
 
 import type { UsuariosRepository, SolicitacaoCpfCrmRepository } from '@/modules/users/repositories';
+import type { InscricaoMedicoRepository } from '@/modules/users/repositories/users-repository';
 
 import { CreateExamUseCase } from '@/modules/exam/use-cases/create-exam-usecase';
 import { ProcessExamUploadUseCase } from '@/modules/exam/use-cases/process-exam-upload-usecase';
@@ -83,6 +86,7 @@ export interface AppContainer {
 
   usuariosRepository: UsuariosRepository;
   solicitacaoCpfCrmRepository: SolicitacaoCpfCrmRepository;
+  inscricaoMedicoRepository: InscricaoMedicoRepository;
   notificationRepository: NotificationsRepository;
   examesRepository: ExamesRepository;
   imagemRepository: ImagemRepository;
@@ -123,6 +127,7 @@ export interface AppContainer {
   markNotificationAsReadUseCase: MarkNotificationAsReadUseCase;
 
   nodeMailerEmailProvider: NodemailerEmailProvider;
+  enviarConviteInscricaoUsecase: EnviarConviteInscricaoUsecase;
   listLogsWithFiltersUseCase: ListLogsWithFiltersUseCase;
   authMessageService: IMessageService;
   reportEditingPresenceService: RedisReportEditingPresenceService;
@@ -142,6 +147,7 @@ container.register({
   usuariosRepository: asClass(DrizzleUsuariosRepository).singleton(),
   solicitacaoCpfCrmRepository: asClass(DrizzleSolicitacaoCpfCrmRepository).singleton(),
   notificationRepository: asClass(DrizzleNotificationRepository).singleton(),
+  inscricaoMedicoRepository: asClass(DrizzleInscricaoMedicoRepository).singleton(),
   examesRepository: asClass(DrizzleExamesRepository).singleton(),
   imagemRepository: asClass(DrizzleImagemRepository).singleton(),
   resultadoIaRepository: asClass(DrizzleResultadoIaRepository).singleton(),
@@ -165,6 +171,11 @@ container.register({
     ({ nodeMailerEmailProvider }: AppContainer) =>
       new AuthEmailMessageService(nodeMailerEmailProvider),
   ).singleton(),
+
+  enviarConviteInscricaoUsecase: asFunction(
+    ({ inscricaoMedicoRepository, usuariosRepository, nodeMailerEmailProvider }: AppContainer) =>
+      new EnviarConviteInscricaoUsecase(inscricaoMedicoRepository, usuariosRepository, nodeMailerEmailProvider),
+  ).scoped(),
 
   markNotificationAsReadUseCase: asFunction(
     ({ notificationRepository }: AppContainer) =>

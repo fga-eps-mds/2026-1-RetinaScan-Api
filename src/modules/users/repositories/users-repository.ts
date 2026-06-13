@@ -1,4 +1,5 @@
 import type { SolicitacaoCpfCrm, SolicitacaoStatus, Usuario } from '@/modules/users/domain';
+import type { InscricaoMedico, InscricaoStatus } from '@/modules/users/domain';
 
 export type UsuarioFindByInput = {
   id?: string;
@@ -58,4 +59,19 @@ export interface SolicitacaoCpfCrmRepository {
   listar(input?: ListarSolicitacoesCpfCrmInput): Promise<SolicitacaoCpfCrm[]>;
   aprovar(input: AprovarSolicitacaoCpfCrmInput): Promise<SolicitacaoCpfCrm | null>;
   rejeitar(input: RejeitarSolicitacaoCpfCrmInput): Promise<SolicitacaoCpfCrm | null>;
+}
+
+export type CriarInscricaoInput = {
+  id?: string;
+  email: string;
+  token: string;
+  tokenExpiresAt: Date;
+  invitedBy?: string | null;
+  tipoPerfil?: 'MEDICO' | 'ESPECIALISTA' | null;
+};
+
+export interface InscricaoMedicoRepository {
+  criar(input: CriarInscricaoInput): Promise<InscricaoMedico>;
+  findByToken(token: string): Promise<InscricaoMedico | null>;
+  findByEmail(email: string): Promise<InscricaoMedico | null>;
 }
