@@ -1,7 +1,8 @@
-import { ConflictError, ForbiddenError, NotFoundError } from '@/shared/errors';
+import { ConflictError, UnauthorizedError, NotFoundError } from '@/shared/errors';
 import type { ExamesRepository } from '@/modules/exam';
 import type { UsuariosRepository } from '@/modules/users/repositories';
-import type { ExamShareRepository, ExamShare } from '../exam-share-repository';
+import type { ExamShareRepository } from '../exam-share-repository';
+import type { ExamShare } from '../exam-share';
 
 export type ShareExamUseCaseInput = {
   examId: string;
@@ -23,7 +24,7 @@ export class ShareExamUseCase {
       throw new NotFoundError('Usuário que está tentando compartilhar não foi encontrado.');
     }
     if (especialista.tipoPerfil !== 'ESPECIALISTA') {
-      throw new ForbiddenError('Apenas usuários do tipo ESPECIALISTA podem compartilhar exames.');
+      throw new UnauthorizedError('Apenas usuários do tipo ESPECIALISTA podem compartilhar exames.');
     }
 
     const exam = await this.examRepository.findOne({ examId: input.examId });
@@ -40,7 +41,7 @@ export class ShareExamUseCase {
       throw new NotFoundError('Médico destino não encontrado na plataforma. Verifique os dados informados.');
     }
     if (medicoDestino.tipoPerfil !== 'MEDICO') {
-      throw new ForbiddenError('Só é possível compartilhar laudos com usuários do perfil MÉDICO.');
+      throw new UnauthorizedError('Só é possível compartilhar laudos com usuários do perfil MÉDICO.');
     }
 
     const existingShare = await this.examShareRepository.findByExamAndMedico(input.examId, medicoDestino.id);
