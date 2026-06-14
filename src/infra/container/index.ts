@@ -29,7 +29,6 @@ import { DefaultMaskingService } from '@/infra/shared/default-masking-service';
 import { DicomParserService } from '@/infra/dicom/dicom-parser-service';
 
 import { CreateUserByAdmin } from '@/modules/users/use-cases/create-user-by-admin';
-import { EnviarConviteInscricaoUsecase } from '@/modules/users/use-cases/enviar-convite-inscricao';
 import { UpdateUserUsecase } from '@/modules/users/use-cases/update-user-usecase';
 import { UpdateUserImageUsecase } from '@/modules/users/use-cases/update-user-image-usecase';
 import { SolicitarAlteracaoCpfCrmUsecase } from '@/modules/users/use-cases/solicitar-alteracao-cpf-crm';
@@ -74,6 +73,12 @@ import { ListMyNotificationsUsecase } from '@/modules/notification/use-case/list
 import { DeleteNotificationUseCase } from '@/modules/notification/use-case/delete-notification-use-case';
 import { MarkNotificationAsReadUseCase } from '@/modules/notification/use-case/mark-notification-as-read-use-case';
 
+import { JoseInviteTokenService } from '@/infra/shared/jose-invite-token-service';
+import { EnviarConvitesEmLoteUsecase } from '@/modules/users/use-cases/enviar-convites-em-lote-usecase';
+import { SubmeterInscricaoUsecase } from '@/modules/users/use-cases/submeter-inscricao-usecase';
+import { ListarInscricoesUsecase } from '@/modules/users/use-cases/listar-inscricoes-usecase';
+import { AvaliarInscricaoUsecase } from '@/modules/users/use-cases/avaliar-inscricao-usecase';
+import type { InviteTokenService } from '@/shared/services/invite-token-service';
 import { NodemailerEmailProvider } from '../mail/providers/nodemailer-email-provider';
 import { DrizzleAuditLogsRepository } from '../database/drizzle/repositories/drizzle-audit-logs-repository';
 import { DrizzleSpecialistReportRepository } from '../database/drizzle/repositories/drizzle-specialist-report-repository';
@@ -127,7 +132,11 @@ export interface AppContainer {
   markNotificationAsReadUseCase: MarkNotificationAsReadUseCase;
 
   nodeMailerEmailProvider: NodemailerEmailProvider;
-  enviarConviteInscricaoUsecase: EnviarConviteInscricaoUsecase;
+  inviteTokenService: InviteTokenService;
+  enviarConvitesEmLoteUsecase: EnviarConvitesEmLoteUsecase;
+  submeterInscricaoUsecase: SubmeterInscricaoUsecase;
+  listarInscricoesUsecase: ListarInscricoesUsecase;
+  avaliarInscricaoUsecase: AvaliarInscricaoUsecase;
   listLogsWithFiltersUseCase: ListLogsWithFiltersUseCase;
   authMessageService: IMessageService;
   reportEditingPresenceService: RedisReportEditingPresenceService;
@@ -143,6 +152,47 @@ container.register({
   redis: asValue(redisClient),
 
   nodeMailerEmailProvider: asClass(NodemailerEmailProvider).singleton(),
+  inviteTokenService: asClass(JoseInviteTokenService).singleton(),
+
+  enviarConvitesEmLoteUsecase: asFunction(
+    ({
+      inscricaoMedicoRepository,
+      usuariosRepository,
+      inviteTokenService,
+      messageBroker,
+    }: AppContainer) =>
+      new EnviarConvitesEmLoteUsecase(
+        inscricaoMedicoRepository,
+        usuariosRepository,
+        inviteTokenService,
+        messageBroker,
+      ),
+  ).scoped(),
+
+  listarInscricoesUsecase: asFunction(
+    ({ inscricaoMedicoRepository }: AppContainer) =>
+      new ListarInscricoesUsecase(inscricaoMedicoRepository),
+  ).scoped(),
+
+  avaliarInscricaoUsecase: asFunction(
+    ({ inscricaoMedicoRepository, cryptographyService }: AppContainer) =>
+      new AvaliarInscricaoUsecase(inscricaoMedicoRepository, cryptographyService),
+  ).scoped(),
+
+  submeterInscricaoUsecase: asFunction(
+    ({
+      inscricaoMedicoRepository,
+      usuariosRepository,
+      inviteTokenService,
+      cryptographyService,
+    }: AppContainer) =>
+      new SubmeterInscricaoUsecase(
+        inscricaoMedicoRepository,
+        usuariosRepository,
+        inviteTokenService,
+        cryptographyService,
+      ),
+  ).scoped(),
 
   usuariosRepository: asClass(DrizzleUsuariosRepository).singleton(),
   solicitacaoCpfCrmRepository: asClass(DrizzleSolicitacaoCpfCrmRepository).singleton(),
@@ -171,11 +221,6 @@ container.register({
     ({ nodeMailerEmailProvider }: AppContainer) =>
       new AuthEmailMessageService(nodeMailerEmailProvider),
   ).singleton(),
-
-  enviarConviteInscricaoUsecase: asFunction(
-    ({ inscricaoMedicoRepository, usuariosRepository, nodeMailerEmailProvider }: AppContainer) =>
-      new EnviarConviteInscricaoUsecase(inscricaoMedicoRepository, usuariosRepository, nodeMailerEmailProvider),
-  ).scoped(),
 
   markNotificationAsReadUseCase: asFunction(
     ({ notificationRepository }: AppContainer) =>
