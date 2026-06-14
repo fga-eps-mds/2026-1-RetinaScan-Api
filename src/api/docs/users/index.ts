@@ -7,5 +7,4 @@ export * from './listar-solicitacoes-cpf-crm-admin.schema';
 export * from './listar-minhas-solicitacoes-cpf-crm.schema';
 export * from './aprovar-solicitacao-cpf-crm.schema';
 export * from './rejeitar-solicitacao-cpf-crm.schema';
-export * from './enviar-convite-inscricao.schema';
 export * from './search-medicos.schema';
