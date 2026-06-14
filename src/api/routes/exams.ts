@@ -14,7 +14,9 @@ import {
   getExamDetailsSchema,
   registerExamWebhookSchema,
   registerExamErrorWebhookSchema,
+  shareExamSchema,
 } from '../docs/exams';
+import { shareExam } from './exams/share-exam';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function examRoutes(app: FastifyInstance): Promise<void> {
@@ -102,4 +104,26 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
     { schema: registerExamErrorWebhookSchema },
     registerExamErrorWebhook,
   );
+
+  app.post<{ Params: { examId: string } }>(
+    '/exams/:examId/share',
+    {
+      schema: shareExamSchema,
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ESPECIALISTA])],
+      config: {
+        audit: {
+          enabled: true,
+          action: 'CREATE',
+          category: 'EXAM_SHARE',
+          getDescription: (request) => `Usuário ${request.user?.id} compartilhou o exame ${(request.params as any).examId}`,
+          getTarget: (request) => ({
+            targetEntityType: 'EXAM',
+            targetEntityId: (request.params as any).examId,
+          }),
+        },
+      },
+    },
+    shareExam,
+  );
 }
+
