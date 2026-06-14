@@ -61,6 +61,15 @@ services:
     command: redis-server --requirepass redispw
     restart: always
 
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    container_name: retina-scan-gotenberg
+    ports:
+      - "3001:3000"
+    networks:
+      - retina-scan-network
+    restart: always
+
   api:
     build:
       context: .

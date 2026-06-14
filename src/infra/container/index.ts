@@ -46,6 +46,7 @@ import { RegisterExamAiResultUseCase } from '@/modules/exam/use-cases/register-e
 import { RegisterExamAiErrorUseCase } from '@/modules/exam/use-cases/register-exam-ai-error-usecase';
 import { CreateSpecialistReportUseCase } from '@/modules/exam/use-cases/create-specialist-report-usecase';
 import { UpdateSpecialistReportUseCase } from '@/modules/exam/use-cases/update-specialist-report-usecase';
+import { GeneratePdfReportUseCase } from '@/modules/exam/use-cases/generate-pdf-report-usecase';
 
 import type { ExamesRepository } from '@/modules/exam/exam-repository';
 import type { ImagemRepository } from '@/modules/exam/imagem-repository';
@@ -61,6 +62,8 @@ import type { DicomService } from '@/shared/services/dicom-service';
 import type { MaskingService } from '@/shared/services/masking-service';
 import type { MessageBroker } from '@/shared/services/message-broker';
 import { AuthEmailMessageService, type IMessageService } from '@/shared/services/message-service';
+import { GotenbergPdfService } from '@/shared/services/pdf-service';
+import type { PdfService } from '@/shared/services/pdf-service';
 
 import type { AuditLogsRepository } from '@/modules/audit-log/audit-log-repository';
 import { ListLogsWithFiltersUseCase } from '@/modules/audit-log/use-case/list-logs-with-filters';
@@ -126,6 +129,9 @@ export interface AppContainer {
   listLogsWithFiltersUseCase: ListLogsWithFiltersUseCase;
   authMessageService: IMessageService;
   reportEditingPresenceService: RedisReportEditingPresenceService;
+
+  pdfService: PdfService;
+  generatePdfReportUseCase: GeneratePdfReportUseCase;
 }
 
 export const container: AwilixContainer<AppContainer> = createContainer<AppContainer>({
@@ -156,6 +162,7 @@ container.register({
   cryptographyService: asClass(NodeCryptoCryptographyService).singleton(),
   maskingService: asClass(DefaultMaskingService).singleton(),
   messageBroker: asClass(BullMQMessageBroker).singleton(),
+  pdfService: asClass(GotenbergPdfService).singleton(),
 
   reportEditingPresenceService: asFunction(
     ({ redis }: AppContainer) => new RedisReportEditingPresenceService(redis),
@@ -343,6 +350,11 @@ container.register({
         specialistReportRepository,
         notificationService,
       ),
+  ).scoped(),
+
+  generatePdfReportUseCase: asFunction(
+    ({ getExamDetailsUseCase, pdfService }: AppContainer) =>
+      new GeneratePdfReportUseCase(getExamDetailsUseCase, pdfService),
   ).scoped(),
 });
 

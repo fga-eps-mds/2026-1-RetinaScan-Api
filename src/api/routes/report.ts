@@ -11,6 +11,8 @@ import {
 } from '../docs/report/report.schema';
 import { getExamEditingLocks } from './report/get-exams-report-locks';
 import { heartbeatReportLock } from './report/heart-beart-report-lock';
+import { generatePdfReport } from './report/generate-pdf-report';
+import { generatePdfReportSchema } from '../docs/report/generate-pdf-report.schema';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function reportRoutes(app: FastifyInstance): Promise<void> {
@@ -98,5 +100,16 @@ export async function reportRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     handler: updateSpecialistReport,
+  });
+
+  app.route({
+    method: 'GET',
+    url: '/report/:examId/pdf',
+    schema: generatePdfReportSchema,
+    preHandler: [
+      authenticationMiddleware,
+      authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ADMIN, tiposPerfil.ESPECIALISTA]),
+    ],
+    handler: generatePdfReport,
   });
 }
