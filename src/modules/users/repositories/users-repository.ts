@@ -1,5 +1,10 @@
-import type { SolicitacaoCpfCrm, SolicitacaoStatus, Usuario } from '@/modules/users/domain';
-import type { InscricaoMedico, InscricaoStatus } from '@/modules/users/domain';
+import type {
+  SolicitacaoCpfCrm,
+  SolicitacaoStatus,
+  Usuario,
+  InscricaoMedico,
+  InscricaoStatus,
+} from '@/modules/users/domain';
 
 export type UsuarioFindByInput = {
   id?: string;
@@ -67,11 +72,38 @@ export type CriarInscricaoInput = {
   token: string;
   tokenExpiresAt: Date;
   invitedBy?: string | null;
+  nomeCompleto?: string | null;
   tipoPerfil?: 'MEDICO' | 'ESPECIALISTA' | null;
+};
+
+export type SubmeterInscricaoInput = {
+  id: string;
+  nomeCompleto: string;
+  cpf: string;
+  crm: string;
+  dtNascimento: string;
+  encryptedPassword: string;
+  submittedAt: Date;
+};
+
+export type AvaliarInscricaoInput = {
+  id: string;
+  decisao: 'APROVADA' | 'REJEITADA';
+  analisadoPor: string;
+  analisadoEm: Date;
+  motivoRejeicao?: string;
+};
+
+export type ListarInscricoesInput = {
+  status?: InscricaoStatus;
 };
 
 export interface InscricaoMedicoRepository {
   criar(input: CriarInscricaoInput): Promise<InscricaoMedico>;
   findByToken(token: string): Promise<InscricaoMedico | null>;
   findByEmail(email: string): Promise<InscricaoMedico | null>;
+  findById(id: string): Promise<InscricaoMedico | null>;
+  submeter(input: SubmeterInscricaoInput): Promise<InscricaoMedico>;
+  avaliar(input: AvaliarInscricaoInput): Promise<InscricaoMedico>;
+  listar(input?: ListarInscricoesInput): Promise<InscricaoMedico[]>;
 }
