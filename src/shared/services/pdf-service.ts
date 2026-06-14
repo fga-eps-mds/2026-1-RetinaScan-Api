@@ -1,6 +1,5 @@
 import FormData from 'form-data';
 import axios from 'axios';
-import { env } from '@/env';
 
 export interface PdfService {
   generateFromHtml(htmlString: string): Promise<Buffer>;
@@ -33,7 +32,7 @@ export class GotenbergPdfService implements PdfService {
       return Buffer.from(response.data);
     } catch (error) {
       console.error('[GotenbergPdfService] Falha ao converter HTML para PDF:', error);
-      throw new Error('Falha interna ao gerar o arquivo PDF do laudo.');
+      throw new Error('Falha interna ao gerar o arquivo PDF do laudo.', { cause: error });
     }
   }
 }

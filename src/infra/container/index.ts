@@ -62,8 +62,7 @@ import type { DicomService } from '@/shared/services/dicom-service';
 import type { MaskingService } from '@/shared/services/masking-service';
 import type { MessageBroker } from '@/shared/services/message-broker';
 import { AuthEmailMessageService, type IMessageService } from '@/shared/services/message-service';
-import { GotenbergPdfService } from '@/shared/services/pdf-service';
-import type { PdfService } from '@/shared/services/pdf-service';
+import { GotenbergPdfService, type PdfService } from '@/shared/services/pdf-service';
 
 import type { AuditLogsRepository } from '@/modules/audit-log/audit-log-repository';
 import { ListLogsWithFiltersUseCase } from '@/modules/audit-log/use-case/list-logs-with-filters';

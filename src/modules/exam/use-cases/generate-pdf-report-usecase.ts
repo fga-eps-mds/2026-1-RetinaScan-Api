@@ -25,11 +25,10 @@ export class GeneratePdfReportUseCase {
     const pacienteNome = data.nomeCompleto || 'Não informado';
     const pacienteCpf = data.cpf || 'Não informado';
     const pacienteNasc = data.dtNascimento || 'Não informado';
-    const dataHora = data.dtHora
-      ? new Date(data.dtHora).toLocaleString('pt-BR')
-      : 'Data não registrada';
+    const dataHora = new Date(data.dtHora).toLocaleString('pt-BR');
     const laudoTexto = data.laudoEspecialista?.texto || 'Laudo estruturado ainda não preenchido.';
     const prontuarioTexto = data.descricao || 'Nenhuma nota médica registrada.';
+    const medicoNome = data.medico.nomeCompleto;
 
     const imagensHtml =
       data.imagens.length > 0
@@ -99,7 +98,7 @@ export class GeneratePdfReportUseCase {
         </table>
 
         <h2>Imagens do Exame</h2>
-        ${imagensHtml || '<p>Nenhuma imagem disponível.</p>'}
+        ${imagensHtml}
 
         <h2>Detalhes do Exame</h2>
         <table>
@@ -107,7 +106,7 @@ export class GeneratePdfReportUseCase {
           <tr><td class="label">Data/Hora:</td><td>${dataHora}</td></tr>
           <tr><td class="label">Olho:</td><td>${data.olho || 'Não especificado'}</td></tr>
           <tr><td class="label">Status:</td><td>${data.status}</td></tr>
-          <tr><td class="label">Médico:</td><td>${data.medico.nomeCompleto}</td></tr>
+          <tr><td class="label">Médico:</td><td>${medicoNome}</td></tr>
         </table>
 
         <h2>Comorbidades</h2>
