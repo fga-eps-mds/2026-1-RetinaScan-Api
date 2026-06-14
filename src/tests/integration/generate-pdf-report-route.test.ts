@@ -1,6 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { sql } from 'drizzle-orm';
+import { asValue } from 'awilix';
 import { db } from '@/infra/database/drizzle/connection';
 import { exam, imagem, usuario } from '@/infra/database/drizzle/schema';
 import { UsuarioBuilder } from '@/tests/helpers/builders/usuario-builder';
@@ -45,9 +46,9 @@ describe('GET /api/report/:examId/pdf (integration)', () => {
     const exame = await ExameBuilder.anExame().withIdUsuario(medico.id).build();
 
     container.register({
-      pdfService: {
+      pdfService: asValue({
         generateFromHtml: vi.fn().mockResolvedValue(Buffer.from('fake-pdf-content'))
-      } as any
+      })
     });
 
     const res = await app.inject({ 
