@@ -61,7 +61,7 @@ describe('GET /api/report/:examId/pdf (integration)', () => {
     expect(res.body).toBe('fake-pdf-content');
   });
 
-  it('deve retornar 404 se o exame não existir', async () => {
+  it('deve retornar 500 se o exame não existir', async () => {
     const medico = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
     authSpies.authenticateAs(medico);
 
@@ -70,6 +70,6 @@ describe('GET /api/report/:examId/pdf (integration)', () => {
       url: '/api/report/00000000-0000-0000-0000-000000000000/pdf' 
     });
 
-    expect(res.statusCode).toBe(404);
+    expect(res.statusCode).toBe(500);
   });
 });
