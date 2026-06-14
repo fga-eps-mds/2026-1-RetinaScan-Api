@@ -207,6 +207,21 @@ export const inscricaoMedico = pgTable('inscricao_medico', {
   invitedBy: text('invited_by').references((): AnyPgColumn => usuario.id, {
     onDelete: 'set null',
   }),
+  // Preenchido pelo admin no convite
+  nomeCompleto: text('nome_completo'),
+  tipoPerfil: tipoPerfilEnum('tipo_perfil'),
+  // Preenchido pelo médico no formulário
+  cpf: text('cpf'),
+  crm: text('crm'),
+  dtNascimento: date('dt_nascimento'),
+  encryptedPassword: text('encrypted_password'),
+  submittedAt: timestamp('submitted_at'),
+  // Preenchido pelo admin na avaliação
+  motivoRejeicao: text('motivo_rejeicao'),
+  analisadoPor: text('analisado_por').references((): AnyPgColumn => usuario.id, {
+    onDelete: 'set null',
+  }),
+  analisadoEm: timestamp('analisado_em'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()
