@@ -18,7 +18,11 @@ import {
   DrizzleExamIaErrorRepository,
   DrizzleNotificationRepository,
   DrizzleComorbidadeRepository,
+<<<<<<< HEAD
   DrizzleInscricaoMedicoRepository,
+=======
+  DrizzleExamShareRepository,
+>>>>>>> 3bdd7f7 (feat: ajustes no caso de uso para retornar os resultados dos exames e verificar o compartilhamento. Também fazendo alguns ajustes para padronizar a data e eliminar inconsistencias para criar compartilhamentos)
 } from '@/infra/database/drizzle/repositories';
 
 import { BetterAuthService } from '@/infra/auth/better-auth-service';
@@ -56,6 +60,7 @@ import type { ResultadoIaRepository } from '@/modules/exam/resultado-ia-reposito
 import type { ExamIaErrorRepository } from '@/modules/exam/exam-ia-error-repository';
 import type { ComorbidadeRepository } from '@/modules/exam/comorbidade-repository';
 import type { SpecialistReportRepository } from '@/modules/exam/specialist-report-repository';
+import type { ExamShareRepository } from '@/modules/exam/exam-share-repository';
 
 import type { AuthService } from '@/shared/services/auth-service';
 import type { StorageService } from '@/shared/services/storage-service';
@@ -102,6 +107,7 @@ export interface AppContainer {
   comorbidadeRepository: ComorbidadeRepository;
   specialistReportRepository: SpecialistReportRepository;
   auditLogRepository: AuditLogsRepository;
+  examShareRepository: ExamShareRepository;
 
   authService: AuthService;
   storageService: StorageService;
@@ -210,6 +216,7 @@ container.register({
   comorbidadeRepository: asClass(DrizzleComorbidadeRepository).singleton(),
   auditLogRepository: asClass(DrizzleAuditLogsRepository).singleton(),
   specialistReportRepository: asClass(DrizzleSpecialistReportRepository).singleton(),
+  examShareRepository: asClass(DrizzleExamShareRepository).singleton(),
 
   authService: asClass(BetterAuthService).singleton(),
   storageService: asClass(MinioStorageService).singleton(),
@@ -333,6 +340,7 @@ container.register({
       storageService,
       cryptographyService,
       specialistReportRepository,
+      examShareRepository,
     }: AppContainer) =>
       new GetExamDetailsUseCase(
         examesRepository,
@@ -343,6 +351,7 @@ container.register({
         storageService,
         cryptographyService,
         specialistReportRepository,
+        examShareRepository,
       ),
   ).scoped(),
 

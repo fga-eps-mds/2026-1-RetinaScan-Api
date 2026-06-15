@@ -6,7 +6,7 @@ import {
   DrizzleExamShareRepository,
 } from '@/infra/database/drizzle/repositories';
 import { ShareExamUseCase } from '@/modules/exam';
-import { UnauthorizedError } from '@/shared/errors';
+import { UnauthorizedError, ValidationError } from '@/shared/errors';
 
 const paramsSchema = z.object({
   examId: z.string().uuid(),
@@ -18,8 +18,18 @@ const bodySchema = z.object({
 });
 
 export async function shareExam(request: FastifyRequest, reply: FastifyReply) {
-  const { examId } = paramsSchema.parse(request.params);
-  const { emailDestino, expiraEm } = bodySchema.parse(request.body);
+  const paramsResult = paramsSchema.safeParse(request.params);
+  if (!paramsResult.success) {
+    throw new ValidationError(paramsResult.error.errors);
+  }
+
+  const bodyResult = bodySchema.safeParse(request.body);
+  if (!bodyResult.success) {
+    throw new ValidationError(bodyResult.error.errors);
+  }
+
+  const { examId } = paramsResult.data;
+  const { emailDestino, expiraEm } = bodyResult.data;
 
   if (!request.user) {
     throw new UnauthorizedError('Usuário não autenticado');

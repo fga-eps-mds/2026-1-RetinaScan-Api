@@ -44,6 +44,17 @@ export class ShareExamUseCase {
       throw new UnauthorizedError('Só é possível compartilhar laudos com usuários do perfil MÉDICO.');
     }
 
+    if (medicoDestino.id === exam.idUsuario) {
+      throw new ConflictError('Este médico é o próprio criador do exame. Ele já possui acesso.');
+    }
+
+    if (input.expiraEm) {
+      const agora = new Date();
+      if (input.expiraEm <= agora) {
+        throw new ConflictError('A data de expiração não pode estar no passado.');
+      }
+    }
+
     const existingShare = await this.examShareRepository.findByExamAndMedico(input.examId, medicoDestino.id);
     if (existingShare && existingShare.ativo) {
       const agora = new Date();
