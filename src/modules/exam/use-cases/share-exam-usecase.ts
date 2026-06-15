@@ -24,7 +24,9 @@ export class ShareExamUseCase {
       throw new NotFoundError('Usuário que está tentando compartilhar não foi encontrado.');
     }
     if (especialista.tipoPerfil !== 'ESPECIALISTA') {
-      throw new UnauthorizedError('Apenas usuários do tipo ESPECIALISTA podem compartilhar exames.');
+      throw new UnauthorizedError(
+        'Apenas usuários do tipo ESPECIALISTA podem compartilhar exames.',
+      );
     }
 
     const exam = await this.examRepository.findOne({ examId: input.examId });
@@ -38,10 +40,14 @@ export class ShareExamUseCase {
 
     const medicoDestino = await this.userRepository.findByEmail(input.emailDestino);
     if (!medicoDestino) {
-      throw new NotFoundError('Médico destino não encontrado na plataforma. Verifique os dados informados.');
+      throw new NotFoundError(
+        'Médico destino não encontrado na plataforma. Verifique os dados informados.',
+      );
     }
     if (medicoDestino.tipoPerfil !== 'MEDICO') {
-      throw new UnauthorizedError('Só é possível compartilhar laudos com usuários do perfil MÉDICO.');
+      throw new UnauthorizedError(
+        'Só é possível compartilhar laudos com usuários do perfil MÉDICO.',
+      );
     }
 
     if (medicoDestino.id === exam.idUsuario) {
@@ -55,7 +61,10 @@ export class ShareExamUseCase {
       }
     }
 
-    const existingShare = await this.examShareRepository.findByExamAndMedico(input.examId, medicoDestino.id);
+    const existingShare = await this.examShareRepository.findByExamAndMedico(
+      input.examId,
+      medicoDestino.id,
+    );
     if (existingShare && existingShare.ativo) {
       const agora = new Date();
       if (!existingShare.expiraEm || existingShare.expiraEm > agora) {

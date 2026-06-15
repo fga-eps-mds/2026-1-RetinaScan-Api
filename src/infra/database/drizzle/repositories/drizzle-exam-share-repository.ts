@@ -19,11 +19,7 @@ export class DrizzleExamShareRepository implements ExamShareRepository {
   }
 
   async findById(id: string): Promise<ExamShare | null> {
-    const result = await db
-      .select()
-      .from(examShare)
-      .where(eq(examShare.id, id))
-      .limit(1);
+    const result = await db.select().from(examShare).where(eq(examShare.id, id)).limit(1);
 
     return result[0] || null;
   }
@@ -46,9 +42,6 @@ export class DrizzleExamShareRepository implements ExamShareRepository {
   }
 
   async revoke(id: string): Promise<void> {
-    await db
-      .update(examShare)
-      .set({ ativo: false })
-      .where(eq(examShare.id, id));
+    await db.update(examShare).set({ ativo: false }).where(eq(examShare.id, id));
   }
 }

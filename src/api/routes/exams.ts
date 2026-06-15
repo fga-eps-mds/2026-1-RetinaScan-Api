@@ -115,10 +115,11 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
           enabled: true,
           action: 'CREATE',
           category: 'EXAM_SHARE',
-          getDescription: (request) => `Usuário ${request.user?.id} compartilhou o exame ${(request.params as any).examId}`,
+          getDescription: (request) =>
+            `Usuário ${request.user?.id} compartilhou o exame ${(request.params as { examId: string }).examId}`,
           getTarget: (request) => ({
             targetEntityType: 'EXAM',
-            targetEntityId: (request.params as any).examId,
+            targetEntityId: (request.params as { examId: string }).examId,
           }),
         },
       },
@@ -126,4 +127,3 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
     shareExam,
   );
 }
-
