@@ -44,7 +44,7 @@ export class GeneratePdfReportUseCase {
     const pacienteCpf = this.formatCpf(data.cpf);
     const pacienteNasc = this.formatDate(data.dtNascimento);
     const dataHora = new Date(data.dtHora).toLocaleString('pt-BR');
-    const laudoTexto = data.laudoEspecialista?.texto || 'Laudo estruturado ainda não preenchido.';
+    const laudohtml = data.laudoEspecialista?.html || 'Laudo estruturado ainda não preenchido.';
     const prontuarioTexto = data.descricao || 'Nenhuma nota médica registrada.';
     const medicoNome = data.medico.nomeCompleto;
 
@@ -134,7 +134,7 @@ export class GeneratePdfReportUseCase {
         <p>${prontuarioTexto}</p>
 
         <h2>Laudo do Especialista</h2>
-        <p>${laudoTexto}</p>
+        <p>${laudohtml}</p>
       </body>
       </html>
     `;
