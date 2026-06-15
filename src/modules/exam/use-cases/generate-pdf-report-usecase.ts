@@ -21,10 +21,28 @@ export class GeneratePdfReportUseCase {
     return pdfBuffer;
   }
 
+  private formatCpf(cpf?: string): string {
+    if (!cpf) return 'Não informado';
+    
+    const cleaned = String(cpf).replace(/\D/g, '');
+    if (cleaned.length !== 11) return cpf; 
+    
+    return cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  }
+
+  private formatDate(date?: string | Date): string {
+    if (!date) return 'Não informado';
+    
+    const d = new Date(date);
+    
+    if (isNaN(d.getTime())) return String(date);
+    return d.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+  }
+
   private buildHtmlReport(data: GetExamDetailsUseCaseOutput): string {
     const pacienteNome = data.nomeCompleto || 'Não informado';
-    const pacienteCpf = data.cpf || 'Não informado';
-    const pacienteNasc = data.dtNascimento || 'Não informado';
+    const pacienteCpf = this.formatCpf(data.cpf);
+    const pacienteNasc = this.formatDate(data.dtNascimento);
     const dataHora = new Date(data.dtHora).toLocaleString('pt-BR');
     const laudoTexto = data.laudoEspecialista?.texto || 'Laudo estruturado ainda não preenchido.';
     const prontuarioTexto = data.descricao || 'Nenhuma nota médica registrada.';
