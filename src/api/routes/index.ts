@@ -7,6 +7,7 @@ import { examRoutes } from './exams';
 import notificationRoutes from './notifications';
 import { logsRoute } from './logs';
 import { reportRoutes } from './report';
+import { inscricoesRoutes } from './inscricoes';
 
 const registerRoutes: FastifyPluginAsync = async (app) => {
   app.get('/health', { schema: healthSchema }, healthHandler);
@@ -17,6 +18,7 @@ const registerRoutes: FastifyPluginAsync = async (app) => {
   await app.register(notificationRoutes);
   await app.register(logsRoute);
   await app.register(reportRoutes);
+  await app.register(inscricoesRoutes);
 };
 
 export default registerRoutes;

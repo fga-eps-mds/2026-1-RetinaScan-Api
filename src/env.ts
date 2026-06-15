@@ -48,6 +48,11 @@ const envSchema = z.object({
   SMTP_REPLY_TO: z.string().min(1, 'SMTP_REPLY_TO is required'),
   SPECIALIST_REPORT_EDIT_WINDOW_DAYS: z.coerce.number().default(7),
   SPECIALIST_REPORT_EDITING_TTL_SECONDS: z.coerce.number().int().min(5).default(30),
+  INVITE_JWT_SECRET: z.string().min(1, 'INVITE_JWT_SECRET is required'),
+  FRONTEND_URL: z
+    .string()
+    .url('FRONTEND_URL must be a valid URL')
+    .min(1, 'FRONTEND_URL is required'),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

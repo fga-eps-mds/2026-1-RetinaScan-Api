@@ -18,6 +18,7 @@ import {
   DrizzleExamIaErrorRepository,
   DrizzleNotificationRepository,
   DrizzleComorbidadeRepository,
+  DrizzleInscricaoMedicoRepository,
 } from '@/infra/database/drizzle/repositories';
 
 import { BetterAuthService } from '@/infra/auth/better-auth-service';
@@ -37,6 +38,7 @@ import { ListarSolicitacoesCpfCrmUsecase } from '@/modules/users/use-cases/lista
 import { RecoverPasswordByCrmUseCase } from '@/modules/users/use-cases/recover-password-by-crm-usecase';
 
 import type { UsuariosRepository, SolicitacaoCpfCrmRepository } from '@/modules/users/repositories';
+import type { InscricaoMedicoRepository } from '@/modules/users/repositories/users-repository';
 
 import { CreateExamUseCase } from '@/modules/exam/use-cases/create-exam-usecase';
 import { ProcessExamUploadUseCase } from '@/modules/exam/use-cases/process-exam-upload-usecase';
@@ -73,6 +75,12 @@ import { ListMyNotificationsUsecase } from '@/modules/notification/use-case/list
 import { DeleteNotificationUseCase } from '@/modules/notification/use-case/delete-notification-use-case';
 import { MarkNotificationAsReadUseCase } from '@/modules/notification/use-case/mark-notification-as-read-use-case';
 
+import { JoseInviteTokenService } from '@/infra/shared/jose-invite-token-service';
+import { EnviarConvitesEmLoteUsecase } from '@/modules/users/use-cases/enviar-convites-em-lote-usecase';
+import { SubmeterInscricaoUsecase } from '@/modules/users/use-cases/submeter-inscricao-usecase';
+import { ListarInscricoesUsecase } from '@/modules/users/use-cases/listar-inscricoes-usecase';
+import { AvaliarInscricaoUsecase } from '@/modules/users/use-cases/avaliar-inscricao-usecase';
+import type { InviteTokenService } from '@/shared/services/invite-token-service';
 import { NodemailerEmailProvider } from '../mail/providers/nodemailer-email-provider';
 import { DrizzleAuditLogsRepository } from '../database/drizzle/repositories/drizzle-audit-logs-repository';
 import { DrizzleSpecialistReportRepository } from '../database/drizzle/repositories/drizzle-specialist-report-repository';
@@ -85,6 +93,7 @@ export interface AppContainer {
 
   usuariosRepository: UsuariosRepository;
   solicitacaoCpfCrmRepository: SolicitacaoCpfCrmRepository;
+  inscricaoMedicoRepository: InscricaoMedicoRepository;
   notificationRepository: NotificationsRepository;
   examesRepository: ExamesRepository;
   imagemRepository: ImagemRepository;
@@ -125,6 +134,11 @@ export interface AppContainer {
   markNotificationAsReadUseCase: MarkNotificationAsReadUseCase;
 
   nodeMailerEmailProvider: NodemailerEmailProvider;
+  inviteTokenService: InviteTokenService;
+  enviarConvitesEmLoteUsecase: EnviarConvitesEmLoteUsecase;
+  submeterInscricaoUsecase: SubmeterInscricaoUsecase;
+  listarInscricoesUsecase: ListarInscricoesUsecase;
+  avaliarInscricaoUsecase: AvaliarInscricaoUsecase;
   listLogsWithFiltersUseCase: ListLogsWithFiltersUseCase;
   authMessageService: IMessageService;
   reportEditingPresenceService: RedisReportEditingPresenceService;
@@ -143,10 +157,52 @@ container.register({
   redis: asValue(redisClient),
 
   nodeMailerEmailProvider: asClass(NodemailerEmailProvider).singleton(),
+  inviteTokenService: asClass(JoseInviteTokenService).singleton(),
+
+  enviarConvitesEmLoteUsecase: asFunction(
+    ({
+      inscricaoMedicoRepository,
+      usuariosRepository,
+      inviteTokenService,
+      messageBroker,
+    }: AppContainer) =>
+      new EnviarConvitesEmLoteUsecase(
+        inscricaoMedicoRepository,
+        usuariosRepository,
+        inviteTokenService,
+        messageBroker,
+      ),
+  ).scoped(),
+
+  listarInscricoesUsecase: asFunction(
+    ({ inscricaoMedicoRepository }: AppContainer) =>
+      new ListarInscricoesUsecase(inscricaoMedicoRepository),
+  ).scoped(),
+
+  avaliarInscricaoUsecase: asFunction(
+    ({ inscricaoMedicoRepository, cryptographyService }: AppContainer) =>
+      new AvaliarInscricaoUsecase(inscricaoMedicoRepository, cryptographyService),
+  ).scoped(),
+
+  submeterInscricaoUsecase: asFunction(
+    ({
+      inscricaoMedicoRepository,
+      usuariosRepository,
+      inviteTokenService,
+      cryptographyService,
+    }: AppContainer) =>
+      new SubmeterInscricaoUsecase(
+        inscricaoMedicoRepository,
+        usuariosRepository,
+        inviteTokenService,
+        cryptographyService,
+      ),
+  ).scoped(),
 
   usuariosRepository: asClass(DrizzleUsuariosRepository).singleton(),
   solicitacaoCpfCrmRepository: asClass(DrizzleSolicitacaoCpfCrmRepository).singleton(),
   notificationRepository: asClass(DrizzleNotificationRepository).singleton(),
+  inscricaoMedicoRepository: asClass(DrizzleInscricaoMedicoRepository).singleton(),
   examesRepository: asClass(DrizzleExamesRepository).singleton(),
   imagemRepository: asClass(DrizzleImagemRepository).singleton(),
   resultadoIaRepository: asClass(DrizzleResultadoIaRepository).singleton(),
