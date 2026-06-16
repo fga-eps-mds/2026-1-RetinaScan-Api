@@ -10,6 +10,7 @@ const searchSchema = z.object({
   email: z.string().email('Email inválido.').optional(),
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().positive().max(100).default(20),
+  tipoPerfil: z.enum(['MEDICO', 'ESPECIALISTA']).optional(),
 });
 
 export async function searchMedicosByAdmin(request: FastifyRequest, reply: FastifyReply) {
@@ -26,7 +27,7 @@ export async function searchMedicosByAdmin(request: FastifyRequest, reply: Fasti
   }
 
   try {
-    const { nome, crm, email, page, pageSize } = queryResult.data;
+    const { nome, crm, email, page, pageSize, tipoPerfil } = queryResult.data;
     const adminId = request.user?.id;
 
     if (!adminId) {
@@ -46,6 +47,7 @@ export async function searchMedicosByAdmin(request: FastifyRequest, reply: Fasti
         name: nome,
         crm,
         email,
+        tipoPerfil,
       },
       pagination: {
         page,

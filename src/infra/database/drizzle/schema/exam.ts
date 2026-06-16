@@ -3,6 +3,7 @@ import { relations } from 'drizzle-orm';
 
 import { usuario } from './user';
 import { imagem } from './image';
+import { specialistReport } from './specialist-report';
 
 export const exam = pgTable('exame', {
   idExame: uuid('id_exame').primaryKey(),
@@ -31,4 +32,5 @@ export const examRelations = relations(exam, ({ one, many }) => ({
     references: [usuario.id],
   }),
   imagens: many(imagem),
+  specialistReport: one(specialistReport),
 }));

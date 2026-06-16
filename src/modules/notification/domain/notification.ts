@@ -3,6 +3,8 @@ export const TIPOS_NOTIFICACAO = [
   'avaliacao_ia_error',
   'avaliacao_ia_revisada_por_especialista',
   'status_solicitacao_cadastral_atualizado',
+  'laudo_especialista_criado',
+  'laudo_especialista_atualizado',
 ];
 
 export type TipoNotificacao = (typeof TIPOS_NOTIFICACAO)[number];

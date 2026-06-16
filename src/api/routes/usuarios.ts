@@ -79,7 +79,10 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
     method: 'PUT',
     url: '/usuarios',
     schema: updateUserSchema,
-    preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
+    preHandler: [
+      authenticationMiddleware,
+      authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA]),
+    ],
     config: {
       audit: {
         enabled: true,
@@ -128,7 +131,10 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
     method: 'PATCH',
     url: '/usuarios/imagem',
     schema: updateUserImageSchema,
-    preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
+    preHandler: [
+      authenticationMiddleware,
+      authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA]),
+    ],
     config: {
       audit: {
         enabled: true,
@@ -159,7 +165,10 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
     method: 'POST',
     url: '/usuarios/solicitacoes-cpf-crm',
     schema: solicitarAlteracaoCpfCrmSchema,
-    preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
+    preHandler: [
+      authenticationMiddleware,
+      authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA]),
+    ],
     config: {
       audit: {
         enabled: true,
@@ -325,7 +334,10 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
     '/usuarios/minhas-solicitacoes-cpf-crm',
     {
       schema: listarMinhasSolicitacoesCpfCrmSchema,
-      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO])],
+      preHandler: [
+        authenticationMiddleware,
+        authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA]),
+      ],
     },
     listarMinhasSolicitacoesCpfCrmRoute,
   );

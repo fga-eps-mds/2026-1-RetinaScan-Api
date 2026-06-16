@@ -14,6 +14,7 @@ vi.mock('@/infra/logger', () => ({
   default: {
     info: vi.fn(),
     warn: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
@@ -32,6 +33,9 @@ vi.mock('socket.io', () => {
       use = useMock;
       on = onMock;
       close = closeMock;
+      in = vi.fn(() => ({
+        fetchSockets: vi.fn().mockResolvedValue([]),
+      }));
     },
   );
 
@@ -45,6 +49,7 @@ describe('setupWebSocket', () => {
   const mockedLogger = logger as unknown as {
     info: ReturnType<typeof vi.fn>;
     warn: ReturnType<typeof vi.fn>;
+    error: ReturnType<typeof vi.fn>;
   };
 
   let decorateMock: ReturnType<typeof vi.fn>;
@@ -102,7 +107,7 @@ describe('setupWebSocket', () => {
     });
 
     middleware(socket, next);
-    await new Promise(process.nextTick);
+    await Promise.resolve();
 
     expect(mockedAuthenticateSocket).toHaveBeenCalledWith(socket);
     expect(socket.data).toEqual({
@@ -131,7 +136,7 @@ describe('setupWebSocket', () => {
     mockedAuthenticateSocket.mockRejectedValueOnce(new Error('invalid session'));
 
     middleware(socket, next);
-    await new Promise(process.nextTick);
+    await Promise.resolve();
 
     expect(mockedAuthenticateSocket).toHaveBeenCalledWith(socket);
     expect(next).toHaveBeenCalledTimes(1);
@@ -150,16 +155,21 @@ describe('setupWebSocket', () => {
     setupWebSocket(app);
 
     const connectionHandler = onMock.mock.calls.find(([event]) => event === 'connection')?.[1];
+
+    expect(connectionHandler).toBeTypeOf('function');
+
     const joinMock = vi.fn().mockResolvedValue(undefined);
-    const disconnectHandlerRegistry: Record<string, () => void> = {};
+    const disconnectHandlerRegistry: Record<string, () => Promise<void> | void> = {};
 
     const socket = {
       id: 'socket-1',
       data: {
         userId: 'user-1',
+        nome: 'Gustavo Costa',
       },
       join: joinMock,
-      on: vi.fn((event: string, handler: () => void) => {
+      leave: vi.fn(),
+      on: vi.fn((event: string, handler: () => Promise<void> | void) => {
         disconnectHandlerRegistry[event] = handler;
       }),
     };
@@ -185,6 +195,8 @@ describe('setupWebSocket', () => {
     setupWebSocket(app);
 
     const onCloseHandler = addHookMock.mock.calls.find(([hook]) => hook === 'onClose')?.[1];
+
+    expect(onCloseHandler).toBeTypeOf('function');
 
     closeMock.mockImplementationOnce((callback?: () => void) => {
       callback?.();

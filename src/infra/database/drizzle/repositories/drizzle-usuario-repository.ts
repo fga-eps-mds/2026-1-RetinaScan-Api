@@ -14,7 +14,7 @@ import type {
   UsuariosRepository,
 } from '@/modules/users/repositories';
 import { usuario, account } from '@/infra/database/drizzle/schema';
-import { and, count, eq, ilike, or, type SQL } from 'drizzle-orm';
+import { and, count, eq, ilike, inArray, or, type SQL } from 'drizzle-orm';
 
 export class DrizzleUsuariosRepository implements UsuariosRepository, IdAdminSearchDoctors {
   async findByEmail(email: string): Promise<Usuario | null> {
@@ -91,11 +91,17 @@ export class DrizzleUsuariosRepository implements UsuariosRepository, IdAdminSea
     criteria: SearchDoctorsCriteria,
     pagination: SearchDoctorsPagination,
   ): Promise<SearchDoctorsResult> {
-    const conds: SQL[] = [eq(usuario.tipoPerfil, 'MEDICO'), eq(usuario.criadoPor, adminId)];
+    const conds: SQL[] = [
+      inArray(usuario.tipoPerfil, ['MEDICO', 'ESPECIALISTA']),
+      eq(usuario.criadoPor, adminId),
+    ];
 
     if (criteria.name) conds.push(ilike(usuario.nomeCompleto, `%${criteria.name}%`));
     if (criteria.crm) conds.push(eq(usuario.crm, criteria.crm));
     if (criteria.email) conds.push(eq(usuario.email, criteria.email));
+    if (criteria.tipoPerfil) {
+      conds.push(eq(usuario.tipoPerfil, criteria.tipoPerfil as 'MEDICO' | 'ESPECIALISTA'));
+    }
 
     const whereClause = and(...conds);
     const offset = (pagination.page - 1) * pagination.pageSize;

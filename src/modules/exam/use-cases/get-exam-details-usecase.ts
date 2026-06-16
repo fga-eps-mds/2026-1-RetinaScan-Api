@@ -10,6 +10,8 @@ import { tiposPerfil, type TipoPerfil } from '@/modules/users/domain';
 import { Buckets, type StorageService } from '@/shared/services/storage-service';
 import type { CryptographyService } from '@/shared/services/cryptography-service';
 import { NotFoundError, UnauthorizedError } from '@/shared/errors';
+import type { SpecialistReportRepository } from '../specialist-report-repository';
+import type { SpecialistReport } from '../specialist-report';
 
 const PRESIGNED_URL_TTL_SECONDS = 900;
 
@@ -74,6 +76,7 @@ export type GetExamDetailsUseCaseOutput = {
   descricao: string | null;
   medico: GetExamDetailsMedicoDto;
   imagens: GetExamDetailsImagemDto[];
+  laudoEspecialista: SpecialistReport | null;
 };
 
 function toComorbidadesDto(comorbidade: Comorbidade): GetExamDetailsComorbidadesDto {
@@ -114,6 +117,7 @@ export class GetExamDetailsUseCase {
     private readonly comorbidadeRepository: ComorbidadeRepository,
     private readonly storageService: StorageService,
     private readonly cryptographyService: CryptographyService,
+    private readonly specialistReportRepository: SpecialistReportRepository,
   ) {}
 
   async execute(input: GetExamDetailsUseCaseInput): Promise<GetExamDetailsUseCaseOutput> {
@@ -125,8 +129,9 @@ export class GetExamDetailsUseCase {
     const resultadosByImagem = await this.getResultadosByImagem(exame);
     const imagensDto = await this.buildImagensDto(imagens, resultadosByImagem);
     const comorbidade = await this.comorbidadeRepository.findByExamId({ examId: exame.id });
+    const laudoEspecialista = await this.specialistReportRepository.findByExamId(exame.id);
 
-    return this.toOutput(exame, medico, imagensDto, comorbidade);
+    return this.toOutput(exame, medico, imagensDto, comorbidade, laudoEspecialista);
   }
 
   private async getExam(examId: string): Promise<Exame> {
@@ -187,6 +192,7 @@ export class GetExamDetailsUseCase {
     medico: GetExamDetailsMedicoDto,
     imagens: GetExamDetailsImagemDto[],
     comorbidade: Comorbidade | null,
+    laudoEspecialista: SpecialistReport | null,
   ): GetExamDetailsUseCaseOutput {
     return {
       id: exame.id,
@@ -201,6 +207,7 @@ export class GetExamDetailsUseCase {
       descricao: exame.descricao ? this.decrypt(exame.descricao) : null,
       medico,
       imagens,
+      laudoEspecialista,
     };
   }
 

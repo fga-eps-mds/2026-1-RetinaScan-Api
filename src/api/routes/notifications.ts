@@ -30,7 +30,7 @@ export default async function notificationRoutes(app: FastifyInstance): Promise<
       schema: listNotificationsSchema,
       preHandler: [
         authenticationMiddleware,
-        authorizationMiddleware([tiposPerfil.ADMIN, tiposPerfil.MEDICO]),
+        authorizationMiddleware([tiposPerfil.ADMIN, tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA]),
       ],
     },
     listNotifications,
@@ -42,7 +42,7 @@ export default async function notificationRoutes(app: FastifyInstance): Promise<
       schema: markNotificationAsReadSchema,
       preHandler: [
         authenticationMiddleware,
-        authorizationMiddleware([tiposPerfil.ADMIN, tiposPerfil.MEDICO]),
+        authorizationMiddleware([tiposPerfil.ADMIN, tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA]),
       ],
     },
     markNotificationAsRead,
@@ -54,7 +54,7 @@ export default async function notificationRoutes(app: FastifyInstance): Promise<
       schema: deleteNotificationSchema,
       preHandler: [
         authenticationMiddleware,
-        authorizationMiddleware([tiposPerfil.ADMIN, tiposPerfil.MEDICO]),
+        authorizationMiddleware([tiposPerfil.ADMIN, tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA]),
       ],
     },
     deleteNotification,

@@ -6,6 +6,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: retina-scan
+    env_file:
+      - env/.env.prod
     volumes:
       - postgres_data_homolog:/var/lib/postgresql/data
     healthcheck:
@@ -14,8 +16,6 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    env_file:
-      - env/.env.prod
     networks:
       - retina-scan-network
     restart: unless-stopped
@@ -30,19 +30,25 @@ services:
     depends_on:
       retina-scan-postgres-homolog:
         condition: service_healthy
-    ports:
-      - "3006:3000"
     networks:
       - retina-scan-network
+      - web
     restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.retina-api.rule=Host(`apihomolog.retinascan.site`)"
+      - "traefik.http.routers.retina-api.entrypoints=websecure"
+      - "traefik.http.routers.retina-api.tls=true"
+      - "traefik.http.routers.retina-api.tls.certresolver=lets-encrypt"
+      - "traefik.http.routers.retina-api.service=retina-api-svc"
+      - "traefik.http.services.retina-api-svc.loadbalancer.server.port=3000"
 
   redis:
     image: redis:7.2.4
+    container_name: retina-scan-redis-homolog
     env_file:
       - ./env/.env.prod
-    container_name: retina-scan-redis-homolog
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
@@ -64,3 +70,7 @@ networks:
   retina-scan-network:
     driver: bridge
     name: retina-scan-prod-net
+
+  web:
+    external: true
+    name: web
