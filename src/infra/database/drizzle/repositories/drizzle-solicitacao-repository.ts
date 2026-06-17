@@ -108,6 +108,31 @@ export class DrizzleSolicitacaoCpfCrmRepository implements SolicitacaoCpfCrmRepo
     })) as SolicitacaoCpfCrm[];
   }
 
+  async deletar(idSolicitacao: string): Promise<SolicitacaoCpfCrm | null> {
+    const solicitacao = await db
+      .select()
+      .from(solicitacaoCpfCrm)
+      .where(eq(solicitacaoCpfCrm.id, idSolicitacao))
+      .limit(1);
+
+    if (solicitacao.length === 0) {
+      return null;
+    }
+
+    if (solicitacao[0].status === solicitacaoStatus.PENDENTE) {
+      throw new Error(
+        'Não é permitido deletar uma solicitação pendente. Por favor, recuse ou aceite a solicitação para removê-la.',
+      );
+    }
+
+    const result = await db
+      .delete(solicitacaoCpfCrm)
+      .where(eq(solicitacaoCpfCrm.id, idSolicitacao))
+      .returning();
+
+    return (result[0] as SolicitacaoCpfCrm | undefined) ?? null;
+  }
+
   async aprovar(input: AprovarSolicitacaoCpfCrmInput): Promise<SolicitacaoCpfCrm | null> {
     const result = await db
       .update(solicitacaoCpfCrm)
