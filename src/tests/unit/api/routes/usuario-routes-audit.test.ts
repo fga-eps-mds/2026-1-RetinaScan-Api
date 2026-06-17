@@ -334,108 +334,38 @@ describe('usuarioRoutes audit config', () => {
     });
   });
 
-  describe('ListLogsWithFiltersUseCase', () => {
-    it('deve chamar auditLogsRepository.findMany com os filtros e paginação informados', async () => {
-      const findMany = vi.fn().mockResolvedValue({
-        data: [
-          {
-            id: 'log-1',
-            action: 'LOGIN',
-            category: 'AUTH',
-            description: 'Usuário autenticado',
-            actorUserId: 'user-1',
-            actorName: 'Gustavo Costa',
-            actorEmail: 'gustavo@email.com',
-            targetEntityType: null,
-            targetEntityId: null,
-            targetDisplay: null,
-            ipAddress: '127.0.0.1',
-            userAgent: 'Vitest',
-            requestId: 'req-1',
-            changes: null,
-            metadata: null,
-            createdAt: new Date('2026-05-31T20:00:00.000Z'),
-          },
-        ],
-        total: 1,
-      });
+  it('should configure audit for DELETE /usuarios/solicitacoes-cpf-crm/:idSolicitacao', () => {
+    const route = findRoute(
+      registeredRoutes,
+      'DELETE',
+      '/usuarios/solicitacoes-cpf-crm/:idSolicitacao',
+    );
+    const audit = route.config?.audit as AuditConfig;
 
-      const auditLogsRepository = {
-        findMany,
-      };
+    const request = {
+      user: { email: 'admin@teste.com' },
+      params: { idSolicitacao: 'sol-4' },
+    };
 
-      const sut = new ListLogsWithFiltersUseCase(auditLogsRepository as any);
+    expect(audit.enabled).toBe(true);
+    expect(audit.action).toBe('DELETE');
+    expect(audit.category).toBe('USER_MANAGEMENT');
 
-      const input = {
-        filters: {
-          action: 'LOGIN',
-          actorUserId: 'user-1',
-          startDate: new Date('2026-05-01T00:00:00.000Z'),
-          endDate: new Date('2026-05-31T23:59:59.999Z'),
-        },
-        pagination: {
-          page: 2,
-          pageSize: 10,
-        },
-      };
+    expect(audit.getDescription?.(request)).toBe(
+      'Solicitação de CPF/CRM sol-4 apagada por admin admin@teste.com',
+    );
 
-      const result = await sut.execute(input);
-
-      expect(findMany).toHaveBeenCalledTimes(1);
-      expect(findMany).toHaveBeenCalledWith(input);
-      expect(result).toEqual({
-        data: [
-          {
-            id: 'log-1',
-            action: 'LOGIN',
-            category: 'AUTH',
-            description: 'Usuário autenticado',
-            actorUserId: 'user-1',
-            actorName: 'Gustavo Costa',
-            actorEmail: 'gustavo@email.com',
-            targetEntityType: null,
-            targetEntityId: null,
-            targetDisplay: null,
-            ipAddress: '127.0.0.1',
-            userAgent: 'Vitest',
-            requestId: 'req-1',
-            changes: null,
-            metadata: null,
-            createdAt: new Date('2026-05-31T20:00:00.000Z'),
-          },
-        ],
-        total: 1,
-      });
+    expect(audit.getTarget?.(request)).toEqual({
+      targetEntityType: 'SOLICITATION',
+      targetEntityId: 'sol-4',
+      targetDisplay: 'sol-4',
     });
 
-    it('deve retornar lista vazia quando o repository não encontrar logs', async () => {
-      const findMany = vi.fn().mockResolvedValue({
-        data: [],
-        total: 0,
-      });
+    expect(audit.getChanges?.(request)).toBeNull();
 
-      const auditLogsRepository = {
-        findMany,
-      };
-
-      const sut = new ListLogsWithFiltersUseCase(auditLogsRepository as any);
-
-      const input = {
-        filters: {},
-        pagination: {
-          page: 1,
-          pageSize: 20,
-        },
-      };
-
-      const result = await sut.execute(input);
-
-      expect(findMany).toHaveBeenCalledTimes(1);
-      expect(findMany).toHaveBeenCalledWith(input);
-      expect(result).toEqual({
-        data: [],
-        total: 0,
-      });
+    expect(audit.getMetadata?.(request)).toEqual({
+      source: 'usuarioRoutes.deletarSolicitacaoCpfCrmAdminRoute',
+      idSolicitacao: 'sol-4',
     });
   });
 });
