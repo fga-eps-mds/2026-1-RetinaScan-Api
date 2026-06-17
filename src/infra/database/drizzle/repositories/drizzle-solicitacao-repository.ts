@@ -1,4 +1,4 @@
-import { and, eq, type SQL } from 'drizzle-orm';
+import { and, asc, desc, eq, ilike, type SQL } from 'drizzle-orm';
 import { randomUUID } from 'node:crypto';
 import { db } from '@/infra/database/drizzle/connection';
 import { solicitacaoCpfCrm, usuario } from '@/infra/database/drizzle/schema';
@@ -53,22 +53,54 @@ export class DrizzleSolicitacaoCpfCrmRepository implements SolicitacaoCpfCrmRepo
       filters.push(eq(solicitacaoCpfCrm.idUsuario, input.idUsuario));
     }
 
-    const whereClause = filters.length > 0 ? and(...filters) : undefined;
+    const direction = input?.sortOrder === 'asc' ? asc : desc;
 
     if (!input?.relations) {
+      const whereClause = filters.length > 0 ? and(...filters) : undefined;
+
+      const orderBy =
+        input?.sortBy === 'updatedAt'
+          ? [direction(solicitacaoCpfCrm.updatedAt), desc(solicitacaoCpfCrm.createdAt)]
+          : input?.sortBy === 'status'
+            ? [direction(solicitacaoCpfCrm.status), desc(solicitacaoCpfCrm.createdAt)]
+            : [direction(solicitacaoCpfCrm.createdAt)];
+
       return db
         .select()
         .from(solicitacaoCpfCrm)
         .where(whereClause)
-        .orderBy(solicitacaoCpfCrm.createdAt) as Promise<SolicitacaoCpfCrm[]>;
+        .orderBy(...orderBy) as Promise<SolicitacaoCpfCrm[]>;
     }
+
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (input?.nome) {
+      filters.push(ilike(usuario.nomeCompleto, `%${input.nome}%`));
+    }
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (input?.email) {
+      filters.push(ilike(usuario.email, `%${input.email}%`));
+    }
+
+    const whereClause = filters.length > 0 ? and(...filters) : undefined;
+
+    const orderBy =
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      input?.sortBy === 'updatedAt'
+        ? [direction(solicitacaoCpfCrm.updatedAt), desc(solicitacaoCpfCrm.createdAt)]
+        : // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          input?.sortBy === 'status'
+          ? [direction(solicitacaoCpfCrm.status), desc(solicitacaoCpfCrm.createdAt)]
+          : // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+            input?.sortBy === 'nomeCompleto'
+            ? [direction(usuario.nomeCompleto), desc(solicitacaoCpfCrm.createdAt)]
+            : [direction(solicitacaoCpfCrm.createdAt)];
 
     const rows = await db
       .select({ solicitacao: solicitacaoCpfCrm, usuario })
       .from(solicitacaoCpfCrm)
       .innerJoin(usuario, eq(solicitacaoCpfCrm.idUsuario, usuario.id))
       .where(whereClause)
-      .orderBy(solicitacaoCpfCrm.createdAt);
+      .orderBy(...orderBy);
 
     return rows.map(({ solicitacao, usuario }) => ({
       ...solicitacao,

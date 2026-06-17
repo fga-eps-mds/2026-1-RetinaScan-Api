@@ -44,7 +44,11 @@ export type SolicitarAlteracaoCpfCrmInput = {
 export type ListarSolicitacoesCpfCrmInput = {
   status?: SolicitacaoStatus;
   idUsuario?: string;
+  nome?: string;
+  email?: string;
   relations?: boolean;
+  sortBy?: 'createdAt' | 'updatedAt' | 'status' | 'nomeCompleto';
+  sortOrder?: 'asc' | 'desc';
 };
 
 export type RejeitarSolicitacaoCpfCrmInput = {

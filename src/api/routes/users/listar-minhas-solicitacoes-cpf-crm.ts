@@ -6,6 +6,8 @@ import { ValidationError } from '@/shared/errors';
 const querySchema = z
   .object({
     status: z.enum(['PENDENTE', 'APROVADA', 'REJEITADA']).optional(),
+    sortBy: z.enum(['createdAt', 'updatedAt', 'status']).optional(),
+    sortOrder: z.enum(['asc', 'desc']).optional(),
   })
   .strict({ message: 'Parâmetros inválidos.' });
 
