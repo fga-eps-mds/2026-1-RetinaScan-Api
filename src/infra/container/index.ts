@@ -18,11 +18,7 @@ import {
   DrizzleExamIaErrorRepository,
   DrizzleNotificationRepository,
   DrizzleComorbidadeRepository,
-<<<<<<< HEAD
   DrizzleInscricaoMedicoRepository,
-=======
-  DrizzleExamShareRepository,
->>>>>>> 3bdd7f7 (feat: ajustes no caso de uso para retornar os resultados dos exames e verificar o compartilhamento. Também fazendo alguns ajustes para padronizar a data e eliminar inconsistencias para criar compartilhamentos)
 } from '@/infra/database/drizzle/repositories';
 
 import { BetterAuthService } from '@/infra/auth/better-auth-service';
