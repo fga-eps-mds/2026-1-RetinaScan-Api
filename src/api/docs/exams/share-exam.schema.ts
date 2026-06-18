@@ -10,7 +10,8 @@ import {
 export const shareExamSchema: FastifySchema = {
   tags: ['Exames'],
   summary: 'Compartilha um exame com um médico',
-  description: 'Permite que um Especialista (qualquer exame) ou um Médico (apenas seus próprios exames) compartilhe os resultados com outro Médico na plataforma.',
+  description:
+    'Permite que um Especialista (qualquer exame) ou um Médico (apenas seus próprios exames) compartilhe os resultados com outro Médico na plataforma.',
   params: {
     type: 'object',
     properties: {

@@ -40,7 +40,9 @@ export class ShareExamUseCase {
 
     const medicoOrigem = await this.userRepository.findBy({ id: exam.idUsuario });
     if (!medicoOrigem) {
-      throw new NotFoundError('Médico origem não encontrado na plataforma. Verifique os dados informados.');
+      throw new NotFoundError(
+        'Médico origem não encontrado na plataforma. Verifique os dados informados.',
+      );
     }
 
     const medicoDestino = await this.userRepository.findByEmail(input.emailDestino);
