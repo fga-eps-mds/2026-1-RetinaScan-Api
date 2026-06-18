@@ -94,17 +94,52 @@ describe('ShareExamUseCase', () => {
     ).rejects.toThrow(NotFoundError);
   });
 
-  it('deve lançar erro se usuário que tenta compartilhar não for ESPECIALISTA', async () => {
-    const admin = UsuarioBuilder.anUser().withTipoPerfil('ADMIN').getData();
+  it('deve lançar erro se tentar compartilhar um exame que não é seu, não sendo ESPECIALISTA', async () => {
+    const admin = UsuarioBuilder.anUser().withTipoPerfil('MEDICO').getData();
+    const exam = ExameBuilder.anExame().withIdUsuario(faker.string.uuid()).getData();
+    
     userRepo.findBy.mockResolvedValue(admin);
+    examRepo.findOne.mockResolvedValue(exam);
 
     await expect(
       usecase.execute({
-        examId: faker.string.uuid(),
+        examId: exam.id,
         emailDestino: faker.internet.email(),
         compartilhadoPorId: admin.id,
       }),
     ).rejects.toThrow(UnauthorizedError);
+  });
+
+  it('deve permitir que um MÉDICO compartilhe o seu próprio exame', async () => {
+    const medicoDono = UsuarioBuilder.anUser().withTipoPerfil('MEDICO').getData();
+    const medicoDestino = UsuarioBuilder.anUser().withTipoPerfil('MEDICO').getData();
+    const exam = ExameBuilder.anExame().withIdUsuario(medicoDono.id).getData();
+
+    userRepo.findBy.mockImplementation((params) => {
+      if (params.id === medicoDono.id) return Promise.resolve(medicoDono);
+      return Promise.resolve(null);
+    });
+    userRepo.findByEmail.mockResolvedValue(medicoDestino);
+    examRepo.findOne.mockResolvedValue(exam);
+    shareRepo.findByExamAndMedico.mockResolvedValue(null);
+    shareRepo.create.mockResolvedValue({
+      id: faker.string.uuid(),
+      examId: exam.id,
+      medicoDestinoId: medicoDestino.id,
+      compartilhadoPor: medicoDono.id,
+      expiraEm: null,
+      ativo: true,
+      criadoEm: new Date(),
+    });
+
+    const result = await usecase.execute({
+      examId: exam.id,
+      emailDestino: medicoDestino.email,
+      compartilhadoPorId: medicoDono.id,
+    });
+
+    expect(result).toBeDefined();
+    expect(shareRepo.create).toHaveBeenCalled();
   });
 
   it('deve lançar erro se o exame não for encontrado', async () => {
