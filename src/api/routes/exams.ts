@@ -109,7 +109,7 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
     '/exams/:examId/share',
     {
       schema: shareExamSchema,
-      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ESPECIALISTA])],
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA, tiposPerfil.ADMIN])],
       config: {
         audit: {
           enabled: true,

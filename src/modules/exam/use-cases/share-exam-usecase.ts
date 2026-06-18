@@ -19,14 +19,10 @@ export class ShareExamUseCase {
   ) {}
 
   async execute(input: ShareExamUseCaseInput): Promise<ExamShare> {
-    const especialista = await this.userRepository.findBy({ id: input.compartilhadoPorId });
-    if (!especialista) {
+    const usuarioOrigem = await this.userRepository.findBy({ id: input.compartilhadoPorId });
+
+    if (!usuarioOrigem) {
       throw new NotFoundError('Usuário que está tentando compartilhar não foi encontrado.');
-    }
-    if (especialista.tipoPerfil !== 'ESPECIALISTA') {
-      throw new UnauthorizedError(
-        'Apenas usuários do tipo ESPECIALISTA podem compartilhar exames.',
-      );
     }
 
     const exam = await this.examRepository.findOne({ examId: input.examId });
@@ -34,8 +30,17 @@ export class ShareExamUseCase {
       throw new NotFoundError('Exame não encontrado.');
     }
 
+    if (exam.idUsuario !== usuarioOrigem.id && usuarioOrigem.tipoPerfil !== 'ESPECIALISTA') {
+      throw new UnauthorizedError('Você não tem permissão para compartilhar este exame.');
+    }
+
     if (!input.emailDestino) {
       throw new Error('É necessário informar o E-mail ou CRM do médico destino.');
+    }
+
+    const medicoOrigem = await this.userRepository.findBy({ id: exam.idUsuario });
+    if (!medicoOrigem) {
+      throw new NotFoundError('Médico origem não encontrado na plataforma. Verifique os dados informados.');
     }
 
     const medicoDestino = await this.userRepository.findByEmail(input.emailDestino);
@@ -75,7 +80,7 @@ export class ShareExamUseCase {
     const newShare = await this.examShareRepository.create({
       examId: input.examId,
       medicoDestinoId: medicoDestino.id,
-      compartilhadoPor: especialista.id,
+      compartilhadoPor: usuarioOrigem.id,
       expiraEm: input.expiraEm,
     });
 

@@ -255,7 +255,7 @@ describe('ShareExamUseCase', () => {
       examId: exam.id,
       medicoDestinoId: medico.id,
       compartilhadoPor: especialista.id,
-      expiraEm: dataNoPassado, // expirado
+      expiraEm: dataNoPassado,
       ativo: true,
       criadoEm: new Date(),
     });
