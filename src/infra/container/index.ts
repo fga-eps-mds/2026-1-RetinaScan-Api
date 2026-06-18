@@ -19,6 +19,7 @@ import {
   DrizzleNotificationRepository,
   DrizzleComorbidadeRepository,
   DrizzleInscricaoMedicoRepository,
+  DrizzleExamShareRepository,
 } from '@/infra/database/drizzle/repositories';
 
 import { BetterAuthService } from '@/infra/auth/better-auth-service';
