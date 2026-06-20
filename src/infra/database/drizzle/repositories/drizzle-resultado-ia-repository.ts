@@ -1,10 +1,12 @@
-import { eq } from 'drizzle-orm';
+import { and, avg, count, desc, eq, gte, lte, type SQL } from 'drizzle-orm';
 
 import { db } from '@/infra/database/drizzle/connection';
-import { imagem, resultadoIa } from '@/infra/database/drizzle/schema';
+import { exam, imagem, resultadoIa } from '@/infra/database/drizzle/schema';
 import type { Probabilities, ResultadoIa } from '@/modules/exam/resultado-ia';
+import type { MetricsDateFilter } from '@/modules/exam/exam-repository';
 import type {
   CreateResultadosIaInput,
+  DiagnosisMetrics,
   ExistsResultadosIaByExamInput,
   FindResultadosIaByExamInput,
   ResultadoIaRepository,
@@ -59,5 +61,38 @@ export class DrizzleResultadoIaRepository implements ResultadoIaRepository {
       confidence: row.confidence,
       probabilities: row.probabilities as Probabilities,
     }));
+  }
+
+  async getDiagnosisMetrics({ startDate, endDate }: MetricsDateFilter): Promise<DiagnosisMetrics> {
+    const conditions: SQL[] = [];
+
+    if (startDate) conditions.push(gte(exam.dtHora, startDate));
+    if (endDate) conditions.push(lte(exam.dtHora, endDate));
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+
+    const labelPromise = db
+      .select({ label: resultadoIa.predictedLabel, total: count() })
+      .from(resultadoIa)
+      .innerJoin(imagem, eq(resultadoIa.idImagem, imagem.idImagem))
+      .innerJoin(exam, eq(imagem.idExame, exam.idExame))
+      .where(whereClause)
+      .groupBy(resultadoIa.predictedLabel)
+      .orderBy(desc(count()));
+
+    const aggPromise = db
+      .select({ total: count(), avgConfidence: avg(resultadoIa.confidence) })
+      .from(resultadoIa)
+      .innerJoin(imagem, eq(resultadoIa.idImagem, imagem.idImagem))
+      .innerJoin(exam, eq(imagem.idExame, exam.idExame))
+      .where(whereClause);
+
+    const [labelRows, aggRows] = await Promise.all([labelPromise, aggPromise]);
+
+    return {
+      totalResultados: Number(aggRows[0].total),
+      porDiagnostico: labelRows.map((row) => ({ label: row.label, total: Number(row.total) })),
+      confiancaMedia: Number(aggRows[0].avgConfidence ?? 0),
+    };
   }
 }

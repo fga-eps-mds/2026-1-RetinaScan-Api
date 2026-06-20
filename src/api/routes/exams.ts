@@ -7,6 +7,7 @@ import { listExams } from './exams/list-exams';
 import { getExamDetails } from './exams/get-exam-details';
 import { registerExamWebhook } from './exams/register-exam-webhook';
 import { registerExamErrorWebhook } from './exams/register-exam-error-webhook';
+import { getExamMetrics } from './exams/get-exam-metrics';
 import {
   createExamSchema,
   processExamUploadSchema,
@@ -14,6 +15,7 @@ import {
   getExamDetailsSchema,
   registerExamWebhookSchema,
   registerExamErrorWebhookSchema,
+  getExamMetricsSchema,
 } from '../docs/exams';
 
 // eslint-disable-next-line @typescript-eslint/require-await
@@ -77,6 +79,15 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
       ],
     },
     listExams,
+  );
+
+  app.get(
+    '/exams/metrics',
+    {
+      schema: getExamMetricsSchema,
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
+    },
+    getExamMetrics,
   );
 
   app.get<{ Params: { examId: string } }>(

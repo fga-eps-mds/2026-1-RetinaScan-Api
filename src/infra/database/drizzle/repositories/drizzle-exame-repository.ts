@@ -1,4 +1,4 @@
-import { and, count, desc, eq, ilike, type SQL } from 'drizzle-orm';
+import { and, count, desc, eq, gte, ilike, lte, sql, type SQL } from 'drizzle-orm';
 
 import { db } from '@/infra/database/drizzle/connection';
 import { exam, examComorbidity } from '@/infra/database/drizzle/schema';
@@ -11,10 +11,12 @@ import type {
 } from '@/modules/exam/exam';
 import type {
   ExameListItem,
+  ExamVolumeMetrics,
   ExamesRepository,
   FindExamInput,
   FindManyExamsInput,
   FindManyExamsResult,
+  MetricsDateFilter,
   UpdateExamInput,
 } from '@/modules/exam/exam-repository';
 
@@ -152,5 +154,55 @@ export class DrizzleExamesRepository implements ExamesRepository {
   async update({ examId, data }: UpdateExamInput): Promise<void> {
     if (Object.keys(data).length === 0) return;
     await db.update(exam).set(data).where(eq(exam.idExame, examId));
+  }
+
+  async getVolumeMetrics({ startDate, endDate }: MetricsDateFilter): Promise<ExamVolumeMetrics> {
+    const conditions: SQL[] = [];
+
+    if (startDate) conditions.push(gte(exam.dtHora, startDate));
+    if (endDate) conditions.push(lte(exam.dtHora, endDate));
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    const dayExpr = sql<string>`to_char(${exam.dtHora}, 'YYYY-MM-DD')`;
+
+    const totalPromise = db.select({ value: count() }).from(exam).where(whereClause);
+
+    const statusPromise = db
+      .select({ status: exam.status, total: count() })
+      .from(exam)
+      .where(whereClause)
+      .groupBy(exam.status);
+
+    const seriePromise = db
+      .select({ data: dayExpr, total: count() })
+      .from(exam)
+      .where(whereClause)
+      .groupBy(dayExpr)
+      .orderBy(dayExpr);
+
+    const [totalRows, statusRows, serieRows] = await Promise.all([
+      totalPromise,
+      statusPromise,
+      seriePromise,
+    ]);
+
+    const porStatus: Record<ExameStatus, number> = {
+      CRIADO: 0,
+      CONCLUIDO: 0,
+      EM_PROCESSAMENTO: 0,
+      ERRO_PROCESSAMENTO: 0,
+    };
+
+    for (const row of statusRows) {
+      if (row.status in porStatus) {
+        porStatus[row.status as ExameStatus] = Number(row.total);
+      }
+    }
+
+    return {
+      total: Number(totalRows[0].value),
+      porStatus,
+      serieTemporal: serieRows.map((row) => ({ data: row.data, total: Number(row.total) })),
+    };
   }
 }

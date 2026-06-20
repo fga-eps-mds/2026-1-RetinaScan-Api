@@ -49,6 +49,7 @@ import { RegisterExamAiErrorUseCase } from '@/modules/exam/use-cases/register-ex
 import { CreateSpecialistReportUseCase } from '@/modules/exam/use-cases/create-specialist-report-usecase';
 import { UpdateSpecialistReportUseCase } from '@/modules/exam/use-cases/update-specialist-report-usecase';
 import { GeneratePdfReportUseCase } from '@/modules/exam/use-cases/generate-pdf-report-usecase';
+import { GetExamMetricsUseCase } from '@/modules/exam/use-cases/get-exam-metrics-usecase';
 
 import type { ExamesRepository } from '@/modules/exam/exam-repository';
 import type { ImagemRepository } from '@/modules/exam/imagem-repository';
@@ -145,6 +146,7 @@ export interface AppContainer {
 
   pdfService: PdfService;
   generatePdfReportUseCase: GeneratePdfReportUseCase;
+  getExamMetricsUseCase: GetExamMetricsUseCase;
 }
 
 export const container: AwilixContainer<AppContainer> = createContainer<AppContainer>({
@@ -410,6 +412,11 @@ container.register({
   generatePdfReportUseCase: asFunction(
     ({ getExamDetailsUseCase, pdfService }: AppContainer) =>
       new GeneratePdfReportUseCase(getExamDetailsUseCase, pdfService),
+  ).scoped(),
+
+  getExamMetricsUseCase: asFunction(
+    ({ examesRepository, resultadoIaRepository }: AppContainer) =>
+      new GetExamMetricsUseCase(examesRepository, resultadoIaRepository),
   ).scoped(),
 });
 

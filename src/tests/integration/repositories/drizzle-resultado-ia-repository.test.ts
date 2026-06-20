@@ -108,6 +108,65 @@ describe('DrizzleResultadoIaRepository (integration)', () => {
     });
   });
 
+  describe('getDiagnosisMetrics', () => {
+    async function seedResultado(
+      label: string,
+      confidence: number,
+      dtHora: Date,
+    ): Promise<void> {
+      const exame = await ExameBuilder.anExame().withDtHora(dtHora).build();
+      const img = await ImagemBuilder.anImagem()
+        .withIdExame(exame.id)
+        .withLateralidadeOlho(LateralidadeOlho.OD)
+        .build();
+      await ResultadoIaBuilder.aResultadoIa()
+        .withIdImagem(img.id)
+        .withPredictedLabel(label)
+        .withConfidence(confidence)
+        .build();
+    }
+
+    it('should aggregate label distribution, total and average confidence', async () => {
+      await seedResultado('normal', 0.9, new Date('2026-06-01T10:00:00.000Z'));
+      await seedResultado('normal', 0.8, new Date('2026-06-02T10:00:00.000Z'));
+      await seedResultado('abnormal', 0.7, new Date('2026-06-03T10:00:00.000Z'));
+
+      const metrics = await repository.getDiagnosisMetrics({});
+
+      expect(metrics.totalResultados).toBe(3);
+      expect(metrics.confiancaMedia).toBeCloseTo(0.8, 5);
+      expect(metrics.porDiagnostico).toEqual(
+        expect.arrayContaining([
+          { label: 'normal', total: 2 },
+          { label: 'abnormal', total: 1 },
+        ]),
+      );
+      expect(metrics.porDiagnostico).toHaveLength(2);
+    });
+
+    it('should filter by dtHora of the related exam', async () => {
+      await seedResultado('normal', 0.9, new Date('2026-05-20T10:00:00.000Z'));
+      await seedResultado('abnormal', 0.6, new Date('2026-06-15T10:00:00.000Z'));
+
+      const metrics = await repository.getDiagnosisMetrics({
+        startDate: new Date('2026-06-01T00:00:00.000Z'),
+        endDate: new Date('2026-06-30T23:59:59.999Z'),
+      });
+
+      expect(metrics.totalResultados).toBe(1);
+      expect(metrics.porDiagnostico).toEqual([{ label: 'abnormal', total: 1 }]);
+      expect(metrics.confiancaMedia).toBeCloseTo(0.6, 5);
+    });
+
+    it('should return empty distribution and zero confidence when there are no results', async () => {
+      const metrics = await repository.getDiagnosisMetrics({});
+
+      expect(metrics.totalResultados).toBe(0);
+      expect(metrics.porDiagnostico).toEqual([]);
+      expect(metrics.confiancaMedia).toBe(0);
+    });
+  });
+
   describe('findByExamId', () => {
     it('should return empty array when exam has no results', async () => {
       const exame = await ExameBuilder.anExame().build();
