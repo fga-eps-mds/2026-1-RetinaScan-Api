@@ -72,6 +72,14 @@ export class CreateExamUseCase {
     private readonly messageBroker: MessageBroker,
   ) {}
 
+  /**
+   * Cria um exame a partir de uploads já feitos em `pending/`: "adota" as imagens para a
+   * pasta definitiva do exame, persiste exame + comorbidades (com dados sensíveis
+   * criptografados) e enfileira o job de análise de IA. Os uploads adotados são revertidos
+   * no storage se a persistência falhar.
+   *
+   * @throws NotFoundError se o usuário não existe ou se algum upload referenciado não está em `pending/`
+   */
   async execute(input: CreateExamUseCaseInput): Promise<CreateExamUseCaseOutput> {
     await this.validateUserExists(input.idUsuario);
     await this.assertUploadsOwnership(input.idUsuario, input.imagens);

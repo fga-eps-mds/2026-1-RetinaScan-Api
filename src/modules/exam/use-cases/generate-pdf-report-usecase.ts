@@ -11,6 +11,13 @@ export class GeneratePdfReportUseCase {
     private readonly pdfService: PdfService,
   ) {}
 
+  /**
+   * Gera o laudo do exame em PDF: reusa {@link GetExamDetailsUseCase} para montar os dados
+   * (inclui a mesma checagem de acesso) e renderiza o HTML do relatório.
+   *
+   * @returns o PDF do laudo como Buffer
+   * @throws NotFoundError | UnauthorizedError propagados de GetExamDetailsUseCase
+   */
   async execute(input: GetExamDetailsUseCaseInput): Promise<Buffer> {
     const examDetails = await this.getExamDetailsUseCase.execute(input);
 

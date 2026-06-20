@@ -38,6 +38,11 @@ export class EnviarConvitesEmLoteUsecase {
     private readonly messageBroker: MessageBroker,
   ) {}
 
+  /**
+   * Cria inscrições e enfileira e-mails de convite em lote. Cada convite é ignorado (não
+   * interrompe o lote) se já houver usuário com o e-mail ou um convite ativo não-rejeitado.
+   * O token expira em 7 dias e o resultado detalha enviados vs. ignorados com o motivo.
+   */
   async execute(input: EnviarConvitesEmLoteInput): Promise<EnviarConvitesEmLoteOutput> {
     const detalhes: ConviteDetalhe[] = [];
 

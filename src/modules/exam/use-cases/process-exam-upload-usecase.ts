@@ -44,6 +44,13 @@ export class ProcessExamUploadUseCase {
     private readonly dicomService: DicomService,
   ) {}
 
+  /**
+   * Sobe as imagens (DICOM/JPEG/PNG) para a área temporária `pending/`, extraindo e
+   * consolidando metadados dos DICOMs. Upload em lote é tudo-ou-nada: falha em qualquer
+   * arquivo faz rollback dos que já subiram.
+   *
+   * @throws ValidationError sem arquivos, campo de origem desconhecido ou formato não suportado
+   */
   async execute(input: ProcessExamUploadUseCaseInput): Promise<ProcessExamUploadUseCaseOutput> {
     this.assertHasFiles(input.arquivos);
     const uploadedKeys: string[] = [];

@@ -24,6 +24,15 @@ export class SubmeterInscricaoUsecase {
     private readonly cryptographyService: CryptographyService,
   ) {}
 
+  /**
+   * Submete os dados da inscrição a partir do token do convite: valida o token, exige que a
+   * inscrição esteja em `CONVITE_ENVIADO` e que CPF/CRM ainda não estejam cadastrados, e guarda
+   * a senha criptografada (a conta só é criada depois, na aprovação pelo admin).
+   *
+   * @throws UnauthorizedError se o token é inválido ou expirou
+   * @throws NotFoundError se a inscrição do token não existe
+   * @throws ConflictError se o convite já foi utilizado ou se o CPF/CRM já está cadastrado
+   */
   async execute(input: SubmeterInscricaoUseCaseInput): Promise<void> {
     const payload = await this.verifyToken(input.token);
     const inscricao = await this.getInscricao(payload.sub);

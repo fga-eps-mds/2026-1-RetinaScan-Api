@@ -17,6 +17,12 @@ export class RecoverPasswordByCrmUseCase {
     private readonly maskingService: MaskingService,
   ) {}
 
+  /**
+   * Resolve o e-mail de um usuário a partir do CRM para o fluxo de recuperação de senha,
+   * retornando também a versão mascarada para exibição.
+   *
+   * @throws NotFoundError se nenhum usuário tem o CRM informado
+   */
   async execute({ crm }: RecoverPasswordByCrmInput): Promise<RecoverPasswordByCrmOutput> {
     const user = await this.usuariosRepository.findByCrm(crm);
 
