@@ -10,7 +10,7 @@ export const getExamMetricsSchema: FastifySchema = {
   tags: ['Exames'],
   summary: 'Métricas agregadas de exames',
   description:
-    'Retorna métricas agregadas de volume/status dos exames e da distribuição de diagnósticos da IA. Acesso restrito a administradores. Filtro de período opcional sobre a data/hora do exame.',
+    'Retorna métricas agregadas de volume/status dos exames e da distribuição de diagnósticos da IA. Administradores e especialistas veem dados globais; médicos veem apenas os próprios exames. Filtro de período opcional sobre a data/hora do exame.',
   querystring: {
     type: 'object',
     additionalProperties: false,

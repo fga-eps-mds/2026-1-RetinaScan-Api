@@ -49,6 +49,7 @@ export type UpdateExamInput = {
 export type MetricsDateFilter = {
   startDate?: Date;
   endDate?: Date;
+  idUsuario?: string;
 };
 
 export type ExamSerieTemporalItem = {

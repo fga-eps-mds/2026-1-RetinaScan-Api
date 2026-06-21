@@ -42,15 +42,6 @@ describe('GET /api/exams/metrics (integration)', () => {
     expect(res.statusCode).toBe(401);
   });
 
-  it('should return 403 for non-admin users', async () => {
-    const medico = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
-    authSpies.authenticateAs(medico);
-
-    const res = await app.inject({ method: 'GET', url: '/api/exams/metrics' });
-
-    expect(res.statusCode).toBe(403);
-  });
-
   it('should return aggregated metrics for an admin', async () => {
     const admin = await UsuarioBuilder.anUser().withTipoPerfil('ADMIN').build();
     authSpies.authenticateAs(admin);
@@ -129,5 +120,63 @@ describe('GET /api/exams/metrics (integration)', () => {
     const res = await app.inject({ method: 'GET', url: '/api/exams/metrics?foo=bar' });
 
     expect(res.statusCode).toBe(400);
+  });
+
+  it('should scope volume and IA metrics to the logged-in medico', async () => {
+    const medico = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+    const outroMedico = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+    authSpies.authenticateAs(medico);
+
+    const meu = await ExameBuilder.anExame()
+      .withIdUsuario(medico.id)
+      .withStatus('CONCLUIDO')
+      .withDtHora(new Date('2026-06-01T10:00:00.000Z'))
+      .build();
+    const dele = await ExameBuilder.anExame()
+      .withIdUsuario(outroMedico.id)
+      .withStatus('CONCLUIDO')
+      .withDtHora(new Date('2026-06-01T10:00:00.000Z'))
+      .build();
+
+    const img = await ImagemBuilder.anImagem()
+      .withIdExame(meu.id)
+      .withLateralidadeOlho(LateralidadeOlho.OD)
+      .build();
+    await ResultadoIaBuilder.aResultadoIa()
+      .withIdImagem(img.id)
+      .withPredictedLabel('normal')
+      .withConfidence(0.9)
+      .build();
+
+    const imgDele = await ImagemBuilder.anImagem()
+      .withIdExame(dele.id)
+      .withLateralidadeOlho(LateralidadeOlho.OD)
+      .build();
+    await ResultadoIaBuilder.aResultadoIa()
+      .withIdImagem(imgDele.id)
+      .withPredictedLabel('abnormal')
+      .withConfidence(0.5)
+      .build();
+
+    const res = await app.inject({ method: 'GET', url: '/api/exams/metrics' });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.volume.total).toBe(1);
+    expect(body.resultadosIa.totalResultados).toBe(1);
+  });
+
+  it('should let especialista see global metrics (not scoped)', async () => {
+    const especialista = await UsuarioBuilder.anUser().withTipoPerfil('ESPECIALISTA').build();
+    const medico = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+    authSpies.authenticateAs(especialista);
+
+    await ExameBuilder.anExame().withIdUsuario(medico.id).build();
+    await ExameBuilder.anExame().withIdUsuario(medico.id).build();
+
+    const res = await app.inject({ method: 'GET', url: '/api/exams/metrics' });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.json().volume.total).toBe(2);
   });
 });

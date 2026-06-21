@@ -23,7 +23,8 @@ export class GetExamMetricsUseCase {
 
   /**
    * Agrega as métricas de exames (volume) e de diagnósticos de IA no período informado,
-   * consultando os dois repositórios em paralelo.
+   * consultando os dois repositórios em paralelo. Quando `input.idUsuario` é fornecido,
+   * as métricas ficam restritas aos exames daquele médico; sem ele, agregam todos os exames.
    */
   async execute(input: GetExamMetricsUseCaseInput): Promise<GetExamMetricsUseCaseOutput> {
     const [volume, resultadosIa] = await Promise.all([

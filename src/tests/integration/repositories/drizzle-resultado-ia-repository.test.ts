@@ -11,6 +11,7 @@ import type { ResultadoIa } from '@/modules/exam/resultado-ia';
 import { ExameBuilder } from '@/tests/helpers/builders/exame-builder';
 import { ImagemBuilder } from '@/tests/helpers/builders/imagem-builder';
 import { ResultadoIaBuilder } from '@/tests/helpers/builders/resultado-ia-builder';
+import { UsuarioBuilder } from '@/tests/helpers/builders/usuario-builder';
 
 describe('DrizzleResultadoIaRepository (integration)', () => {
   const repository = new DrizzleResultadoIaRepository();
@@ -126,6 +127,26 @@ describe('DrizzleResultadoIaRepository (integration)', () => {
         .build();
     }
 
+    async function seedResultadoForMedico(
+      idUsuario: string,
+      label: string,
+      confidence: number,
+    ): Promise<void> {
+      const exame = await ExameBuilder.anExame()
+        .withIdUsuario(idUsuario)
+        .withDtHora(new Date('2026-06-01T10:00:00.000Z'))
+        .build();
+      const img = await ImagemBuilder.anImagem()
+        .withIdExame(exame.id)
+        .withLateralidadeOlho(LateralidadeOlho.OD)
+        .build();
+      await ResultadoIaBuilder.aResultadoIa()
+        .withIdImagem(img.id)
+        .withPredictedLabel(label)
+        .withConfidence(confidence)
+        .build();
+    }
+
     it('should aggregate label distribution, total and average confidence', async () => {
       await seedResultado('normal', 0.9, new Date('2026-06-01T10:00:00.000Z'));
       await seedResultado('normal', 0.8, new Date('2026-06-02T10:00:00.000Z'));
@@ -164,6 +185,27 @@ describe('DrizzleResultadoIaRepository (integration)', () => {
       expect(metrics.totalResultados).toBe(0);
       expect(metrics.porDiagnostico).toEqual([]);
       expect(metrics.confiancaMedia).toBe(0);
+    });
+
+    it('should aggregate only results from exams of the given idUsuario', async () => {
+      const medico = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+      const outroMedico = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+
+      await seedResultadoForMedico(medico.id, 'normal', 0.9);
+      await seedResultadoForMedico(medico.id, 'abnormal', 0.7);
+      await seedResultadoForMedico(outroMedico.id, 'normal', 0.5);
+
+      const metrics = await repository.getDiagnosisMetrics({ idUsuario: medico.id });
+
+      expect(metrics.totalResultados).toBe(2);
+      expect(metrics.confiancaMedia).toBeCloseTo(0.8, 5);
+      expect(metrics.porDiagnostico).toEqual(
+        expect.arrayContaining([
+          { label: 'normal', total: 1 },
+          { label: 'abnormal', total: 1 },
+        ]),
+      );
+      expect(metrics.porDiagnostico).toHaveLength(2);
     });
   });
 

@@ -85,7 +85,10 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
     '/exams/metrics',
     {
       schema: getExamMetricsSchema,
-      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
+      preHandler: [
+        authenticationMiddleware,
+        authorizationMiddleware([tiposPerfil.ADMIN, tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA]),
+      ],
     },
     getExamMetrics,
   );

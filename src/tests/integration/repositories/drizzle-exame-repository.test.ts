@@ -360,5 +360,36 @@ describe('DrizzleExamesRepository (integration)', () => {
       });
       expect(metrics.serieTemporal).toEqual([]);
     });
+
+    it('should count only exams from the given idUsuario when provided', async () => {
+      const medico = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+      const outroMedico = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+
+      await ExameBuilder.anExame()
+        .withIdUsuario(medico.id)
+        .withStatus('CONCLUIDO')
+        .withDtHora(new Date('2026-06-01T10:00:00.000Z'))
+        .build();
+      await ExameBuilder.anExame()
+        .withIdUsuario(medico.id)
+        .withStatus('CRIADO')
+        .withDtHora(new Date('2026-06-02T10:00:00.000Z'))
+        .build();
+      await ExameBuilder.anExame()
+        .withIdUsuario(outroMedico.id)
+        .withStatus('CONCLUIDO')
+        .withDtHora(new Date('2026-06-01T10:00:00.000Z'))
+        .build();
+
+      const metrics = await repository.getVolumeMetrics({ idUsuario: medico.id });
+
+      expect(metrics.total).toBe(2);
+      expect(metrics.porStatus).toEqual({
+        CRIADO: 1,
+        CONCLUIDO: 1,
+        EM_PROCESSAMENTO: 0,
+        ERRO_PROCESSAMENTO: 0,
+      });
+    });
   });
 });

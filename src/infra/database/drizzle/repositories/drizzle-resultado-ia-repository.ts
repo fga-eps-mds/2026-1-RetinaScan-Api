@@ -63,11 +63,16 @@ export class DrizzleResultadoIaRepository implements ResultadoIaRepository {
     }));
   }
 
-  async getDiagnosisMetrics({ startDate, endDate }: MetricsDateFilter): Promise<DiagnosisMetrics> {
+  async getDiagnosisMetrics({
+    startDate,
+    endDate,
+    idUsuario,
+  }: MetricsDateFilter): Promise<DiagnosisMetrics> {
     const conditions: SQL[] = [];
 
     if (startDate) conditions.push(gte(exam.dtHora, startDate));
     if (endDate) conditions.push(lte(exam.dtHora, endDate));
+    if (idUsuario) conditions.push(eq(exam.idUsuario, idUsuario));
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 

@@ -2,6 +2,7 @@ import { container } from '@/infra/container';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import z from 'zod';
 import { ValidationError } from '@/shared/errors';
+import { tiposPerfil } from '@/modules/users/domain';
 
 const querySchema = z
   .object({
@@ -31,9 +32,12 @@ export async function getExamMetrics(request: FastifyRequest, reply: FastifyRepl
     );
   }
 
+  const isMedico = request.user!.tipoPerfil === tiposPerfil.MEDICO;
+  const idUsuario = isMedico ? request.user!.id : undefined;
+
   const useCase = container.resolve('getExamMetricsUseCase');
 
-  const metrics = await useCase.execute({ startDate, endDate });
+  const metrics = await useCase.execute({ startDate, endDate, idUsuario });
 
   return reply.status(200).send(metrics);
 }

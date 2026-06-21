@@ -73,6 +73,18 @@ describe('GetExamMetricsUseCase', () => {
     expect(resultadoIaRepository.getDiagnosisMetrics).toHaveBeenCalledWith(input);
   });
 
+  it('should forward idUsuario scope to both repositories', async () => {
+    examesRepository.getVolumeMetrics.mockResolvedValue(volume);
+    resultadoIaRepository.getDiagnosisMetrics.mockResolvedValue(resultadosIa);
+
+    const input = { idUsuario: 'medico-123' };
+
+    await usecase.execute(input);
+
+    expect(examesRepository.getVolumeMetrics).toHaveBeenCalledWith(input);
+    expect(resultadoIaRepository.getDiagnosisMetrics).toHaveBeenCalledWith(input);
+  });
+
   it('should pass through empty aggregates', async () => {
     examesRepository.getVolumeMetrics.mockResolvedValue({
       total: 0,
