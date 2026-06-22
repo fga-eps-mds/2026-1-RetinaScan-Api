@@ -22,7 +22,9 @@ import {
   listarSolicitacoesCpfCrmAdminSchema,
   listarMinhasSolicitacoesCpfCrmSchema,
   searchMedicosSchema,
+  listAvailableDoctorsSchema,
 } from '../docs/users';
+import { listAvailableDoctorsRoute } from './users/list-available-doctors-route';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
@@ -349,5 +351,17 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
       preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
     },
     searchMedicosByAdmin,
+  );
+
+  app.get(
+    '/medicos/disponiveis',
+    {
+      schema: listAvailableDoctorsSchema,
+      preHandler: [
+        authenticationMiddleware,
+        authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA]),
+      ],
+    },
+    listAvailableDoctorsRoute,
   );
 }

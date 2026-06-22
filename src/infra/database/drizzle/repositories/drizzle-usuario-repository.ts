@@ -129,4 +129,18 @@ export class DrizzleUsuariosRepository implements UsuariosRepository, IdAdminSea
       },
     };
   }
+
+  async searchAvailableDoctors(busca?: string): Promise<Usuario[]> {
+    const conds: SQL[] = [inArray(usuario.tipoPerfil, ['MEDICO', 'ESPECIALISTA'])];
+
+    if (busca) {
+      conds.push(or(ilike(usuario.nomeCompleto, `%${busca}%`), ilike(usuario.email, `%${busca}%`))!);
+    }
+
+    return db
+      .select()
+      .from(usuario)
+      .where(and(...conds))
+      .limit(50);
+  }
 }
