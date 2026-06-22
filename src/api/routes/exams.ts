@@ -15,8 +15,14 @@ import {
   registerExamWebhookSchema,
   registerExamErrorWebhookSchema,
   shareExamSchema,
+  listExamSharesSchema,
+  listMySharesSchema,
+  revokeExamShareSchema,
 } from '../docs/exams';
 import { shareExam } from './exams/share-exam';
+import { listExamShares } from './exams/list-exam-shares';
+import { listMyShares } from './exams/list-my-shares';
+import { revokeExamShare } from './exams/revoke-exam-share';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function examRoutes(app: FastifyInstance): Promise<void> {
@@ -128,5 +134,54 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
       },
     },
     shareExam,
+  );
+
+  app.get<{ Params: { examId: string } }>(
+    '/exams/:examId/shares',
+    {
+      schema: listExamSharesSchema,
+      preHandler: [
+        authenticationMiddleware,
+        authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA, tiposPerfil.ADMIN]),
+      ],
+    },
+    listExamShares,
+  );
+
+  app.get(
+    '/exams/shares/my-shares',
+    {
+      schema: listMySharesSchema,
+      preHandler: [
+        authenticationMiddleware,
+        authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA]),
+      ],
+    },
+    listMyShares,
+  );
+
+  app.delete<{ Params: { examId: string; shareId: string } }>(
+    '/exams/:examId/shares/:shareId',
+    {
+      schema: revokeExamShareSchema,
+      preHandler: [
+        authenticationMiddleware,
+        authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA, tiposPerfil.ADMIN]),
+      ],
+      config: {
+        audit: {
+          enabled: true,
+          action: 'DELETE',
+          category: 'EXAM_SHARE',
+          getDescription: (request) =>
+            `Usuário ${request.user?.id} revogou o compartilhamento ${(request.params as any).shareId} do exame ${(request.params as any).examId}`,
+          getTarget: (request) => ({
+            targetEntityType: 'EXAM',
+            targetEntityId: (request.params as any).examId,
+          }),
+        },
+      },
+    },
+    revokeExamShare,
   );
 }
