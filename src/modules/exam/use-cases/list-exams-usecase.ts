@@ -25,6 +25,9 @@ export type ListExamsUseCaseOutput = {
 export class ListExamsUseCase {
   constructor(private readonly examRepository: ExamesRepository) {}
 
+  /**
+   * Lista exames de forma paginada aplicando os filtros recebidos e calcula o total de páginas.
+   */
   async execute(input: ListExamsUseCaseInput): Promise<ListExamsUseCaseOutput> {
     const { filters, pagination } = input;
 
