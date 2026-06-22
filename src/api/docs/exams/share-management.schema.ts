@@ -3,7 +3,8 @@ import type { FastifySchema } from 'fastify';
 export const listExamSharesSchema: FastifySchema = {
   tags: ['Exames'],
   summary: 'Lista compartilhamentos ativos de um exame',
-  description: 'Retorna a lista de médicos com os quais este exame foi compartilhado e que ainda possuem acesso ativo.',
+  description:
+    'Retorna a lista de médicos com os quais este exame foi compartilhado e que ainda possuem acesso ativo.',
   params: {
     type: 'object',
     properties: {
@@ -43,7 +44,8 @@ export const listExamSharesSchema: FastifySchema = {
 export const listMySharesSchema: FastifySchema = {
   tags: ['Exames'],
   summary: 'Lista todos os compartilhamentos criados pelo usuário logado',
-  description: 'Retorna uma lista de todos os compartilhamentos ativos que o médico autenticado criou na plataforma.',
+  description:
+    'Retorna uma lista de todos os compartilhamentos ativos que o médico autenticado criou na plataforma.',
   response: {
     200: {
       type: 'object',
@@ -77,7 +79,8 @@ export const listMySharesSchema: FastifySchema = {
 export const revokeExamShareSchema: FastifySchema = {
   tags: ['Exames'],
   summary: 'Revoga o compartilhamento de um exame',
-  description: 'Permite que o criador do exame (ou um admin/especialista) revogue imediatamente o acesso concedido a outro médico.',
+  description:
+    'Permite que o criador do exame (ou um admin/especialista) revogue imediatamente o acesso concedido a outro médico.',
   params: {
     type: 'object',
     properties: {

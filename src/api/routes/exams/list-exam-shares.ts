@@ -1,7 +1,10 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import z from 'zod';
 import { ListExamSharesUseCase } from '@/modules/exam';
-import { DrizzleExamShareRepository, DrizzleUsuariosRepository } from '@/infra/database/drizzle/repositories';
+import {
+  DrizzleExamShareRepository,
+  DrizzleUsuariosRepository,
+} from '@/infra/database/drizzle/repositories';
 
 const listExamSharesParamsSchema = z.object({
   examId: z.string().uuid('ID do exame inválido.'),

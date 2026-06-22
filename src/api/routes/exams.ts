@@ -173,12 +173,17 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
           enabled: true,
           action: 'DELETE',
           category: 'EXAM_SHARE',
-          getDescription: (request) =>
-            `Usuário ${request.user?.id} revogou o compartilhamento ${(request.params as any).shareId} do exame ${(request.params as any).examId}`,
-          getTarget: (request) => ({
-            targetEntityType: 'EXAM',
-            targetEntityId: (request.params as any).examId,
-          }),
+          getDescription: (request) => {
+            const params = request.params as { examId: string; shareId: string };
+            return `Usuário ${request.user?.id} revogou o compartilhamento ${params.shareId} do exame ${params.examId}`;
+          },
+          getTarget: (request) => {
+            const params = request.params as { examId: string; shareId: string };
+            return {
+              targetEntityType: 'EXAM',
+              targetEntityId: params.examId,
+            };
+          },
         },
       },
     },

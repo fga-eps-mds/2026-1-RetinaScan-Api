@@ -134,7 +134,9 @@ export class DrizzleUsuariosRepository implements UsuariosRepository, IdAdminSea
     const conds: SQL[] = [inArray(usuario.tipoPerfil, ['MEDICO', 'ESPECIALISTA'])];
 
     if (busca) {
-      conds.push(or(ilike(usuario.nomeCompleto, `%${busca}%`), ilike(usuario.email, `%${busca}%`))!);
+      conds.push(
+        or(ilike(usuario.nomeCompleto, `%${busca}%`), ilike(usuario.email, `%${busca}%`))!,
+      );
     }
 
     return db

@@ -1,10 +1,10 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import z from 'zod';
 import { RevokeExamShareUseCase } from '@/modules/exam';
-import { 
-  DrizzleExamShareRepository, 
-  DrizzleExamesRepository, 
-  DrizzleUsuariosRepository 
+import {
+  DrizzleExamShareRepository,
+  DrizzleExamesRepository,
+  DrizzleUsuariosRepository,
 } from '@/infra/database/drizzle/repositories';
 
 const revokeShareParamsSchema = z.object({
@@ -39,7 +39,7 @@ export async function revokeExamShare(request: FastifyRequest, reply: FastifyRep
     const userRepo = new DrizzleUsuariosRepository();
     const useCase = new RevokeExamShareUseCase(shareRepo, examRepo, userRepo);
 
-    await useCase.execute({ 
+    await useCase.execute({
       shareId: paramsResult.data.shareId,
       requesterId: userId,
     });
@@ -47,12 +47,24 @@ export async function revokeExamShare(request: FastifyRequest, reply: FastifyRep
     return reply.status(200).send({
       message: 'Acesso revogado com sucesso.',
     });
-  } catch (error: any) {
-    const statusCode = error.statusCode || 500;
-    return reply.status(statusCode).send({
-      statusCode,
-      error: error.name || 'Internal Server Error',
-      message: error.message || 'Erro ao revogar compartilhamento.',
+  } catch (error) {
+    if (error instanceof Error) {
+      let statusCode = 500;
+      if ('statusCode' in error && typeof error.statusCode === 'number') {
+        statusCode = error.statusCode;
+      }
+
+      return reply.status(statusCode).send({
+        statusCode,
+        error: error.name || 'Internal Server Error',
+        message: error.message || 'Erro ao revogar compartilhamento.',
+      });
+    }
+
+    return reply.status(500).send({
+      statusCode: 500,
+      error: 'Internal Server Error',
+      message: 'Erro desconhecido ao revogar compartilhamento.',
     });
   }
 }

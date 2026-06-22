@@ -41,8 +41,8 @@ export class ListMySharesUseCase {
             nomeCompleto: medico?.nomeCompleto ?? 'Desconhecido',
             email: medico?.email ?? 'Desconhecido',
           },
-          criadoEm: share.criadoEm,
-          expiraEm: share.expiraEm,
+          criadoEm: share.createdAt,
+          expiraEm: share.expiraEm ?? null,
           ativo: share.ativo,
         };
       }),

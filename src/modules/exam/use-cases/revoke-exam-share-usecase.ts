@@ -32,7 +32,11 @@ export class RevokeExamShareUseCase {
     }
 
     // Apenas o criador do exame ou um ESPECIALISTA/ADMIN pode revogar
-    if (exam.idUsuario !== requester.id && requester.tipoPerfil !== 'ESPECIALISTA' && requester.tipoPerfil !== 'ADMIN') {
+    if (
+      exam.idUsuario !== requester.id &&
+      requester.tipoPerfil !== 'ESPECIALISTA' &&
+      requester.tipoPerfil !== 'ADMIN'
+    ) {
       throw new UnauthorizedError('Você não tem permissão para revogar este compartilhamento.');
     }
 

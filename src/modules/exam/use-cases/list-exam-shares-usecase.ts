@@ -1,6 +1,5 @@
 import type { ExamShareRepository } from '../exam-share-repository';
 import type { UsuariosRepository } from '@/modules/users/repositories';
-import { NotFoundError } from '@/shared/errors';
 
 export type ListExamSharesUseCaseInput = {
   examId: string;
@@ -38,8 +37,8 @@ export class ListExamSharesUseCase {
             nomeCompleto: medico?.nomeCompleto ?? 'Desconhecido',
             email: medico?.email ?? 'Desconhecido',
           },
-          criadoEm: share.criadoEm,
-          expiraEm: share.expiraEm,
+          criadoEm: share.createdAt,
+          expiraEm: share.expiraEm ?? null,
           ativo: share.ativo,
         };
       }),

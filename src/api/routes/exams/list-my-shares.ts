@@ -1,6 +1,9 @@
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import { ListMySharesUseCase } from '@/modules/exam';
-import { DrizzleExamShareRepository, DrizzleUsuariosRepository } from '@/infra/database/drizzle/repositories';
+import {
+  DrizzleExamShareRepository,
+  DrizzleUsuariosRepository,
+} from '@/infra/database/drizzle/repositories';
 
 export async function listMyShares(request: FastifyRequest, reply: FastifyReply) {
   const userId = request.user?.id;

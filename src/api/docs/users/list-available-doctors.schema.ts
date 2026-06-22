@@ -3,7 +3,8 @@ import type { FastifySchema } from 'fastify';
 export const listAvailableDoctorsSchema: FastifySchema = {
   tags: ['Usuários'],
   summary: 'Lista médicos disponíveis para compartilhamento',
-  description: 'Retorna uma lista resumida (apenas id, nome e email) de todos os médicos e especialistas da plataforma, para o front-end exibir na busca. Pode-se passar um parâmetro de busca opcional.',
+  description:
+    'Retorna uma lista resumida (apenas id, nome e email) de todos os médicos e especialistas da plataforma, para o front-end exibir na busca. Pode-se passar um parâmetro de busca opcional.',
   querystring: {
     type: 'object',
     properties: {
