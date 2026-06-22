@@ -41,6 +41,13 @@ export class DrizzleExamShareRepository implements ExamShareRepository {
       .where(and(eq(examShare.examId, examId), eq(examShare.ativo, true)));
   }
 
+  async listActiveByCompartilhadoPor(compartilhadoPor: string): Promise<ExamShare[]> {
+    return db
+      .select()
+      .from(examShare)
+      .where(and(eq(examShare.compartilhadoPor, compartilhadoPor), eq(examShare.ativo, true)));
+  }
+
   async revoke(id: string): Promise<void> {
     await db.update(examShare).set({ ativo: false }).where(eq(examShare.id, id));
   }
