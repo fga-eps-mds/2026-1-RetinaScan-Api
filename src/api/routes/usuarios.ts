@@ -23,6 +23,8 @@ import {
   listarMinhasSolicitacoesCpfCrmSchema,
   searchMedicosSchema,
 } from '../docs/users';
+import { deletarSolicitacaoCpfCrmAdminRoute } from './users/deletar-solicitacao-cpf-crm';
+import { deletarSolicitacaoCpfCrmAdminSchema } from '../docs/users/deletar-solicitacoes-cpf-crm.schema';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
@@ -328,6 +330,45 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
       preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
     },
     listarSolicitacoesCpfCrmAdminRoute,
+  );
+
+  app.delete(
+    '/usuarios/solicitacoes-cpf-crm/:idSolicitacao',
+    {
+      schema: deletarSolicitacaoCpfCrmAdminSchema,
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
+      config: {
+        audit: {
+          enabled: true,
+          action: 'DELETE',
+          category: 'USER_MANAGEMENT',
+          getDescription: (request) => {
+            const params = request.params as { idSolicitacao: string };
+
+            return `Solicitação de CPF/CRM ${params.idSolicitacao} apagada por admin ${request.user?.email}`;
+          },
+          getTarget: (request) => {
+            const params = request.params as { idSolicitacao: string };
+
+            return {
+              targetEntityType: 'SOLICITATION',
+              targetEntityId: params.idSolicitacao,
+              targetDisplay: params.idSolicitacao,
+            };
+          },
+          getChanges: () => null,
+          getMetadata: (request) => {
+            const params = request.params as { idSolicitacao: string };
+
+            return {
+              source: 'usuarioRoutes.deletarSolicitacaoCpfCrmAdminRoute',
+              idSolicitacao: params.idSolicitacao,
+            };
+          },
+        },
+      },
+    },
+    deletarSolicitacaoCpfCrmAdminRoute,
   );
 
   app.get(

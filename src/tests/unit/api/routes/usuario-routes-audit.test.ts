@@ -1,8 +1,9 @@
 // src/tests/unit/api/routes/usuario-routes-audit.test.ts
 
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import fastify, { type FastifyInstance, type RouteOptions } from 'fastify';
 import { usuarioRoutes } from '@/api/routes/usuarios';
+import { ListLogsWithFiltersUseCase } from '@/modules/audit-log/use-case/list-logs-with-filters';
 
 type AuditConfig = {
   enabled: boolean;
@@ -330,6 +331,41 @@ describe('usuarioRoutes audit config', () => {
     expect(audit.getMetadata?.(request)).toEqual({
       source: 'usuarioRoutes.rejeitarSolicitacaoCpfCrmRoute',
       idSolicitacao: 'sol-3',
+    });
+  });
+
+  it('should configure audit for DELETE /usuarios/solicitacoes-cpf-crm/:idSolicitacao', () => {
+    const route = findRoute(
+      registeredRoutes,
+      'DELETE',
+      '/usuarios/solicitacoes-cpf-crm/:idSolicitacao',
+    );
+    const audit = route.config?.audit as AuditConfig;
+
+    const request = {
+      user: { email: 'admin@teste.com' },
+      params: { idSolicitacao: 'sol-4' },
+    };
+
+    expect(audit.enabled).toBe(true);
+    expect(audit.action).toBe('DELETE');
+    expect(audit.category).toBe('USER_MANAGEMENT');
+
+    expect(audit.getDescription?.(request)).toBe(
+      'Solicitação de CPF/CRM sol-4 apagada por admin admin@teste.com',
+    );
+
+    expect(audit.getTarget?.(request)).toEqual({
+      targetEntityType: 'SOLICITATION',
+      targetEntityId: 'sol-4',
+      targetDisplay: 'sol-4',
+    });
+
+    expect(audit.getChanges?.(request)).toBeNull();
+
+    expect(audit.getMetadata?.(request)).toEqual({
+      source: 'usuarioRoutes.deletarSolicitacaoCpfCrmAdminRoute',
+      idSolicitacao: 'sol-4',
     });
   });
 });

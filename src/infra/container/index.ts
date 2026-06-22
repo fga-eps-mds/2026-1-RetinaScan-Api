@@ -87,6 +87,7 @@ import { DrizzleAuditLogsRepository } from '../database/drizzle/repositories/dri
 import { DrizzleSpecialistReportRepository } from '../database/drizzle/repositories/drizzle-specialist-report-repository';
 import { RedisReportEditingPresenceService } from '../shared/redis-report-editing-presence-service';
 import { redisClient } from '../cache/redis-client';
+import { DeletarSolicitacaoCpfCrmUsecase } from '@/modules/users/use-cases/deletar-solicitacao-usecase';
 
 export interface AppContainer {
   app: FastifyInstance;
@@ -117,6 +118,7 @@ export interface AppContainer {
   solicitarAlteracaoCpfCrmUsecase: SolicitarAlteracaoCpfCrmUsecase;
   aprovarSolicitacaoCpfCrmUsecase: AprovarSolicitacaoCpfCrmUsecase;
   rejeitarSolicitacaoCpfCrmUsecase: RejeitarSolicitacaoCpfCrmUsecase;
+  deletarSolicitacaoCpfCrmUsecase: DeletarSolicitacaoCpfCrmUsecase;
   listarSolicitacoesCpfCrmUsecase: ListarSolicitacoesCpfCrmUsecase;
   recoverPasswordByCrmUseCase: RecoverPasswordByCrmUseCase;
 
@@ -290,6 +292,11 @@ container.register({
   listarSolicitacoesCpfCrmUsecase: asFunction(
     ({ solicitacaoCpfCrmRepository }: AppContainer) =>
       new ListarSolicitacoesCpfCrmUsecase(solicitacaoCpfCrmRepository),
+  ).scoped(),
+
+  deletarSolicitacaoCpfCrmUsecase: asFunction(
+    ({ solicitacaoCpfCrmRepository }: AppContainer) =>
+      new DeletarSolicitacaoCpfCrmUsecase(solicitacaoCpfCrmRepository),
   ).scoped(),
 
   recoverPasswordByCrmUseCase: asFunction(
