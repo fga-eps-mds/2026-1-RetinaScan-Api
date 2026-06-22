@@ -8,3 +8,6 @@ export * from './use-cases/list-exams-usecase';
 export * from './exam-share';
 export * from './exam-share-repository';
 export * from './use-cases/share-exam-usecase';
+export * from './use-cases/list-exam-shares-usecase';
+export * from './use-cases/list-my-shares-usecase';
+export * from './use-cases/revoke-exam-share-usecase';

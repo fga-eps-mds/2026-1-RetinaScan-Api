@@ -5,5 +5,6 @@ export interface ExamShareRepository {
   findById(id: string): Promise<ExamShare | null>;
   findByExamAndMedico(examId: string, medicoDestinoId: string): Promise<ExamShare | null>;
   listActiveByExam(examId: string): Promise<ExamShare[]>;
+  listActiveByCompartilhadoPor(compartilhadoPor: string): Promise<ExamShare[]>;
   revoke(id: string): Promise<void>;
 }
