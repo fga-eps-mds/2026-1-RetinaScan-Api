@@ -1,7 +1,7 @@
 import type { ExamShareRepository } from '../exam-share-repository';
 import type { ExamesRepository } from '../exam-repository';
 import type { UsuariosRepository } from '@/modules/users/repositories';
-import { NotFoundError, UnauthorizedError } from '@/shared/errors';
+import { ConflictError, NotFoundError, UnauthorizedError } from '@/shared/errors';
 
 export type RevokeExamShareUseCaseInput = {
   shareId: string;
@@ -19,6 +19,10 @@ export class RevokeExamShareUseCase {
     const share = await this.examShareRepository.findById(input.shareId);
     if (!share) {
       throw new NotFoundError('Compartilhamento não encontrado.');
+    }
+
+    if (!share.ativo) {
+      throw new ConflictError('Este acesso já foi revogado anteriormente.');
     }
 
     const requester = await this.usuariosRepository.findBy({ id: input.requesterId });
