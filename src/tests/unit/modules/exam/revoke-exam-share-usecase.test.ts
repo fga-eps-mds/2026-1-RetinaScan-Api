@@ -150,4 +150,23 @@ describe('RevokeExamShareUseCase', () => {
     
     expect(shareRepo.revoke).not.toHaveBeenCalled();
   });
+
+  it('deve lançar ConflictError se o acesso já estiver revogado (ativo = false)', async () => {
+    const shareId = faker.string.uuid();
+
+    shareRepo.findById.mockResolvedValue({
+      id: shareId,
+      examId: faker.string.uuid(),
+      medicoDestinoId: faker.string.uuid(),
+      compartilhadoPor: faker.string.uuid(),
+      ativo: false,
+      expiraEm: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    await expect(
+      usecase.execute({ shareId, requesterId: faker.string.uuid() })
+    ).rejects.toThrow('Este acesso já foi revogado anteriormente.');
+  });
 });
