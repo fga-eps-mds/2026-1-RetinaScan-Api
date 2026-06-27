@@ -39,13 +39,16 @@ export async function revokeExamShare(request: FastifyRequest, reply: FastifyRep
     const userRepo = new DrizzleUsuariosRepository();
     const useCase = new RevokeExamShareUseCase(shareRepo, examRepo, userRepo);
 
-    await useCase.execute({
+    const result = await useCase.execute({
       shareId: paramsResult.data.shareId,
       requesterId: userId,
     });
 
     return reply.status(200).send({
       message: 'Acesso revogado com sucesso.',
+      data: {
+        medicoDestinoEmail: result.emailDestino,
+      },
     });
   } catch (error) {
     if (error instanceof Error) {

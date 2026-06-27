@@ -8,6 +8,10 @@ export type RevokeExamShareUseCaseInput = {
   requesterId: string;
 };
 
+export type RevokeExamShareUseCaseOutput = {
+  emailDestino: string;
+};
+
 export class RevokeExamShareUseCase {
   constructor(
     private readonly examShareRepository: ExamShareRepository,
@@ -15,7 +19,7 @@ export class RevokeExamShareUseCase {
     private readonly usuariosRepository: UsuariosRepository,
   ) {}
 
-  async execute(input: RevokeExamShareUseCaseInput): Promise<void> {
+  async execute(input: RevokeExamShareUseCaseInput): Promise<RevokeExamShareUseCaseOutput> {
     const share = await this.examShareRepository.findById(input.shareId);
     if (!share) {
       throw new NotFoundError('Compartilhamento não encontrado.');
@@ -45,5 +49,10 @@ export class RevokeExamShareUseCase {
     }
 
     await this.examShareRepository.revoke(input.shareId);
+
+    const medicoDestino = await this.usuariosRepository.findBy({ id: share.medicoDestinoId });
+    const emailDestino = medicoDestino?.email || 'Desconhecido';
+
+    return { emailDestino };
   }
 }

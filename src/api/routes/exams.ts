@@ -122,13 +122,16 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
       config: {
         audit: {
           enabled: true,
-          action: 'CREATE',
-          category: 'EXAM_SHARE',
-          getDescription: (request) =>
-            `Usuário ${request.user?.id} compartilhou o exame ${(request.params as { examId: string }).examId}`,
+          action: 'SHARE_CREATED',
+          category: 'EXAM_ACCESS',
+          getDescription: (request) => {
+            const body = request.body as { emailDestino?: string };
+            return `Acesso ao exame concedido para ${body.emailDestino || 'o médico destino'}`;
+          },
           getTarget: (request) => ({
             targetEntityType: 'EXAM',
             targetEntityId: (request.params as { examId: string }).examId,
+            targetDisplay: `Exame de ID: ${(request.params as { examId: string }).examId}`,
           }),
         },
       },
@@ -171,17 +174,18 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
       config: {
         audit: {
           enabled: true,
-          action: 'DELETE',
-          category: 'EXAM_SHARE',
-          getDescription: (request) => {
-            const params = request.params as { examId: string; shareId: string };
-            return `Usuário ${request.user?.id} revogou o compartilhamento ${params.shareId} do exame ${params.examId}`;
+          action: 'SHARE_REVOKED',
+          category: 'EXAM_ACCESS',
+          getDescription: (request, payload: any) => {
+            const emailDestino = payload?.data?.medicoDestinoEmail || 'o médico selecionado';
+            return `Acesso ao exame revogado para ${emailDestino}`;
           },
           getTarget: (request) => {
             const params = request.params as { examId: string; shareId: string };
             return {
               targetEntityType: 'EXAM',
               targetEntityId: params.examId,
+              targetDisplay: `Exame de ID: ${params.examId}`,
             };
           },
         },

@@ -69,7 +69,7 @@ describe('RevokeExamShareUseCase', () => {
 
     await expect(
       usecase.execute({ shareId, requesterId: medicoDono.id })
-    ).resolves.toBeUndefined();
+    ).resolves.toHaveProperty('emailDestino');
 
     expect(shareRepo.revoke).toHaveBeenCalledWith(shareId);
   });
@@ -95,7 +95,7 @@ describe('RevokeExamShareUseCase', () => {
 
     await expect(
       usecase.execute({ shareId, requesterId: especialista.id })
-    ).resolves.toBeUndefined();
+    ).resolves.toHaveProperty('emailDestino');
 
     expect(shareRepo.revoke).toHaveBeenCalledWith(shareId);
   });
