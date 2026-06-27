@@ -33,6 +33,7 @@ export interface UsuariosRepository {
   getAllUsers(): Promise<Usuario[]>;
   update(id: string, params: UsuarioUpdateInput): Promise<UsuarioUpdateOutput>;
   updatePassword(userId: string, passwordHash: string): Promise<void>;
+  searchAvailableDoctors(busca?: string, excludeId?: string): Promise<Usuario[]>;
 }
 
 export type SolicitarAlteracaoCpfCrmInput = {

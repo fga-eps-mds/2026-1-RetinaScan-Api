@@ -7,3 +7,4 @@ export * from './drizzle-resultado-ia-repository';
 export * from './drizzle-exam-ia-error-repository';
 export * from './drizzle-comorbidade-repository';
 export * from './drizzle-notification-repository';
+export * from './drizzle-exam-share-repository';

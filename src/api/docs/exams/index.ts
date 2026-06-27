@@ -4,4 +4,6 @@ export * from './list-exams.schema';
 export * from './get-exam-details.schema';
 export * from './register-exam-webhook.schema';
 export * from './register-exam-error-webhook.schema';
+export * from './share-exam.schema';
+export * from './share-management.schema';
 export * from './get-exam-metrics.schema';

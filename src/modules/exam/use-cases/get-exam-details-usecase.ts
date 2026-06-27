@@ -12,6 +12,7 @@ import type { CryptographyService } from '@/shared/services/cryptography-service
 import { NotFoundError, UnauthorizedError } from '@/shared/errors';
 import type { SpecialistReportRepository } from '../specialist-report-repository';
 import type { SpecialistReport } from '../specialist-report';
+import type { ExamShareRepository } from '../exam-share-repository';
 
 const PRESIGNED_URL_TTL_SECONDS = 900;
 
@@ -118,6 +119,7 @@ export class GetExamDetailsUseCase {
     private readonly storageService: StorageService,
     private readonly cryptographyService: CryptographyService,
     private readonly specialistReportRepository: SpecialistReportRepository,
+    private readonly examShareRepository?: ExamShareRepository,
   ) {}
 
   /**
@@ -131,7 +133,7 @@ export class GetExamDetailsUseCase {
    */
   async execute(input: GetExamDetailsUseCaseInput): Promise<GetExamDetailsUseCaseOutput> {
     const exame = await this.getExam(input.examId);
-    this.assertCanView(exame, input.requester);
+    await this.assertCanView(exame, input.requester);
 
     const medico = await this.getMedico(exame.idUsuario);
     const imagens = await this.imagemRepository.findMany({ examId: exame.id });
@@ -151,8 +153,17 @@ export class GetExamDetailsUseCase {
     return exame;
   }
 
-  private assertCanView(exame: Exame, requester: GetExamDetailsRequester): void {
+  private async assertCanView(exame: Exame, requester: GetExamDetailsRequester): Promise<void> {
     if (requester.tipoPerfil === tiposPerfil.MEDICO && exame.idUsuario !== requester.id) {
+      if (this.examShareRepository) {
+        const share = await this.examShareRepository.findByExamAndMedico(exame.id, requester.id);
+        if (share && share.ativo) {
+          const agora = new Date();
+          if (!share.expiraEm || share.expiraEm > agora) {
+            return;
+          }
+        }
+      }
       throw new UnauthorizedError('Acesso negado a este exame.');
     }
   }
