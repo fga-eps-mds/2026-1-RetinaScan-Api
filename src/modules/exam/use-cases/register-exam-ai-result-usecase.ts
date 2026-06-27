@@ -39,6 +39,16 @@ export class RegisterExamAiResultUseCase {
     private readonly notificationService: NotificationService,
   ) {}
 
+  /**
+   * Registra os resultados de IA reportados por webhook, casando cada `result` a uma imagem
+   * do exame pelo `filename` (= caminho da imagem), persiste os resultados, marca o exame como
+   * `CONCLUIDO` e notifica o dono. Idempotente por exame (recusa um segundo registro).
+   *
+   * @throws ValidationError se o `exam_id` diverge da rota, se `total_images` não bate com a
+   *   quantidade de results, ou se um `filename` não casa / está duplicado
+   * @throws NotFoundError se o exame não existe
+   * @throws ConflictError se o exame já possui resultados registrados
+   */
   async execute(input: RegisterExamAiResultUseCaseInput): Promise<void> {
     const { examId, payloadExamId, totalImages, results } = input;
 

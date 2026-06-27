@@ -45,7 +45,11 @@ export type SolicitarAlteracaoCpfCrmInput = {
 export type ListarSolicitacoesCpfCrmInput = {
   status?: SolicitacaoStatus;
   idUsuario?: string;
+  nome?: string;
+  email?: string;
   relations?: boolean;
+  sortBy?: 'createdAt' | 'updatedAt' | 'status' | 'nomeCompleto';
+  sortOrder?: 'asc' | 'desc';
 };
 
 export type RejeitarSolicitacaoCpfCrmInput = {
@@ -65,6 +69,7 @@ export interface SolicitacaoCpfCrmRepository {
   listar(input?: ListarSolicitacoesCpfCrmInput): Promise<SolicitacaoCpfCrm[]>;
   aprovar(input: AprovarSolicitacaoCpfCrmInput): Promise<SolicitacaoCpfCrm | null>;
   rejeitar(input: RejeitarSolicitacaoCpfCrmInput): Promise<SolicitacaoCpfCrm | null>;
+  deletar(idSolicitacao: string): Promise<SolicitacaoCpfCrm | null>;
 }
 
 export type CriarInscricaoInput = {

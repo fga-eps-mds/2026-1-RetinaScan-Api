@@ -29,6 +29,15 @@ export class CreateSpecialistReportUseCase {
     private readonly reportEditingPresenceService: ReportEditingPresenceService,
   ) {}
 
+  /**
+   * Cria o laudo do especialista para um exame concluído e notifica o médico dono.
+   * O exame só pode ter um laudo, e a criação é bloqueada se outro especialista estiver
+   * editando o laudo no momento (lock de presença).
+   *
+   * @throws NotFoundError se o usuário ou o exame não existem
+   * @throws UnauthorizedError se o ator não é um especialista
+   * @throws ConflictError se o exame não está concluído, já possui laudo, ou está sendo editado por outro
+   */
   async execute(data: createSpecialistUseCaseRequest): Promise<createSpecialistUseCaseResponse> {
     const actor = await this.usuariosRepository.findBy({
       id: data.specialistId,

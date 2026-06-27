@@ -288,4 +288,108 @@ describe('DrizzleExamesRepository (integration)', () => {
       expect(result.data).toEqual([]);
     });
   });
+
+  describe('getVolumeMetrics', () => {
+    it('should return totals, per-status counts (all keys) and daily series', async () => {
+      const medico = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+
+      await ExameBuilder.anExame()
+        .withIdUsuario(medico.id)
+        .withStatus('CONCLUIDO')
+        .withDtHora(new Date('2026-06-01T10:00:00.000Z'))
+        .build();
+      await ExameBuilder.anExame()
+        .withIdUsuario(medico.id)
+        .withStatus('CONCLUIDO')
+        .withDtHora(new Date('2026-06-01T15:00:00.000Z'))
+        .build();
+      await ExameBuilder.anExame()
+        .withIdUsuario(medico.id)
+        .withStatus('CRIADO')
+        .withDtHora(new Date('2026-06-02T09:00:00.000Z'))
+        .build();
+
+      const metrics = await repository.getVolumeMetrics({});
+
+      expect(metrics.total).toBe(3);
+      expect(metrics.porStatus).toEqual({
+        CRIADO: 1,
+        CONCLUIDO: 2,
+        EM_PROCESSAMENTO: 0,
+        ERRO_PROCESSAMENTO: 0,
+      });
+      expect(metrics.serieTemporal).toEqual([
+        { data: '2026-06-01', total: 2 },
+        { data: '2026-06-02', total: 1 },
+      ]);
+    });
+
+    it('should filter by startDate/endDate over dtHora', async () => {
+      const medico = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+
+      await ExameBuilder.anExame()
+        .withIdUsuario(medico.id)
+        .withDtHora(new Date('2026-05-31T23:00:00.000Z'))
+        .build();
+      await ExameBuilder.anExame()
+        .withIdUsuario(medico.id)
+        .withDtHora(new Date('2026-06-10T12:00:00.000Z'))
+        .build();
+      await ExameBuilder.anExame()
+        .withIdUsuario(medico.id)
+        .withDtHora(new Date('2026-07-01T12:00:00.000Z'))
+        .build();
+
+      const metrics = await repository.getVolumeMetrics({
+        startDate: new Date('2026-06-01T00:00:00.000Z'),
+        endDate: new Date('2026-06-30T23:59:59.999Z'),
+      });
+
+      expect(metrics.total).toBe(1);
+    });
+
+    it('should return zeros for an empty database', async () => {
+      const metrics = await repository.getVolumeMetrics({});
+
+      expect(metrics.total).toBe(0);
+      expect(metrics.porStatus).toEqual({
+        CRIADO: 0,
+        CONCLUIDO: 0,
+        EM_PROCESSAMENTO: 0,
+        ERRO_PROCESSAMENTO: 0,
+      });
+      expect(metrics.serieTemporal).toEqual([]);
+    });
+
+    it('should count only exams from the given idUsuario when provided', async () => {
+      const medico = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+      const outroMedico = await UsuarioBuilder.anUser().withTipoPerfil('MEDICO').build();
+
+      await ExameBuilder.anExame()
+        .withIdUsuario(medico.id)
+        .withStatus('CONCLUIDO')
+        .withDtHora(new Date('2026-06-01T10:00:00.000Z'))
+        .build();
+      await ExameBuilder.anExame()
+        .withIdUsuario(medico.id)
+        .withStatus('CRIADO')
+        .withDtHora(new Date('2026-06-02T10:00:00.000Z'))
+        .build();
+      await ExameBuilder.anExame()
+        .withIdUsuario(outroMedico.id)
+        .withStatus('CONCLUIDO')
+        .withDtHora(new Date('2026-06-01T10:00:00.000Z'))
+        .build();
+
+      const metrics = await repository.getVolumeMetrics({ idUsuario: medico.id });
+
+      expect(metrics.total).toBe(2);
+      expect(metrics.porStatus).toEqual({
+        CRIADO: 1,
+        CONCLUIDO: 1,
+        EM_PROCESSAMENTO: 0,
+        ERRO_PROCESSAMENTO: 0,
+      });
+    });
+  });
 });

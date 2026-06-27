@@ -7,6 +7,10 @@ const querySchema = z
   .object({
     status: z.enum(['PENDENTE', 'APROVADA', 'REJEITADA']).optional(),
     idUsuario: z.string().optional(),
+    nome: z.string().trim().min(1).optional(),
+    email: z.string().trim().min(1).optional(),
+    sortBy: z.enum(['createdAt', 'updatedAt', 'status', 'nomeCompleto']).optional(),
+    sortOrder: z.enum(['asc', 'desc']).optional(),
   })
   .strict({ message: 'Parâmetros inválidos.' });
 

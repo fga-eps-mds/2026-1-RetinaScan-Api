@@ -19,6 +19,15 @@ export class AvaliarInscricaoUsecase {
     private readonly cryptographyService: CryptographyService,
   ) {}
 
+  /**
+   * Aprova ou rejeita uma inscrição pendente. Na aprovação, descriptografa a senha guardada e
+   * cria a conta do usuário (via better-auth) antes de marcar a inscrição como avaliada; na
+   * rejeição, o motivo é obrigatório.
+   *
+   * @throws NotFoundError se a inscrição não existe
+   * @throws ConflictError se a inscrição não está pendente
+   * @throws ValidationError se a decisão é REJEITADA sem motivo
+   */
   async execute(input: AvaliarInscricaoUseCaseInput): Promise<void> {
     const inscricao = await this.getInscricao(input.inscricaoId);
     this.assertPendente(inscricao);

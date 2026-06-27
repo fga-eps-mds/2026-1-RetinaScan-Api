@@ -121,6 +121,15 @@ export class GetExamDetailsUseCase {
     private readonly examShareRepository?: import('./../exam-share-repository').ExamShareRepository,
   ) {}
 
+  /**
+   * Monta os detalhes completos do exame: dados do paciente (com campos sensíveis
+   * descriptografados), médico, imagens com URLs assinadas e laudo do especialista.
+   * Resultados de IA só entram quando o exame está `CONCLUIDO`. Um `MEDICO` só acessa
+   * os próprios exames; demais perfis acessam qualquer um.
+   *
+   * @throws NotFoundError se o exame ou o médico responsável não existem
+   * @throws UnauthorizedError se um médico tenta acessar exame de outro usuário
+   */
   async execute(input: GetExamDetailsUseCaseInput): Promise<GetExamDetailsUseCaseOutput> {
     const exame = await this.getExam(input.examId);
     await this.assertCanView(exame, input.requester);

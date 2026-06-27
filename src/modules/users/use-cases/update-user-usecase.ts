@@ -22,6 +22,14 @@ export class UpdateUserUsecase {
     private readonly authService: AuthService,
   ) {}
 
+  /**
+   * Atualiza os dados do usuário. Troca de e-mail e de senha passam pelo AuthService
+   * (better-auth) usando os `headers` da sessão; a senha só muda quando `senhaAtual` e
+   * `novaSenha` vêm juntas.
+   *
+   * @throws NotFoundError se o usuário não existe
+   * @throws ConflictError se o novo e-mail já pertence a outro usuário
+   */
   async execute(input: UpdateUserInput): Promise<UpdateUserOutput> {
     const user = await this.getUser(input.idUsuario);
 

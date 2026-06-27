@@ -7,6 +7,7 @@ import { listExams } from './exams/list-exams';
 import { getExamDetails } from './exams/get-exam-details';
 import { registerExamWebhook } from './exams/register-exam-webhook';
 import { registerExamErrorWebhook } from './exams/register-exam-error-webhook';
+import { getExamMetrics } from './exams/get-exam-metrics';
 import {
   createExamSchema,
   processExamUploadSchema,
@@ -18,6 +19,7 @@ import {
   listExamSharesSchema,
   listMySharesSchema,
   revokeExamShareSchema,
+  getExamMetricsSchema,
 } from '../docs/exams';
 import { shareExam } from './exams/share-exam';
 import { listExamShares } from './exams/list-exam-shares';
@@ -85,6 +87,18 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
       ],
     },
     listExams,
+  );
+
+  app.get(
+    '/exams/metrics',
+    {
+      schema: getExamMetricsSchema,
+      preHandler: [
+        authenticationMiddleware,
+        authorizationMiddleware([tiposPerfil.ADMIN, tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA]),
+      ],
+    },
+    getExamMetrics,
   );
 
   app.get<{ Params: { examId: string } }>(
