@@ -29,7 +29,7 @@ describe('ListAvailableDoctorsUseCase', () => {
     
     userRepo.searchAvailableDoctors.mockResolvedValue([medico]);
 
-    const result = await usecase.execute();
+    const result = await usecase.execute({ requesterId: 'user-123' });
 
     expect(result).toHaveLength(1);
     expect(result[0]).toEqual({
@@ -43,22 +43,22 @@ describe('ListAvailableDoctorsUseCase', () => {
     expect((result[0] as any).crm).toBeUndefined();
     expect((result[0] as any).password).toBeUndefined();
 
-    expect(userRepo.searchAvailableDoctors).toHaveBeenCalledWith(undefined);
+    expect(userRepo.searchAvailableDoctors).toHaveBeenCalledWith(undefined, 'user-123');
   });
 
   it('deve passar o termo de busca para o repositório', async () => {
     userRepo.searchAvailableDoctors.mockResolvedValue([]);
 
     const termoBusca = 'joao';
-    await usecase.execute(termoBusca);
+    await usecase.execute({ busca: termoBusca, requesterId: 'user-123' });
 
-    expect(userRepo.searchAvailableDoctors).toHaveBeenCalledWith(termoBusca);
+    expect(userRepo.searchAvailableDoctors).toHaveBeenCalledWith(termoBusca, 'user-123');
   });
 
   it('deve retornar array vazio se não encontrar médicos', async () => {
     userRepo.searchAvailableDoctors.mockResolvedValue([]);
 
-    const result = await usecase.execute();
+    const result = await usecase.execute({ requesterId: 'user-123' });
 
     expect(result).toHaveLength(0);
   });

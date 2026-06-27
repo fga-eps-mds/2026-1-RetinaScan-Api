@@ -6,11 +6,16 @@ export type ListAvailableDoctorsOutput = {
   email: string;
 }[];
 
+export type ListAvailableDoctorsInput = {
+  busca?: string;
+  requesterId: string;
+};
+
 export class ListAvailableDoctorsUseCase {
   constructor(private readonly usuariosRepository: UsuariosRepository) {}
 
-  async execute(busca?: string): Promise<ListAvailableDoctorsOutput> {
-    const usuarios = await this.usuariosRepository.searchAvailableDoctors(busca);
+  async execute(input: ListAvailableDoctorsInput): Promise<ListAvailableDoctorsOutput> {
+    const usuarios = await this.usuariosRepository.searchAvailableDoctors(input.busca, input.requesterId);
 
     return usuarios.map((u) => ({
       id: u.id,

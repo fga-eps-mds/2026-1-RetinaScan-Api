@@ -24,10 +24,18 @@ export async function listAvailableDoctorsRoute(request: FastifyRequest, reply: 
     const repository = new DrizzleUsuariosRepository();
     const useCase = new ListAvailableDoctorsUseCase(repository);
 
-    const result = await useCase.execute(queryResult.data.busca);
+    const busca = queryResult.data?.busca;
+    const requesterId = request.user?.id;
+    if (!requesterId) throw new Error('User not found in request');
 
-    return reply.status(200).send(result);
-  } catch {
+    const result = await useCase.execute({
+      busca,
+      requesterId,
+    });
+
+    return reply.status(200).send({ data: result });
+  } catch (error) {
+    console.error('ERRO NA ROTA:', error);
     return reply.status(500).send({
       statusCode: 500,
       error: 'Internal Server Error',

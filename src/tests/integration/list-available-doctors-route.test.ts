@@ -48,14 +48,15 @@ describe('GET /api/medicos/disponiveis (integration)', () => {
     expect(res.statusCode).toBe(200);
 
     const body = res.json();
-    expect(body).toHaveLength(2);
+    expect(body.data).toHaveLength(1);
     
-    const ids = body.map((m: any) => m.id);
-    expect(ids).toContain(medico1.id);
+    const ids = body.data.map((m: any) => m.id);
     expect(ids).toContain(especialista1.id);
+    expect(ids).not.toContain(medico1.id);
     
-    expect(body[0].cpf).toBeUndefined();
-    expect(body[0].password).toBeUndefined();
+    // Assegurar que os dados sensíveis não vêm
+    expect(body.data[0].cpf).toBeUndefined();
+    expect(body.data[0].password).toBeUndefined();
   });
 
   it('deve filtrar por nome (busca)', async () => {
@@ -69,7 +70,7 @@ describe('GET /api/medicos/disponiveis (integration)', () => {
     expect(res.statusCode).toBe(200);
 
     const body = res.json();
-    expect(body).toHaveLength(1);
-    expect(body[0].id).toBe(alvo.id);
+    expect(body.data).toHaveLength(1);
+    expect(body.data[0].id).toBe(alvo.id);
   });
 });
