@@ -138,7 +138,7 @@ export class DrizzleUsuariosRepository implements UsuariosRepository, IdAdminSea
         or(ilike(usuario.nomeCompleto, `%${busca}%`), ilike(usuario.email, `%${busca}%`))!,
       );
     }
-    
+
     if (excludeId) {
       conds.push(ne(usuario.id, excludeId));
     }

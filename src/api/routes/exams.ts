@@ -190,8 +190,9 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
           enabled: true,
           action: 'SHARE_REVOKED',
           category: 'EXAM_ACCESS',
-          getDescription: (request, payload: any) => {
-            const emailDestino = payload?.data?.medicoDestinoEmail || 'o médico selecionado';
+          getDescription: (request, payload: unknown) => {
+            const responseData = payload as { data?: { medicoDestinoEmail?: string } } | undefined;
+            const emailDestino = responseData?.data?.medicoDestinoEmail || 'o médico selecionado';
             return `Acesso ao exame revogado para ${emailDestino}`;
           },
           getTarget: (request) => {

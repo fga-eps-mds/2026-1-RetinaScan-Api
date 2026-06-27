@@ -24,7 +24,7 @@ export async function listAvailableDoctorsRoute(request: FastifyRequest, reply: 
     const repository = new DrizzleUsuariosRepository();
     const useCase = new ListAvailableDoctorsUseCase(repository);
 
-    const busca = queryResult.data?.busca;
+    const busca = queryResult.data.busca;
     const requesterId = request.user?.id;
     if (!requesterId) throw new Error('User not found in request');
 

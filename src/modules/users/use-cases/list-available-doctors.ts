@@ -15,7 +15,10 @@ export class ListAvailableDoctorsUseCase {
   constructor(private readonly usuariosRepository: UsuariosRepository) {}
 
   async execute(input: ListAvailableDoctorsInput): Promise<ListAvailableDoctorsOutput> {
-    const usuarios = await this.usuariosRepository.searchAvailableDoctors(input.busca, input.requesterId);
+    const usuarios = await this.usuariosRepository.searchAvailableDoctors(
+      input.busca,
+      input.requesterId,
+    );
 
     return usuarios.map((u) => ({
       id: u.id,

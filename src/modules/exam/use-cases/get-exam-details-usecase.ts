@@ -12,6 +12,7 @@ import type { CryptographyService } from '@/shared/services/cryptography-service
 import { NotFoundError, UnauthorizedError } from '@/shared/errors';
 import type { SpecialistReportRepository } from '../specialist-report-repository';
 import type { SpecialistReport } from '../specialist-report';
+import type { ExamShareRepository } from '../exam-share-repository';
 
 const PRESIGNED_URL_TTL_SECONDS = 900;
 
@@ -118,7 +119,7 @@ export class GetExamDetailsUseCase {
     private readonly storageService: StorageService,
     private readonly cryptographyService: CryptographyService,
     private readonly specialistReportRepository: SpecialistReportRepository,
-    private readonly examShareRepository?: import('./../exam-share-repository').ExamShareRepository,
+    private readonly examShareRepository?: ExamShareRepository,
   ) {}
 
   /**
