@@ -25,6 +25,14 @@ export class RegisterExamAiErrorUseCase {
     private readonly notificationService: NotificationService,
   ) {}
 
+  /**
+   * Registra a falha de processamento de IA reportada por webhook: marca o exame como
+   * `ERRO_PROCESSAMENTO` e notifica o dono. Idempotente por exame (recusa um segundo erro).
+   *
+   * @throws ValidationError se o `exam_id` do payload diverge do exame da rota
+   * @throws NotFoundError se o exame não existe
+   * @throws ConflictError se o exame já está concluído ou já possui registro de erro
+   */
   async execute(input: RegisterExamAiErrorUseCaseInput): Promise<void> {
     const { examId, payloadExamId } = input;
 

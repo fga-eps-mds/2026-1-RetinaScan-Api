@@ -14,6 +14,7 @@ const {
   mockUpdate,
   mockSet,
   mockReturning,
+  mockDelete,
 } = vi.hoisted(() => {
   const mockLimit = vi.fn();
   const mockOrderBy = vi.fn();
@@ -50,6 +51,10 @@ const {
     set: mockSet,
   }));
 
+  const mockDelete = vi.fn(() => ({
+    where: mockWhere,
+  }));
+
   return {
     mockSelect,
     mockFrom,
@@ -61,6 +66,7 @@ const {
     mockUpdate,
     mockSet,
     mockReturning,
+    mockDelete,
   };
 });
 
@@ -69,6 +75,7 @@ vi.mock('@/infra/database/drizzle/connection', () => ({
     select: mockSelect,
     insert: mockInsert,
     update: mockUpdate,
+    delete: mockDelete,
   },
 }));
 
@@ -106,7 +113,11 @@ describe('DrizzleSolicitacaoCpfCrmRepository', () => {
 
   describe('findPendenteByUsuario', () => {
     it('deve retornar solicitacao pendente do usuario', async () => {
-      const mockSolicitacao = { id: 'sol-1', idUsuario: 'user-1', status: solicitacaoStatus.PENDENTE };
+      const mockSolicitacao = {
+        id: 'sol-1',
+        idUsuario: 'user-1',
+        status: solicitacaoStatus.PENDENTE,
+      };
 
       mockLimit.mockResolvedValueOnce([mockSolicitacao]);
 
@@ -137,7 +148,8 @@ describe('DrizzleSolicitacaoCpfCrmRepository', () => {
 
       expect(mockSelect).toHaveBeenCalledTimes(1);
       expect(mockFrom).toHaveBeenCalledWith(solicitacaoCpfCrm);
-      expect(mockOrderBy).toHaveBeenCalledWith(solicitacaoCpfCrm.createdAt);
+      expect(mockOrderBy).toHaveBeenCalledTimes(1);
+      expect(mockOrderBy.mock.calls[0]).toHaveLength(1);
       expect(result).toEqual(rows);
     });
 
@@ -151,7 +163,8 @@ describe('DrizzleSolicitacaoCpfCrmRepository', () => {
       });
 
       expect(mockWhere).toHaveBeenCalledTimes(1);
-      expect(mockOrderBy).toHaveBeenCalledWith(solicitacaoCpfCrm.createdAt);
+      expect(mockOrderBy).toHaveBeenCalledTimes(1);
+      expect(mockOrderBy.mock.calls[0]).toHaveLength(1);
       expect(result).toEqual(rows);
     });
   });
@@ -186,7 +199,11 @@ describe('DrizzleSolicitacaoCpfCrmRepository', () => {
 
   describe('rejeitar', () => {
     it('deve rejeitar solicitacao com motivo', async () => {
-      const row = { id: 'sol-1', status: solicitacaoStatus.REJEITADA, motivoRejeicao: 'dados invalidos' };
+      const row = {
+        id: 'sol-1',
+        status: solicitacaoStatus.REJEITADA,
+        motivoRejeicao: 'dados invalidos',
+      };
       mockReturning.mockResolvedValueOnce([row]);
 
       const result = await repository.rejeitar({
@@ -211,6 +228,60 @@ describe('DrizzleSolicitacaoCpfCrmRepository', () => {
       });
 
       expect(result).toBeNull();
+    });
+  });
+
+  describe('deletar', () => {
+    it('deve deletar solicitacao existente quando nao estiver pendente', async () => {
+      const solicitacaoExistente = {
+        id: 'sol-1',
+        status: solicitacaoStatus.REJEITADA,
+      };
+
+      const solicitacaoDeletada = {
+        id: 'sol-1',
+        status: solicitacaoStatus.REJEITADA,
+      };
+
+      mockLimit.mockResolvedValueOnce([solicitacaoExistente]);
+      mockReturning.mockResolvedValueOnce([solicitacaoDeletada]);
+
+      const result = await repository.deletar('sol-1');
+
+      expect(mockSelect).toHaveBeenCalledTimes(1);
+      expect(mockFrom).toHaveBeenCalledWith(solicitacaoCpfCrm);
+      expect(mockWhere).toHaveBeenCalledTimes(2);
+      expect(mockLimit).toHaveBeenCalledWith(1);
+      expect(mockDelete).toHaveBeenCalledWith(solicitacaoCpfCrm);
+      expect(result).toEqual(solicitacaoDeletada);
+    });
+
+    it('deve retornar nulo ao deletar solicitacao inexistente', async () => {
+      mockLimit.mockResolvedValueOnce([]);
+
+      const result = await repository.deletar('sol-x');
+
+      expect(mockSelect).toHaveBeenCalledTimes(1);
+      expect(mockFrom).toHaveBeenCalledWith(solicitacaoCpfCrm);
+      expect(mockWhere).toHaveBeenCalledTimes(1);
+      expect(mockLimit).toHaveBeenCalledWith(1);
+      expect(mockDelete).not.toHaveBeenCalled();
+      expect(result).toBeNull();
+    });
+
+    it('deve lançar erro ao tentar deletar solicitacao pendente', async () => {
+      mockLimit.mockResolvedValueOnce([
+        {
+          id: 'sol-1',
+          status: solicitacaoStatus.PENDENTE,
+        },
+      ]);
+
+      await expect(repository.deletar('sol-1')).rejects.toThrow(
+        'Não é permitido deletar uma solicitação pendente. Por favor, recuse ou aceite a solicitação para removê-la.',
+      );
+
+      expect(mockDelete).not.toHaveBeenCalled();
     });
   });
 });

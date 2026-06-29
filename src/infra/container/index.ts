@@ -19,6 +19,7 @@ import {
   DrizzleNotificationRepository,
   DrizzleComorbidadeRepository,
   DrizzleInscricaoMedicoRepository,
+  DrizzleExamShareRepository,
 } from '@/infra/database/drizzle/repositories';
 
 import { BetterAuthService } from '@/infra/auth/better-auth-service';
@@ -49,6 +50,7 @@ import { RegisterExamAiErrorUseCase } from '@/modules/exam/use-cases/register-ex
 import { CreateSpecialistReportUseCase } from '@/modules/exam/use-cases/create-specialist-report-usecase';
 import { UpdateSpecialistReportUseCase } from '@/modules/exam/use-cases/update-specialist-report-usecase';
 import { GeneratePdfReportUseCase } from '@/modules/exam/use-cases/generate-pdf-report-usecase';
+import { GetExamMetricsUseCase } from '@/modules/exam/use-cases/get-exam-metrics-usecase';
 
 import type { ExamesRepository } from '@/modules/exam/exam-repository';
 import type { ImagemRepository } from '@/modules/exam/imagem-repository';
@@ -56,6 +58,7 @@ import type { ResultadoIaRepository } from '@/modules/exam/resultado-ia-reposito
 import type { ExamIaErrorRepository } from '@/modules/exam/exam-ia-error-repository';
 import type { ComorbidadeRepository } from '@/modules/exam/comorbidade-repository';
 import type { SpecialistReportRepository } from '@/modules/exam/specialist-report-repository';
+import type { ExamShareRepository } from '@/modules/exam/exam-share-repository';
 
 import type { AuthService } from '@/shared/services/auth-service';
 import type { StorageService } from '@/shared/services/storage-service';
@@ -86,6 +89,7 @@ import { DrizzleAuditLogsRepository } from '../database/drizzle/repositories/dri
 import { DrizzleSpecialistReportRepository } from '../database/drizzle/repositories/drizzle-specialist-report-repository';
 import { RedisReportEditingPresenceService } from '../shared/redis-report-editing-presence-service';
 import { redisClient } from '../cache/redis-client';
+import { DeletarSolicitacaoCpfCrmUsecase } from '@/modules/users/use-cases/deletar-solicitacao-usecase';
 
 export interface AppContainer {
   app: FastifyInstance;
@@ -102,6 +106,7 @@ export interface AppContainer {
   comorbidadeRepository: ComorbidadeRepository;
   specialistReportRepository: SpecialistReportRepository;
   auditLogRepository: AuditLogsRepository;
+  examShareRepository: ExamShareRepository;
 
   authService: AuthService;
   storageService: StorageService;
@@ -116,6 +121,7 @@ export interface AppContainer {
   solicitarAlteracaoCpfCrmUsecase: SolicitarAlteracaoCpfCrmUsecase;
   aprovarSolicitacaoCpfCrmUsecase: AprovarSolicitacaoCpfCrmUsecase;
   rejeitarSolicitacaoCpfCrmUsecase: RejeitarSolicitacaoCpfCrmUsecase;
+  deletarSolicitacaoCpfCrmUsecase: DeletarSolicitacaoCpfCrmUsecase;
   listarSolicitacoesCpfCrmUsecase: ListarSolicitacoesCpfCrmUsecase;
   recoverPasswordByCrmUseCase: RecoverPasswordByCrmUseCase;
 
@@ -145,6 +151,7 @@ export interface AppContainer {
 
   pdfService: PdfService;
   generatePdfReportUseCase: GeneratePdfReportUseCase;
+  getExamMetricsUseCase: GetExamMetricsUseCase;
 }
 
 export const container: AwilixContainer<AppContainer> = createContainer<AppContainer>({
@@ -210,6 +217,7 @@ container.register({
   comorbidadeRepository: asClass(DrizzleComorbidadeRepository).singleton(),
   auditLogRepository: asClass(DrizzleAuditLogsRepository).singleton(),
   specialistReportRepository: asClass(DrizzleSpecialistReportRepository).singleton(),
+  examShareRepository: asClass(DrizzleExamShareRepository).singleton(),
 
   authService: asClass(BetterAuthService).singleton(),
   storageService: asClass(MinioStorageService).singleton(),
@@ -290,6 +298,11 @@ container.register({
       new ListarSolicitacoesCpfCrmUsecase(solicitacaoCpfCrmRepository),
   ).scoped(),
 
+  deletarSolicitacaoCpfCrmUsecase: asFunction(
+    ({ solicitacaoCpfCrmRepository }: AppContainer) =>
+      new DeletarSolicitacaoCpfCrmUsecase(solicitacaoCpfCrmRepository),
+  ).scoped(),
+
   recoverPasswordByCrmUseCase: asFunction(
     ({ usuariosRepository, maskingService }: AppContainer) =>
       new RecoverPasswordByCrmUseCase(usuariosRepository, maskingService),
@@ -333,6 +346,7 @@ container.register({
       storageService,
       cryptographyService,
       specialistReportRepository,
+      examShareRepository,
     }: AppContainer) =>
       new GetExamDetailsUseCase(
         examesRepository,
@@ -343,6 +357,7 @@ container.register({
         storageService,
         cryptographyService,
         specialistReportRepository,
+        examShareRepository,
       ),
   ).scoped(),
 
@@ -410,6 +425,11 @@ container.register({
   generatePdfReportUseCase: asFunction(
     ({ getExamDetailsUseCase, pdfService }: AppContainer) =>
       new GeneratePdfReportUseCase(getExamDetailsUseCase, pdfService),
+  ).scoped(),
+
+  getExamMetricsUseCase: asFunction(
+    ({ examesRepository, resultadoIaRepository }: AppContainer) =>
+      new GetExamMetricsUseCase(examesRepository, resultadoIaRepository),
   ).scoped(),
 });
 

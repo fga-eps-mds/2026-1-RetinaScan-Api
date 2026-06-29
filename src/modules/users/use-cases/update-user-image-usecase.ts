@@ -18,6 +18,12 @@ export class UpdateUserImageUsecase {
     private readonly storageService: StorageService,
   ) {}
 
+  /**
+   * Substitui a imagem de perfil do usuário: sobe a nova, atualiza o registro e só então
+   * remove a anterior do storage (se existia).
+   *
+   * @throws NotFoundError se o usuário não existe
+   */
   async execute(input: UpdateUserImageInput): Promise<UpdateUserImageOutput> {
     const { idUsuario, imageBuffer, contentType } = input;
 

@@ -28,6 +28,16 @@ export class UpdateSpecialistReportUseCase {
     private readonly notificationService: NotificationService,
   ) {}
 
+  /**
+   * Atualiza o laudo do especialista de um exame e notifica o médico dono.
+   *
+   * Só o autor original pode editar, apenas enquanto o exame está `CONCLUIDO` e dentro da
+   * janela de edição (`SPECIALIST_REPORT_EDIT_WINDOW_DAYS` a partir da criação do laudo).
+   *
+   * @throws NotFoundError se o usuário, o exame ou o laudo não existem
+   * @throws ConflictError se o exame ainda não está concluído
+   * @throws UnauthorizedError se o ator não é o autor do laudo ou se o prazo de edição expirou
+   */
   async execute(
     data: UpdateSpecialistReportUseCaseRequest,
   ): Promise<UpdateSpecialistReportUseCaseResponse> {

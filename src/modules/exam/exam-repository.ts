@@ -5,6 +5,7 @@ export type FindExamInput = {
 };
 
 export type FindManyExamsFilters = {
+  id?: string;
   idUsuario?: string;
   cpf?: string;
   nomeCompleto?: string;
@@ -46,10 +47,28 @@ export type UpdateExamInput = {
   data: UpdateExamData;
 };
 
+export type MetricsDateFilter = {
+  startDate?: Date;
+  endDate?: Date;
+  idUsuario?: string;
+};
+
+export type ExamSerieTemporalItem = {
+  data: string;
+  total: number;
+};
+
+export type ExamVolumeMetrics = {
+  total: number;
+  porStatus: Record<ExameStatus, number>;
+  serieTemporal: ExamSerieTemporalItem[];
+};
+
 export type ExamesRepository = {
   create(input: Exame): Promise<Exame>;
   createWithComorbidity(input: CreateWithComorbidityInput): Promise<Exame>;
   findOne(input: FindExamInput): Promise<Exame | null>;
   findMany(input: FindManyExamsInput): Promise<FindManyExamsResult>;
   update(input: UpdateExamInput): Promise<void>;
+  getVolumeMetrics(input: MetricsDateFilter): Promise<ExamVolumeMetrics>;
 };

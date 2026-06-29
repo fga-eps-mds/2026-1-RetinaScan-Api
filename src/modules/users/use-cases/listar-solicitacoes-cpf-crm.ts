@@ -4,6 +4,10 @@ import type { SolicitacaoCpfCrmRepository } from '@/modules/users/repositories';
 export type ListarSolicitacoesCpfCrmUsecaseInput = {
   status?: SolicitacaoStatus;
   idUsuario?: string;
+  nome?: string;
+  email?: string;
+  sortBy?: 'createdAt' | 'updatedAt' | 'status' | 'nomeCompleto';
+  sortOrder?: 'asc' | 'desc';
 };
 
 export type ListarSolicitacoesCpfCrmUsecaseOutput = {

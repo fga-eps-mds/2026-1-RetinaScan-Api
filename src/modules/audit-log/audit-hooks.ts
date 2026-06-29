@@ -4,7 +4,7 @@ import { auth } from '@/lib/auth';
 import { DrizzleAuditLogsRepository } from '@/infra/database/drizzle/repositories/drizzle-audit-logs-repository';
 import { AuditLogService } from '@/modules/audit-log/services/audit-log-service';
 
-export const auditHooks = fp(async (app: FastifyInstance) => {
+export const auditHooks = fp((app: FastifyInstance) => {
   app.addHook('preSerialization', async (request, _reply, payload) => {
     const audit = request.routeOptions.config.audit;
 
@@ -47,7 +47,7 @@ export const auditHooks = fp(async (app: FastifyInstance) => {
         targetEntityType: target.targetEntityType ?? null,
         targetEntityId: target.targetEntityId ?? null,
         targetDisplay: target.targetDisplay ?? null,
-        ipAddress: session?.session.ipAddress ?? request.ip ?? null,
+        ipAddress: session?.session.ipAddress ?? request.ip,
         userAgent: session?.session.userAgent ?? request.headers['user-agent'] ?? null,
         requestId: request.id,
         changes,

@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { solicitacaoStatus, statusUsuario, tiposPerfil, type SolicitacaoCpfCrm, type Usuario } from '@/modules/users/domain';
+import {
+  solicitacaoStatus,
+  statusUsuario,
+  tiposPerfil,
+  type SolicitacaoCpfCrm,
+  type Usuario,
+} from '@/modules/users/domain';
 import type {
   SolicitacaoCpfCrmRepository,
   SolicitarAlteracaoCpfCrmInput,
@@ -26,6 +32,7 @@ class FakeSolicitacaoCpfCrmRepository implements SolicitacaoCpfCrmRepository {
   listar = vi.fn();
   aprovar = vi.fn();
   rejeitar = vi.fn();
+  deletar = vi.fn();
 }
 
 describe('SolicitarAlteracaoCpfCrmUsecase', () => {
@@ -83,7 +90,8 @@ describe('SolicitarAlteracaoCpfCrmUsecase', () => {
     expect(result).toEqual({
       idSolicitacao: 'sol-1',
       status: solicitacaoStatus.PENDENTE,
-      mensagem: 'Solicitação de alteração de CPF/CRM enviada com sucesso. Aguarde a análise do administrador.',
+      mensagem:
+        'Solicitação de alteração de CPF/CRM enviada com sucesso. Aguarde a análise do administrador.',
     });
   });
 
@@ -128,9 +136,7 @@ describe('SolicitarAlteracaoCpfCrmUsecase', () => {
   });
 
   it('deve lançar ValidationError quando nem cpf nem crm forem informados', async () => {
-    await expect(
-      usecase.execute({ idUsuario: medico.id }),
-    ).rejects.toBeInstanceOf(ValidationError);
+    await expect(usecase.execute({ idUsuario: medico.id })).rejects.toBeInstanceOf(ValidationError);
   });
 
   it('deve lançar ValidationError para cpf invalido', async () => {

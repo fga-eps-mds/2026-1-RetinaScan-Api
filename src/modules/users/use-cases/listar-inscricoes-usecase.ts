@@ -16,6 +16,10 @@ export type InscricaoListItem = Omit<
 export class ListarInscricoesUsecase {
   constructor(private readonly inscricaoRepo: InscricaoMedicoRepository) {}
 
+  /**
+   * Lista inscrições de médicos, opcionalmente filtrando por status, removendo o
+   * `encryptedPassword` de cada item antes de retornar.
+   */
   async execute(input: ListarInscricoesUseCaseInput): Promise<InscricaoListItem[]> {
     const filtros: ListarInscricoesInput = {};
     if (input.status) filtros.status = input.status;

@@ -1,11 +1,11 @@
-name: Deploy Production
+name: Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [develop, main]
 
   pull_request:
-    branches: [main]
+    branches: [develop, main]
     types: [closed]
 
 permissions:
@@ -14,46 +14,23 @@ permissions:
 
 jobs:
   deploy:
+    if: github.event_name == 'push' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     environment:
-      name: production
+      name: homolog
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Cloudflared
-        run: |
-          curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
-          sudo dpkg -i cloudflared.deb
-
-      - name: SSH Setup
-        env:
-          CF_ID: ${{ secrets.CF_CLIENT_ID }}
-          CF_SECRET: ${{ secrets.CF_CLIENT_SECRET }}
-          SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          # Cria a pasta e garante permissão total pro runner nela
-          mkdir -p $HOME/.ssh
-          chmod 700 $HOME/.ssh
-
-          cat <<EOF > $HOME/.ssh/config
-          Host retinascanvm.retinascan.site
-              ProxyCommand /usr/bin/cloudflared access ssh --hostname %h --service-token-id $CF_ID --service-token-secret $CF_SECRET
-              StrictHostKeyChecking no
-              UserKnownHostsFile /dev/null
-          EOF
-
-          # Grava a chave usando a variável de env (muito mais seguro)
-          echo "$SSH_KEY" > $HOME/.ssh/id_rsa
-          chmod 600 $HOME/.ssh/id_rsa
-
-      - name: Execute Docker Compose on VM
-        run: |
-          # Adicionamos a flag -o para reforçar que não queremos validar o host
-          ssh -o StrictHostKeyChecking=no ${{ secrets.VM_USER }}@retinascanvm.retinascan.site << 'EOF'
-            cd /home/retinascan/2026-1-RetinaScan-Api
-            git pull origin main
-            docker compose -f docker-compose.prod.yml up -d --build
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd homolog/2026-1-RetinaScan-Api/
+            git pull origin develop
+            docker compose -f docker-compose.homolog.yml up -d --build
             docker image prune -f
-          EOF

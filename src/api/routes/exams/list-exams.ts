@@ -8,6 +8,8 @@ import type { ListExamsUseCase } from '@/modules/exam/use-cases/list-exams-useca
 
 const querySchema = z
   .object({
+    // uuid
+    id: z.string().uuid().optional(),
     cpf: z
       .string()
       .refine((value) => cpfValidator.isValid(value), { message: 'CPF inválido.' })
@@ -34,6 +36,7 @@ export async function listExams(request: FastifyRequest, reply: FastifyReply) {
 
   const response = await usecase.execute({
     filters: {
+      id: data.id,
       idUsuario: isMedico ? request.user!.id : undefined,
       cpf: data.cpf,
       nomeCompleto: data.nomeCompleto,

@@ -7,6 +7,7 @@ import { listExams } from './exams/list-exams';
 import { getExamDetails } from './exams/get-exam-details';
 import { registerExamWebhook } from './exams/register-exam-webhook';
 import { registerExamErrorWebhook } from './exams/register-exam-error-webhook';
+import { getExamMetrics } from './exams/get-exam-metrics';
 import {
   createExamSchema,
   processExamUploadSchema,
@@ -14,7 +15,16 @@ import {
   getExamDetailsSchema,
   registerExamWebhookSchema,
   registerExamErrorWebhookSchema,
+  shareExamSchema,
+  listExamSharesSchema,
+  listMySharesSchema,
+  revokeExamShareSchema,
+  getExamMetricsSchema,
 } from '../docs/exams';
+import { shareExam } from './exams/share-exam';
+import { listExamShares } from './exams/list-exam-shares';
+import { listMyShares } from './exams/list-my-shares';
+import { revokeExamShare } from './exams/revoke-exam-share';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function examRoutes(app: FastifyInstance): Promise<void> {
@@ -79,6 +89,18 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
     listExams,
   );
 
+  app.get(
+    '/exams/metrics',
+    {
+      schema: getExamMetricsSchema,
+      preHandler: [
+        authenticationMiddleware,
+        authorizationMiddleware([tiposPerfil.ADMIN, tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA]),
+      ],
+    },
+    getExamMetrics,
+  );
+
   app.get<{ Params: { examId: string } }>(
     '/exams/:examId',
     {
@@ -101,5 +123,89 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
     '/exams/:examId/webhook/error',
     { schema: registerExamErrorWebhookSchema },
     registerExamErrorWebhook,
+  );
+
+  app.post<{ Params: { examId: string } }>(
+    '/exams/:examId/share',
+    {
+      schema: shareExamSchema,
+      preHandler: [
+        authenticationMiddleware,
+        authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA, tiposPerfil.ADMIN]),
+      ],
+      config: {
+        audit: {
+          enabled: true,
+          action: 'SHARE_CREATED',
+          category: 'EXAM_ACCESS',
+          getDescription: (request) => {
+            const body = request.body as { emailDestino?: string };
+            return `Acesso ao exame concedido para ${body.emailDestino || 'o médico destino'}`;
+          },
+          getTarget: (request) => ({
+            targetEntityType: 'EXAM',
+            targetEntityId: (request.params as { examId: string }).examId,
+            targetDisplay: `Exame de ID: ${(request.params as { examId: string }).examId}`,
+          }),
+        },
+      },
+    },
+    shareExam,
+  );
+
+  app.get<{ Params: { examId: string } }>(
+    '/exams/:examId/shares',
+    {
+      schema: listExamSharesSchema,
+      preHandler: [
+        authenticationMiddleware,
+        authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA, tiposPerfil.ADMIN]),
+      ],
+    },
+    listExamShares,
+  );
+
+  app.get(
+    '/exams/shares/my-shares',
+    {
+      schema: listMySharesSchema,
+      preHandler: [
+        authenticationMiddleware,
+        authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA]),
+      ],
+    },
+    listMyShares,
+  );
+
+  app.delete<{ Params: { examId: string; shareId: string } }>(
+    '/exams/:examId/shares/:shareId',
+    {
+      schema: revokeExamShareSchema,
+      preHandler: [
+        authenticationMiddleware,
+        authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA, tiposPerfil.ADMIN]),
+      ],
+      config: {
+        audit: {
+          enabled: true,
+          action: 'SHARE_REVOKED',
+          category: 'EXAM_ACCESS',
+          getDescription: (request, payload: unknown) => {
+            const responseData = payload as { data?: { medicoDestinoEmail?: string } } | undefined;
+            const emailDestino = responseData?.data?.medicoDestinoEmail || 'o médico selecionado';
+            return `Acesso ao exame revogado para ${emailDestino}`;
+          },
+          getTarget: (request) => {
+            const params = request.params as { examId: string; shareId: string };
+            return {
+              targetEntityType: 'EXAM',
+              targetEntityId: params.examId,
+              targetDisplay: `Exame de ID: ${params.examId}`,
+            };
+          },
+        },
+      },
+    },
+    revokeExamShare,
   );
 }

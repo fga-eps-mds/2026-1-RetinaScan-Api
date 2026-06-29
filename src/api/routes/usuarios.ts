@@ -22,7 +22,11 @@ import {
   listarSolicitacoesCpfCrmAdminSchema,
   listarMinhasSolicitacoesCpfCrmSchema,
   searchMedicosSchema,
+  listAvailableDoctorsSchema,
 } from '../docs/users';
+import { listAvailableDoctorsRoute } from './users/list-available-doctors-route';
+import { deletarSolicitacaoCpfCrmAdminRoute } from './users/deletar-solicitacao-cpf-crm';
+import { deletarSolicitacaoCpfCrmAdminSchema } from '../docs/users/deletar-solicitacoes-cpf-crm.schema';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
@@ -330,6 +334,45 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
     listarSolicitacoesCpfCrmAdminRoute,
   );
 
+  app.delete(
+    '/usuarios/solicitacoes-cpf-crm/:idSolicitacao',
+    {
+      schema: deletarSolicitacaoCpfCrmAdminSchema,
+      preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
+      config: {
+        audit: {
+          enabled: true,
+          action: 'DELETE',
+          category: 'USER_MANAGEMENT',
+          getDescription: (request) => {
+            const params = request.params as { idSolicitacao: string };
+
+            return `Solicitação de CPF/CRM ${params.idSolicitacao} apagada por admin ${request.user?.email}`;
+          },
+          getTarget: (request) => {
+            const params = request.params as { idSolicitacao: string };
+
+            return {
+              targetEntityType: 'SOLICITATION',
+              targetEntityId: params.idSolicitacao,
+              targetDisplay: params.idSolicitacao,
+            };
+          },
+          getChanges: () => null,
+          getMetadata: (request) => {
+            const params = request.params as { idSolicitacao: string };
+
+            return {
+              source: 'usuarioRoutes.deletarSolicitacaoCpfCrmAdminRoute',
+              idSolicitacao: params.idSolicitacao,
+            };
+          },
+        },
+      },
+    },
+    deletarSolicitacaoCpfCrmAdminRoute,
+  );
+
   app.get(
     '/usuarios/minhas-solicitacoes-cpf-crm',
     {
@@ -349,5 +392,17 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
       preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
     },
     searchMedicosByAdmin,
+  );
+
+  app.get(
+    '/medicos/disponiveis',
+    {
+      schema: listAvailableDoctorsSchema,
+      preHandler: [
+        authenticationMiddleware,
+        authorizationMiddleware([tiposPerfil.MEDICO, tiposPerfil.ESPECIALISTA]),
+      ],
+    },
+    listAvailableDoctorsRoute,
   );
 }

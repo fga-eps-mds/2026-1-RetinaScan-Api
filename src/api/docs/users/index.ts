@@ -8,3 +8,4 @@ export * from './listar-minhas-solicitacoes-cpf-crm.schema';
 export * from './aprovar-solicitacao-cpf-crm.schema';
 export * from './rejeitar-solicitacao-cpf-crm.schema';
 export * from './search-medicos.schema';
+export * from './list-available-doctors.schema';

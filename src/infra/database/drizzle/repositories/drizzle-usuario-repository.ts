@@ -14,7 +14,7 @@ import type {
   UsuariosRepository,
 } from '@/modules/users/repositories';
 import { usuario, account } from '@/infra/database/drizzle/schema';
-import { and, count, eq, ilike, inArray, or, type SQL } from 'drizzle-orm';
+import { eq, count, and, ilike, or, inArray, ne, type SQL } from 'drizzle-orm';
 
 export class DrizzleUsuariosRepository implements UsuariosRepository, IdAdminSearchDoctors {
   async findByEmail(email: string): Promise<Usuario | null> {
@@ -128,5 +128,25 @@ export class DrizzleUsuariosRepository implements UsuariosRepository, IdAdminSea
         totalPages: pagination.pageSize > 0 ? Math.ceil(total / pagination.pageSize) : 0,
       },
     };
+  }
+
+  async searchAvailableDoctors(busca?: string, excludeId?: string): Promise<Usuario[]> {
+    const conds: SQL[] = [inArray(usuario.tipoPerfil, ['MEDICO', 'ESPECIALISTA'])];
+
+    if (busca) {
+      conds.push(
+        or(ilike(usuario.nomeCompleto, `%${busca}%`), ilike(usuario.email, `%${busca}%`))!,
+      );
+    }
+
+    if (excludeId) {
+      conds.push(ne(usuario.id, excludeId));
+    }
+
+    return db
+      .select()
+      .from(usuario)
+      .where(and(...conds))
+      .limit(50);
   }
 }
