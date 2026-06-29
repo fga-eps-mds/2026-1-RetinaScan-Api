@@ -109,6 +109,10 @@ export class DrizzleExamesRepository implements ExamesRepository {
   async findMany({ filters, pagination }: FindManyExamsInput): Promise<FindManyExamsResult> {
     const conditions: SQL[] = [];
 
+    if (filters.id) {
+      conditions.push(eq(exam.idExame, filters.id));
+    }
+
     if (filters.idUsuario) {
       conditions.push(eq(exam.idUsuario, filters.idUsuario));
     }
@@ -183,8 +187,8 @@ export class DrizzleExamesRepository implements ExamesRepository {
       .from(exam)
       .where(whereClause)
       .groupBy(dayExpr)
-      .orderBy(dayExpr);
 
+      .orderBy(dayExpr);
     const [totalRows, statusRows, serieRows] = await Promise.all([
       totalPromise,
       statusPromise,
