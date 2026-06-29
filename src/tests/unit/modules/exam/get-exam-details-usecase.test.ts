@@ -283,7 +283,7 @@ describe('GetExamDetailsUseCase', () => {
     expect(cryptographyService.decrypt).toHaveBeenCalledTimes(2);
   });
 
-  it('retorna comorbidades estruturadas quando registro existe', async () => {
+  it('retorna comorbidades estruturadas e decripta outrasComorbidadesDescricao', async () => {
     examesRepository.findOne.mockResolvedValue(buildExam({ dtNascimento: 'enc:1980-04-12' }));
     usuariosRepository.findBy.mockResolvedValue(buildMedico());
     imagemRepository.findMany.mockResolvedValue([]);
@@ -296,7 +296,7 @@ describe('GetExamDetailsUseCase', () => {
         diabetesControlado: true,
         hipertensao: true,
         outrasComorbidades: true,
-        outrasComorbidadesDescricao: 'Asma',
+        outrasComorbidadesDescricao: 'enc:Asma',
       }),
     );
 
@@ -322,6 +322,24 @@ describe('GetExamDetailsUseCase', () => {
       outrasComorbidadesDescricao: 'Asma',
       qualidadeTecnicaDificuldade: false,
     });
+  });
+
+  it('mantém outrasComorbidadesDescricao null sem chamar decrypt quando não há descrição', async () => {
+    examesRepository.findOne.mockResolvedValue(buildExam({ dtNascimento: 'enc:1980-04-12' }));
+    usuariosRepository.findBy.mockResolvedValue(buildMedico());
+    imagemRepository.findMany.mockResolvedValue([]);
+    resultadoIaRepository.findByExamId.mockResolvedValue([]);
+    comorbidadeRepository.findByExamId.mockResolvedValue(
+      buildComorbidade({ outrasComorbidades: false, outrasComorbidadesDescricao: null }),
+    );
+
+    const output = await useCase.execute({
+      examId: EXAM_ID,
+      requester: { id: MEDICO_ID, tipoPerfil: tiposPerfil.MEDICO },
+    });
+
+    expect(output.comorbidades?.outrasComorbidadesDescricao).toBeNull();
+    expect(cryptographyService.decrypt).toHaveBeenCalledTimes(1);
   });
 
   it('retorna comorbidades null quando exame não possui registro', async () => {
