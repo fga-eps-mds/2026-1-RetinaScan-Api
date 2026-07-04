@@ -101,8 +101,14 @@ describe('GetExamDetailsUseCase', () => {
   let imagemRepository: { findMany: ReturnType<typeof vi.fn> };
   let resultadoIaRepository: { findByExamId: ReturnType<typeof vi.fn> };
   let comorbidadeRepository: { findByExamId: ReturnType<typeof vi.fn> };
-  let storageService: { getPresignedUrl: ReturnType<typeof vi.fn> };
-  let cryptographyService: { encrypt: ReturnType<typeof vi.fn>; decrypt: ReturnType<typeof vi.fn> };
+  let storageService: {
+    getPresignedUrl: ReturnType<typeof vi.fn>;
+    objectExists: ReturnType<typeof vi.fn>;
+  };
+  let cryptographyService: {
+    encrypt: ReturnType<typeof vi.fn>;
+    decrypt: ReturnType<typeof vi.fn>;
+  };
   let specialistReportRepository: { findByExamId: ReturnType<typeof vi.fn> };
   let useCase: GetExamDetailsUseCase;
 
@@ -114,6 +120,7 @@ describe('GetExamDetailsUseCase', () => {
     comorbidadeRepository = { findByExamId: vi.fn().mockResolvedValue(null) };
     storageService = {
       getPresignedUrl: vi.fn(async (input: { key: string }) => `https://signed/${input.key}`),
+      objectExists: vi.fn(async () => false),
     };
     cryptographyService = {
       encrypt: vi.fn(),
@@ -177,6 +184,7 @@ describe('GetExamDetailsUseCase', () => {
       resultadoIa: { id: 'res-od', predictedLabel: 'Normal' },
     });
     expect(output.imagens[1].resultadoIa).toMatchObject({ predictedLabel: 'Alterado' });
+    expect(output.gradCam).toBeNull();
   });
 
   it('não consulta ResultadoIa quando status é EM_PROCESSAMENTO', async () => {
@@ -191,6 +199,7 @@ describe('GetExamDetailsUseCase', () => {
 
     expect(resultadoIaRepository.findByExamId).not.toHaveBeenCalled();
     expect(output.imagens[0].resultadoIa).toBeNull();
+    expect(output.gradCam).toBeNull();
   });
 
   it('não consulta ResultadoIa quando status é ERRO_PROCESSAMENTO', async () => {
@@ -208,6 +217,7 @@ describe('GetExamDetailsUseCase', () => {
     expect(resultadoIaRepository.findByExamId).not.toHaveBeenCalled();
     expect(output.status).toBe(ExameStatus.ERRO_PROCESSAMENTO);
     expect(output.imagens[0].resultadoIa).toBeNull();
+    expect(output.gradCam).toBeNull();
   });
 
   it('retorna imagens vazias e resultadoIa não chamado quando status é CRIADO sem imagens', async () => {
@@ -222,6 +232,7 @@ describe('GetExamDetailsUseCase', () => {
 
     expect(resultadoIaRepository.findByExamId).not.toHaveBeenCalled();
     expect(output.imagens).toEqual([]);
+    expect(output.gradCam).toBeNull();
   });
 
   it('lança NotFoundError quando exame não existe', async () => {
@@ -260,6 +271,7 @@ describe('GetExamDetailsUseCase', () => {
     });
 
     expect(output.medico.nomeCompleto).toBe('Dr. Outro');
+    expect(output.gradCam).toBeNull();
   });
 
   it('decripta dtNascimento e descricao no output', async () => {
@@ -281,6 +293,7 @@ describe('GetExamDetailsUseCase', () => {
     expect(output.dtNascimento).toBe('1980-04-12');
     expect(output.descricao).toBe('exame de rotina');
     expect(cryptographyService.decrypt).toHaveBeenCalledTimes(2);
+    expect(output.gradCam).toBeNull();
   });
 
   it('retorna comorbidades estruturadas quando registro existe', async () => {
@@ -368,5 +381,6 @@ describe('GetExamDetailsUseCase', () => {
 
     expect(output.imagens[0].resultadoIa).not.toBeNull();
     expect(output.imagens[1].resultadoIa).toBeNull();
+    expect(output.gradCam).toBeNull();
   });
 });
