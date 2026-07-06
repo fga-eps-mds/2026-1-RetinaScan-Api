@@ -1,5 +1,6 @@
 import type { FastifySchema } from 'fastify';
 
+// Documentação da rota que lista os compartilhamentos ativos de um exame.
 export const listExamSharesSchema: FastifySchema = {
   tags: ['Exames'],
   summary: 'Lista compartilhamentos ativos de um exame',
@@ -41,6 +42,7 @@ export const listExamSharesSchema: FastifySchema = {
   },
 };
 
+// Documentação da rota que lista todos os compartilhamentos criados pelo usuário autenticado.
 export const listMySharesSchema: FastifySchema = {
   tags: ['Exames'],
   summary: 'Lista todos os compartilhamentos criados pelo usuário logado',
@@ -76,6 +78,7 @@ export const listMySharesSchema: FastifySchema = {
   },
 };
 
+// Documentação da rota responsável por revogar um compartilhamento de exame.
 export const revokeExamShareSchema: FastifySchema = {
   tags: ['Exames'],
   summary: 'Revoga o compartilhamento de um exame',
