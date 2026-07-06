@@ -5,6 +5,7 @@ import {
   unauthorizedResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável por listar todos os usuários para administradores.
 export const getAllUsersSchema: FastifySchema = {
   tags: ['Usuários'],
   summary: 'Lista todos os usuários (admin)',
@@ -16,6 +17,7 @@ export const getAllUsersSchema: FastifySchema = {
         type: 'object',
         additionalProperties: true,
       },
+      // Exemplo da estrutura de usuários retornada pela API.
       example: [
         {
           id: '7c2c7f2e-1d3a-4f0a-8e6d-b6a3a5f0c111',
