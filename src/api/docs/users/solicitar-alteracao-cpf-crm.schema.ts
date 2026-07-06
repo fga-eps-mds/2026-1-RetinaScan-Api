@@ -7,6 +7,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável por criar solicitações de alteração de CPF e/ou CRM.
 export const solicitarAlteracaoCpfCrmSchema: FastifySchema = {
   tags: ['Usuários'],
   summary: 'Solicita alteração de CPF e/ou CRM',
@@ -25,6 +26,7 @@ export const solicitarAlteracaoCpfCrmSchema: FastifySchema = {
       type: 'object',
       additionalProperties: true,
       description: 'Solicitação criada.',
+      // Exemplo da resposta retornada após o envio da solicitação.
       example: {
         idSolicitacao: 'b8c1f3e2-5a7d-4e1b-9c2f-1a2b3c4d5e6f',
         status: 'PENDENTE',
