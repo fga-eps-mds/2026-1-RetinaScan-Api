@@ -6,6 +6,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável por remover uma solicitação de alteração de CPF/CRM.
 export const deletarSolicitacaoCpfCrmAdminSchema: FastifySchema = {
   tags: ['Usuários'],
   summary: 'Apaga uma solicitação de alteração',
