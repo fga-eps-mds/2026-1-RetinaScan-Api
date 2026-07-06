@@ -6,6 +6,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável por listar solicitações de alteração de CPF/CRM para administradores.
 export const listarSolicitacoesCpfCrmAdminSchema: FastifySchema = {
   tags: ['Usuários'],
   summary: 'Lista solicitações de alteração (admin)',
