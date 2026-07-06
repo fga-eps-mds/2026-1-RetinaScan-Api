@@ -7,6 +7,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável por aprovar solicitações de alteração de CPF/CRM.
 export const aprovarSolicitacaoCpfCrmSchema: FastifySchema = {
   tags: ['Usuários'],
   summary: 'Aprova solicitação de alteração de CPF/CRM',
@@ -23,6 +24,7 @@ export const aprovarSolicitacaoCpfCrmSchema: FastifySchema = {
       type: 'object',
       additionalProperties: true,
       description: 'Solicitação aprovada.',
+      // Exemplo da resposta retornada após a aprovação da solicitação.
       example: {
         solicitacao: {
           id: 'b8c1f3e2-5a7d-4e1b-9c2f-1a2b3c4d5e6f',
