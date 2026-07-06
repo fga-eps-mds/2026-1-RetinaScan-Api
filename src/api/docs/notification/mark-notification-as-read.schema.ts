@@ -7,6 +7,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável por marcar uma notificação como lida.
 export const markNotificationAsReadSchema: FastifySchema = {
   tags: ['Notificações'],
   summary: 'Marca notificação como lida',
