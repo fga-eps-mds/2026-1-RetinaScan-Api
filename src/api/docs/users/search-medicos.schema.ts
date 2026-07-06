@@ -6,6 +6,7 @@ import {
   unauthorizedResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável pela pesquisa paginada de médicos gerenciados por administradores.
 export const searchMedicosSchema: FastifySchema = {
   tags: ['Usuários'],
   summary: 'Pesquisa médicos criados pelo admin',
@@ -28,6 +29,7 @@ export const searchMedicosSchema: FastifySchema = {
       type: 'object',
       additionalProperties: true,
       description: 'Página de médicos.',
+      // Exemplo da resposta paginada contendo médicos e informações de paginação.
       example: {
         message: 'Médicos encontrados com sucesso.',
         data: [
