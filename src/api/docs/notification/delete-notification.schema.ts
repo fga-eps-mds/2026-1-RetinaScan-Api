@@ -7,6 +7,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável pela remoção de notificações do usuário autenticado.
 export const deleteNotificationSchema: FastifySchema = {
   tags: ['Notificações'],
   summary: 'Remove notificação',
