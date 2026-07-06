@@ -6,6 +6,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável por listar as notificações do usuário autenticado.
 export const listNotificationsSchema: FastifySchema = {
   tags: ['Notificações'],
   summary: 'Lista notificações do usuário',
@@ -27,6 +28,7 @@ export const listNotificationsSchema: FastifySchema = {
     200: {
       type: 'array',
       items: { type: 'object', additionalProperties: true },
+      // Exemplo da lista de notificações retornada pela API.
       example: [
         {
           id: 'f1e2d3c4-b5a6-9788-ab12-cd34ef56ab78',
