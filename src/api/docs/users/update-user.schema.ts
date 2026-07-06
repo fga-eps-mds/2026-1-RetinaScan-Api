@@ -6,6 +6,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável pela atualização dos dados do usuário autenticado.
 export const updateUserSchema: FastifySchema = {
   tags: ['Usuários'],
   summary: 'Atualiza o próprio usuário',
@@ -27,6 +28,7 @@ export const updateUserSchema: FastifySchema = {
       type: 'object',
       additionalProperties: true,
       description: 'Usuário atualizado.',
+      // Exemplo da estrutura retornada após a atualização do usuário.
       example: {
         usuario: {
           id: '7c2c7f2e-1d3a-4f0a-8e6d-b6a3a5f0c111',
