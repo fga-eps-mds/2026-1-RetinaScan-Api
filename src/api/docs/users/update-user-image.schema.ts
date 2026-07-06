@@ -6,6 +6,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável por atualizar a imagem de perfil do usuário autenticado.
 export const updateUserImageSchema: FastifySchema = {
   tags: ['Usuários'],
   summary: 'Atualiza a imagem de perfil',
@@ -25,6 +26,7 @@ export const updateUserImageSchema: FastifySchema = {
       properties: {
         url: { type: 'string', format: 'uri' },
       },
+      // Exemplo da URL gerada após o armazenamento da imagem de perfil.
       example: {
         url: 'https://minio.local/retinascan/users/7c2c7f2e-1d3a-4f0a-8e6d-b6a3a5f0c111/profile.png',
       },
