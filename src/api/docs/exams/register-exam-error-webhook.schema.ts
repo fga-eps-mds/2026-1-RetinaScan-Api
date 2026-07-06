@@ -5,6 +5,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Documentação do webhook utilizado pelo serviço de IA para registrar falhas no processamento de exames.
 export const registerExamErrorWebhookSchema: FastifySchema = {
   tags: ['Exames'],
   summary: 'Webhook de erro da IA',
