@@ -28,8 +28,11 @@ import { listAvailableDoctorsRoute } from './users/list-available-doctors-route'
 import { deletarSolicitacaoCpfCrmAdminRoute } from './users/deletar-solicitacao-cpf-crm';
 import { deletarSolicitacaoCpfCrmAdminSchema } from '../docs/users/deletar-solicitacoes-cpf-crm.schema';
 
-// eslint-disable-next-line @typescript-eslint/require-await
+// Registra as rotas relacionadas ao gerenciamento de usuários,
+// incluindo criação, atualização de dados e fluxo de alteração de CPF/CRM.
 export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
+  // Criação de usuários realizada exclusivamente por administradores,
+  // com auditoria dos dados cadastrados.
   app.route({
     method: 'POST',
     url: '/usuarios',
@@ -79,6 +82,9 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
     getAllUsers,
   );
 
+  // Fluxo de solicitação e aprovação de alterações sensíveis de CPF/CRM.
+  // As operações são auditadas para rastreabilidade das mudanças.
+  app.route({
   app.route({
     method: 'PUT',
     url: '/usuarios',
@@ -214,6 +220,7 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
     handler: solicitarAlteracaoCpfCrmRoute,
   });
 
+  // Aprovação ou rejeição das solicitações de alteração realizada por administradores.
   app.route({
     method: 'PATCH',
     url: '/usuarios/solicitacoes-cpf-crm/:id/aprovar',
@@ -325,6 +332,7 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
     handler: rejeitarSolicitacaoCpfCrmRoute,
   });
 
+  // Consultas auxiliares para seleção e gerenciamento de médicos.
   app.get(
     '/usuarios/solicitacoes-cpf-crm',
     {
