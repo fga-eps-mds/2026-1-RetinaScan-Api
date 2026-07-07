@@ -18,11 +18,13 @@ const bodySchema = z.object({
 });
 
 export async function shareExam(request: FastifyRequest, reply: FastifyReply) {
+  // Valida o identificador do exame recebido na URL.
   const paramsResult = paramsSchema.safeParse(request.params);
   if (!paramsResult.success) {
     throw new ValidationError(paramsResult.error.errors);
   }
 
+  // Valida os dados necessários para criar o compartilhamento.
   const bodyResult = bodySchema.safeParse(request.body);
   if (!bodyResult.success) {
     throw new ValidationError(bodyResult.error.errors);
@@ -31,10 +33,12 @@ export async function shareExam(request: FastifyRequest, reply: FastifyReply) {
   const { examId } = paramsResult.data;
   const { emailDestino, expiraEm } = bodyResult.data;
 
+  // Garante que somente usuários autenticados possam compartilhar exames.
   if (!request.user) {
     throw new UnauthorizedError('Usuário não autenticado');
   }
 
+  // Instancia os repositórios e cria o caso de uso responsável pela regra de compartilhamento.
   const examRepository = new DrizzleExamesRepository();
   const userRepository = new DrizzleUsuariosRepository();
   const examShareRepository = new DrizzleExamShareRepository();
