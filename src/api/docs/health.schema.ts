@@ -1,5 +1,6 @@
 import type { FastifySchema } from 'fastify';
 
+// Estrutura padrão da resposta de verificação de saúde da API e seus serviços dependentes.
 const healthResponseSchema = {
   type: 'object',
   properties: {
@@ -28,6 +29,7 @@ export const healthSchema: FastifySchema = {
   response: {
     200: {
       ...healthResponseSchema,
+      // Exemplo de resposta quando a API e suas dependências estão funcionando.
       examples: [
         {
           status: 'healthy',
@@ -37,6 +39,7 @@ export const healthSchema: FastifySchema = {
     },
     500: {
       ...healthResponseSchema,
+      // Exemplo de resposta quando alguma dependência da API apresenta falha.
       examples: [
         {
           status: 'unhealthy',
