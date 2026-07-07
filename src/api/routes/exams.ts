@@ -26,7 +26,7 @@ import { listExamShares } from './exams/list-exam-shares';
 import { listMyShares } from './exams/list-my-shares';
 import { revokeExamShare } from './exams/revoke-exam-share';
 
-// eslint-disable-next-line @typescript-eslint/require-await
+// Registra todas as rotas relacionadas ao gerenciamento de exames.
 export async function examRoutes(app: FastifyInstance): Promise<void> {
   app.route({
     method: 'POST',
@@ -60,6 +60,7 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
             descricao: body.descricao,
           };
         },
+        // Registra informações complementares para rastreamento da ação.
         getMetadata: () => ({
           source: 'examRoutes.createExam',
         }),
@@ -68,6 +69,7 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
     handler: createExam,
   });
 
+  // Rotas relacionadas ao envio, consulta e processamento de exames.
   app.post(
     '/exams/images',
     {
@@ -125,6 +127,7 @@ export async function examRoutes(app: FastifyInstance): Promise<void> {
     registerExamErrorWebhook,
   );
 
+  // Rotas responsáveis pelo compartilhamento e controle de acesso aos exames.
   app.post<{ Params: { examId: string } }>(
     '/exams/:examId/share',
     {
