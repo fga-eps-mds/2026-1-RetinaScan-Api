@@ -23,6 +23,7 @@ type NotificationParams = {
 };
 
 // Registra as rotas de gerenciamento de notificações do usuário autenticado.
+// eslint-disable-next-line @typescript-eslint/require-await
 export default async function notificationRoutes(app: FastifyInstance): Promise<void> {
   app.get<{
     Querystring: ListNotificationsQuery;
