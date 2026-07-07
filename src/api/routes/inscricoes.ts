@@ -6,11 +6,12 @@ import { submeterInscricaoRoute } from './inscricoes/submeter-inscricao';
 import { listarInscricoesRoute } from './inscricoes/listar-inscricoes';
 import { avaliarInscricaoRoute } from './inscricoes/avaliar-inscricao';
 
-// eslint-disable-next-line @typescript-eslint/require-await
+// Registra as rotas relacionadas ao fluxo de inscrições e avaliação de candidatos.
 export async function inscricoesRoutes(app: FastifyInstance): Promise<void> {
   app.route({
     method: 'POST',
     url: '/inscricoes/convites',
+    // Apenas administradores podem enviar convites em lote.
     preHandler: [authenticationMiddleware, authorizationMiddleware([tiposPerfil.ADMIN])],
     handler: enviarConvitesEmLoteRoute,
   });
