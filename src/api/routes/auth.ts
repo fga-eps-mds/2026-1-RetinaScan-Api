@@ -3,6 +3,7 @@ import type { FastifyRequest, FastifyReply, FastifyPluginAsync } from 'fastify';
 import { recoverByCrmHandler } from './auth/recover-by-crm';
 
 // Registra as rotas relacionadas à autenticação e integra o handler do provedor de autenticação com o Fastify.
+// eslint-disable-next-line @typescript-eslint/require-await
 export const authRoutes: FastifyPluginAsync = async (app) => {
   app.route({
     method: ['GET', 'POST'],
