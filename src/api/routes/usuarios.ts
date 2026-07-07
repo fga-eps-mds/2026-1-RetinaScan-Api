@@ -30,6 +30,7 @@ import { deletarSolicitacaoCpfCrmAdminSchema } from '../docs/users/deletar-solic
 
 // Registra as rotas relacionadas ao gerenciamento de usuários,
 // incluindo criação, atualização de dados e fluxo de alteração de CPF/CRM.
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
   // Criação de usuários realizada exclusivamente por administradores,
   // com auditoria dos dados cadastrados.
