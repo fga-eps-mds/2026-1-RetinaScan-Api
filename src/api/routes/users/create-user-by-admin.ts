@@ -6,6 +6,7 @@ import { isValidCpf } from '@/shared/validators/is-valid-cpf';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import z from 'zod';
 
+// Validação dos dados necessários para criação de usuários pelo administrador.
 const bodySchema = z.object({
   nomeCompleto: z.string().min(3, 'Nome inválido.'),
   email: z.string().email('Email inválido.'),
@@ -18,6 +19,7 @@ const bodySchema = z.object({
   tipoPerfil: z.enum(['ADMIN', 'MEDICO', 'ESPECIALISTA']),
 });
 
+// Extrai o código de erro retornado pela biblioteca de autenticação, quando disponível.
 function getErrorCode(error: unknown): string | null {
   if (typeof error !== 'object' || error === null) {
     return null;
@@ -52,6 +54,7 @@ export async function createUserByAdmin(request: FastifyRequest, reply: FastifyR
     const body = result.data;
     const adminId = request.user?.id;
 
+    // Instancia o caso de uso responsável pela criação do usuário administrativo.
     const useCase = new CreateUserByAdmin(new DrizzleUsuariosRepository());
 
     await useCase.execute({ ...body, adminId });
@@ -60,6 +63,7 @@ export async function createUserByAdmin(request: FastifyRequest, reply: FastifyR
       message: 'Usuário criado com sucesso.',
     });
   } catch (error: unknown) {
+    // Trata conflitos de dados, como tentativa de cadastro duplicado.
     if (error instanceof ConflictError) {
       return reply.status(409).send({
         statusCode: 409,
