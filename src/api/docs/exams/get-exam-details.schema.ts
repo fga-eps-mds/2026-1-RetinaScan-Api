@@ -7,6 +7,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável por retornar os detalhes completos de um exame.
 export const getExamDetailsSchema: FastifySchema = {
   tags: ['Exames'],
   summary: 'Detalhes de um exame',
@@ -23,6 +24,7 @@ export const getExamDetailsSchema: FastifySchema = {
       type: 'object',
       additionalProperties: true,
       description: 'Exame com paciente, comorbidades, imagens e (quando houver) resultado da IA.',
+      // Exemplo utilizado pelo Swagger para ilustrar a estrutura da resposta.
       example: {
         id: '123e4567-e89b-12d3-a456-426614174000',
         status: 'CONCLUIDO',

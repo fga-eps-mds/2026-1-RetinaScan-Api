@@ -9,11 +9,13 @@ export async function generatePdfReport(
   const { examId } = request.params;
   const user = request.user;
 
+  // Impede a geração de relatórios para requisições sem usuário autenticado.
   if (!user) {
     return reply.status(401).send({ message: 'Usuário não autenticado.' });
   }
 
   try {
+    // Resolve o caso de uso responsável pela geração do relatório em PDF.
     const generatePdfReportUseCase: GeneratePdfReportUseCase = container.resolve(
       'generatePdfReportUseCase',
     );
@@ -23,6 +25,7 @@ export async function generatePdfReport(
       requester: { id: user.id, tipoPerfil: user.tipoPerfil },
     });
 
+    // Retorna o arquivo PDF como resposta para download.
     return reply
       .status(200)
       .header('Content-Type', 'application/pdf')

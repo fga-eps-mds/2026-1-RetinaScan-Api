@@ -3,6 +3,7 @@ import { ValidationError } from '@/shared/errors';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import z from 'zod';
 
+// Define os filtros disponíveis para consulta das notificações do usuário.
 const querySchema = z
   .object({
     status: z.enum(['todas', 'nao-lidas', 'lidas']).optional().default('todas'),
@@ -18,12 +19,14 @@ const querySchema = z
   .strict({ message: 'Query params inválidos.' });
 
 export async function listNotifications(request: FastifyRequest, reply: FastifyReply) {
+  // Valida os filtros recebidos antes de buscar as notificações.
   const result = querySchema.safeParse(request.query);
 
   if (!result.success) {
     throw new ValidationError(result.error.issues, true);
   }
 
+  // Resolve o caso de uso responsável pela consulta das notificações do usuário.
   const useCase = container.resolve('listMyNotificationsUsecase');
 
   const notifications = await useCase.execute({

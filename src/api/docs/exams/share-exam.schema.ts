@@ -7,6 +7,7 @@ import {
   unauthorizedResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável pelo compartilhamento de exames entre médicos.
 export const shareExamSchema: FastifySchema = {
   tags: ['Exames'],
   summary: 'Compartilha um exame com um médico',

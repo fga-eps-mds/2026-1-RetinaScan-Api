@@ -6,6 +6,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável pelo processamento das imagens enviadas para um exame.
 export const processExamUploadSchema: FastifySchema = {
   tags: ['Exames'],
   summary: 'Processa upload de imagens de fundo de olho',
@@ -29,6 +30,7 @@ export const processExamUploadSchema: FastifySchema = {
         'Metadados consolidados (quando houver DICOM) e referências das imagens processadas.',
       required: ['imagens'],
       properties: {
+        // Dados extraídos automaticamente do arquivo DICOM, quando disponíveis.
         metadados: {
           type: 'object',
           additionalProperties: false,
@@ -63,6 +65,7 @@ export const processExamUploadSchema: FastifySchema = {
           },
         },
       },
+      // Exemplo da resposta retornada após o processamento das imagens.
       example: {
         metadados: {
           nomeCompleto: 'João da Silva',

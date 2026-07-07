@@ -22,18 +22,21 @@ export async function registerExamErrorWebhook(
   request: FastifyRequest<{ Params: { examId: string } }>,
   reply: FastifyReply,
 ) {
+  // Valida o identificador do exame antes de processar o erro recebido.
   const paramsResult = paramsSchema.safeParse(request.params);
 
   if (!paramsResult.success) {
     throw new ValidationError(paramsResult.error.issues, true);
   }
 
+  // Valida o payload enviado pelo serviço de IA para garantir a estrutura esperada.
   const bodyResult = bodySchema.safeParse(request.body);
 
   if (!bodyResult.success) {
     throw new ValidationError(bodyResult.error.issues, true);
   }
 
+  // Registra o erro através do caso de uso responsável pelo histórico de falhas da IA.
   const usecase = container.resolve('registerExamAiErrorUseCase');
 
   await usecase.execute({

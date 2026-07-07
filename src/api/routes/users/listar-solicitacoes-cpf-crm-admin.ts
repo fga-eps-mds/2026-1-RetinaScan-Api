@@ -3,6 +3,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import z from 'zod';
 import { ValidationError } from '@/shared/errors';
 
+// Define os filtros e opções de ordenação disponíveis para consulta administrativa.
 const querySchema = z
   .object({
     status: z.enum(['PENDENTE', 'APROVADA', 'REJEITADA']).optional(),
@@ -20,10 +21,12 @@ export async function listarSolicitacoesCpfCrmAdminRoute(
 ) {
   const result = querySchema.safeParse(request.query);
 
+  // Garante que apenas parâmetros válidos sejam encaminhados ao caso de uso.
   if (!result.success) {
     throw new ValidationError(result.error.issues, true);
   }
 
+  // Obtém o caso de uso responsável pela busca das solicitações CPF/CRM.
   const usecase = container.resolve('listarSolicitacoesCpfCrmUsecase');
 
   const response = await usecase.execute(result.data);

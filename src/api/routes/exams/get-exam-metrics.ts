@@ -4,6 +4,7 @@ import z from 'zod';
 import { ValidationError } from '@/shared/errors';
 import { tiposPerfil } from '@/modules/users/domain';
 
+// Define os filtros opcionais utilizados para consultar as métricas de exames.
 const querySchema = z
   .object({
     startDate: z.coerce.date().optional(),
@@ -20,6 +21,7 @@ export async function getExamMetrics(request: FastifyRequest, reply: FastifyRepl
 
   const { startDate, endDate } = result.data;
 
+  // Garante que o intervalo informado pelo usuário seja cronologicamente válido.
   if (startDate && endDate && startDate > endDate) {
     throw new ValidationError(
       [
@@ -32,9 +34,11 @@ export async function getExamMetrics(request: FastifyRequest, reply: FastifyRepl
     );
   }
 
+  // Médicos visualizam apenas métricas dos próprios exames; outros perfis possuem visão global.
   const isMedico = request.user!.tipoPerfil === tiposPerfil.MEDICO;
   const idUsuario = isMedico ? request.user!.id : undefined;
 
+  // Resolve o caso de uso responsável pelo cálculo das métricas agregadas.
   const useCase = container.resolve('getExamMetricsUseCase');
 
   const metrics = await useCase.execute({ startDate, endDate, idUsuario });

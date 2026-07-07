@@ -42,6 +42,12 @@ export type GetExamDetailsImagemDto = {
   resultadoIa: GetExamDetailsResultadoIaDto | null;
 };
 
+export type GetExamDetailsGradCamDto = {
+  id: string;
+  lateralidadeOlho: LateralidadeOlho;
+  url: string;
+};
+
 export type GetExamDetailsMedicoDto = {
   id: string;
   nomeCompleto: string;
@@ -78,26 +84,8 @@ export type GetExamDetailsUseCaseOutput = {
   medico: GetExamDetailsMedicoDto;
   imagens: GetExamDetailsImagemDto[];
   laudoEspecialista: SpecialistReport | null;
+  gradCam: GetExamDetailsGradCamDto[] | null;
 };
-
-function toComorbidadesDto(comorbidade: Comorbidade): GetExamDetailsComorbidadesDto {
-  return {
-    diabetes: comorbidade.diabetes,
-    diabetesAnos: comorbidade.diabetesAnos ?? null,
-    diabetesUsoInsulina: comorbidade.diabetesUsoInsulina,
-    diabetesControlado: comorbidade.diabetesControlado,
-    hipertensao: comorbidade.hipertensao,
-    hipertensaoControlada: comorbidade.hipertensaoControlada,
-    altaMiopia: comorbidade.altaMiopia,
-    glaucoma: comorbidade.glaucoma,
-    usoHidroxicloroquina: comorbidade.usoHidroxicloroquina,
-    uveite: comorbidade.uveite,
-    catarata: comorbidade.catarata,
-    outrasComorbidades: comorbidade.outrasComorbidades,
-    outrasComorbidadesDescricao: comorbidade.outrasComorbidadesDescricao ?? null,
-    qualidadeTecnicaDificuldade: comorbidade.qualidadeTecnicaDificuldade,
-  };
-}
 
 function toResultadoDto(resultado: ResultadoIa): GetExamDetailsResultadoIaDto {
   return {
@@ -141,8 +129,9 @@ export class GetExamDetailsUseCase {
     const imagensDto = await this.buildImagensDto(imagens, resultadosByImagem);
     const comorbidade = await this.comorbidadeRepository.findByExamId({ examId: exame.id });
     const laudoEspecialista = await this.specialistReportRepository.findByExamId(exame.id);
+    const gradCam = await this.buildGradCamDto(exame);
 
-    return this.toOutput(exame, medico, imagensDto, comorbidade, laudoEspecialista);
+    return this.toOutput(exame, medico, imagensDto, comorbidade, laudoEspecialista, gradCam);
   }
 
   private async getExam(examId: string): Promise<Exame> {
@@ -207,12 +196,53 @@ export class GetExamDetailsUseCase {
     );
   }
 
+  private async buildGradCamDto(exame: Exame): Promise<GetExamDetailsGradCamDto[] | null> {
+    const gradCamKeys = [
+      `exams/${exame.id}/OE-${exame.id}-gradcam.png`,
+      `exams/${exame.id}/OD-${exame.id}-gradcam.png`,
+    ];
+
+    const gradCamUrls = await Promise.all(
+      gradCamKeys.map(async (key) => {
+        const exists = await this.storageService.objectExists(key, Buckets.examImages);
+        if (!exists) {
+          return null;
+        }
+        const url = await this.storageService.getPresignedUrl({
+          key,
+          bucket: Buckets.examImages,
+          expiresInSeconds: PRESIGNED_URL_TTL_SECONDS,
+        });
+        return url;
+      }),
+    );
+
+    const gradCamDtos: GetExamDetailsGradCamDto[] = [];
+    if (gradCamUrls[0]) {
+      gradCamDtos.push({
+        id: `gradcam-${exame.id}-OE`,
+        lateralidadeOlho: 'OE',
+        url: gradCamUrls[0],
+      });
+    }
+    if (gradCamUrls[1]) {
+      gradCamDtos.push({
+        id: `gradcam-${exame.id}-OD`,
+        lateralidadeOlho: 'OD',
+        url: gradCamUrls[1],
+      });
+    }
+
+    return gradCamDtos.length > 0 ? gradCamDtos : null;
+  }
+
   private toOutput(
     exame: Exame,
     medico: GetExamDetailsMedicoDto,
     imagens: GetExamDetailsImagemDto[],
     comorbidade: Comorbidade | null,
     laudoEspecialista: SpecialistReport | null,
+    gradCam: GetExamDetailsGradCamDto[] | null = null,
   ): GetExamDetailsUseCaseOutput {
     return {
       id: exame.id,
@@ -223,11 +253,33 @@ export class GetExamDetailsUseCase {
       dtNascimento: this.decrypt(exame.dtNascimento),
       dtHora: exame.dtHora,
       olho: exame.olho ?? null,
-      comorbidades: comorbidade ? toComorbidadesDto(comorbidade) : null,
+      comorbidades: comorbidade ? this.toComorbidadesDto(comorbidade) : null,
       descricao: exame.descricao ? this.decrypt(exame.descricao) : null,
       medico,
       imagens,
       laudoEspecialista,
+      gradCam,
+    };
+  }
+
+  private toComorbidadesDto(comorbidade: Comorbidade): GetExamDetailsComorbidadesDto {
+    return {
+      diabetes: comorbidade.diabetes,
+      diabetesAnos: comorbidade.diabetesAnos ?? null,
+      diabetesUsoInsulina: comorbidade.diabetesUsoInsulina,
+      diabetesControlado: comorbidade.diabetesControlado,
+      hipertensao: comorbidade.hipertensao,
+      hipertensaoControlada: comorbidade.hipertensaoControlada,
+      altaMiopia: comorbidade.altaMiopia,
+      glaucoma: comorbidade.glaucoma,
+      usoHidroxicloroquina: comorbidade.usoHidroxicloroquina,
+      uveite: comorbidade.uveite,
+      catarata: comorbidade.catarata,
+      outrasComorbidades: comorbidade.outrasComorbidades,
+      outrasComorbidadesDescricao: comorbidade.outrasComorbidadesDescricao
+        ? this.decrypt(comorbidade.outrasComorbidadesDescricao)
+        : null,
+      qualidadeTecnicaDificuldade: comorbidade.qualidadeTecnicaDificuldade,
     };
   }
 

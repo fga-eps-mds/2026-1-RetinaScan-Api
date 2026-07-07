@@ -6,6 +6,7 @@ import {
 } from '@/infra/database/drizzle/repositories';
 
 export async function listMyShares(request: FastifyRequest, reply: FastifyReply) {
+  // Garante que apenas usuários autenticados possam consultar seus próprios compartilhamentos.
   const userId = request.user?.id;
 
   if (!userId) {
@@ -17,6 +18,7 @@ export async function listMyShares(request: FastifyRequest, reply: FastifyReply)
   }
 
   try {
+    // Cria as dependências necessárias e delega a regra de negócio ao use case.
     const shareRepo = new DrizzleExamShareRepository();
     const userRepo = new DrizzleUsuariosRepository();
     const useCase = new ListMySharesUseCase(shareRepo, userRepo);
@@ -27,6 +29,7 @@ export async function listMyShares(request: FastifyRequest, reply: FastifyReply)
       data: result,
     });
   } catch {
+    // Retorna uma mensagem genérica para evitar exposição de detalhes internos da aplicação.
     return reply.status(500).send({
       statusCode: 500,
       error: 'Internal Server Error',

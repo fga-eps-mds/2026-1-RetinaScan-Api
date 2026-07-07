@@ -14,6 +14,7 @@ import { heartbeatReportLock } from './report/heart-beart-report-lock';
 import { generatePdfReport } from './report/generate-pdf-report';
 import { generatePdfReportSchema } from '../docs/report/generate-pdf-report.schema';
 
+// Registra as rotas relacionadas ao fluxo de criação, edição e consulta de laudos de especialistas.
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function reportRoutes(app: FastifyInstance): Promise<void> {
   app.route({
@@ -44,6 +45,7 @@ export async function reportRoutes(app: FastifyInstance): Promise<void> {
     handler: releaseReportLock,
   });
 
+  // Criação de laudo com registro automático das informações de auditoria.
   app.route({
     method: 'POST',
     url: '/report/:examId/create',
@@ -73,6 +75,7 @@ export async function reportRoutes(app: FastifyInstance): Promise<void> {
     handler: createSpecialistReport,
   });
 
+  // Atualização de laudo com auditoria das alterações realizadas.
   app.route({
     method: 'PUT',
     url: '/report/:examId/update',

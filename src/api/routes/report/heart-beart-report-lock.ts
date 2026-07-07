@@ -4,10 +4,12 @@ import { container } from '@/infra/container';
 import { ValidationError } from '@/shared/errors';
 import { env } from '@/env';
 
+// Validação do identificador do exame utilizado para localizar o lock de edição.
 const paramsSchema = z.object({
   examId: z.string().uuid({ message: 'examId inválido.' }),
 });
 
+// Validação da sessão utilizada para renovar a posse do lock.
 const bodySchema = z.object({
   sessionId: z.string().uuid({ message: 'sessionId inválido.' }),
 });
@@ -26,6 +28,7 @@ export async function heartbeatReportLock(request: FastifyRequest, reply: Fastif
   const { examId } = parsedParams.data;
   const { sessionId } = parsedBody.data;
 
+  // Serviço responsável por controlar a presença de edição do relatório.
   const service = container.resolve('reportEditingPresenceService');
 
   const presence = await service.heartbeat({
@@ -40,5 +43,6 @@ export async function heartbeatReportLock(request: FastifyRequest, reply: Fastif
     return reply.status(404).send({ message: 'Lock não encontrado ou não pertence ao usuário.' });
   }
 
+  // Retorna o novo horário de expiração após renovar o lock.
   return reply.status(200).send({ expiresAt: presence.expiresAt });
 }

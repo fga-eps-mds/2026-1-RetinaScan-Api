@@ -3,6 +3,7 @@ import type { FastifyRequest, FastifyReply } from 'fastify';
 import z from 'zod';
 import { ValidationError } from '@/shared/errors';
 
+// Define os filtros e parâmetros de paginação aceitos pela consulta de logs.
 const querySchema = z
   .object({
     action: z.string().trim().min(1).optional(),
@@ -15,6 +16,7 @@ const querySchema = z
   .strict({ message: 'Parâmetros inválidos.' });
 
 export async function listLogsWithFilters(request: FastifyRequest, reply: FastifyReply) {
+  // Valida os filtros recebidos antes de executar a consulta.
   const result = querySchema.safeParse(request.query);
 
   if (!result.success) {
@@ -23,6 +25,7 @@ export async function listLogsWithFilters(request: FastifyRequest, reply: Fastif
 
   const { action, actorUserId, startDate, endDate, page, pageSize } = result.data;
 
+  // Garante que o intervalo de datas informado seja válido.
   if (startDate && endDate && startDate > endDate) {
     throw new ValidationError(
       [
@@ -35,6 +38,7 @@ export async function listLogsWithFilters(request: FastifyRequest, reply: Fastif
     );
   }
 
+  // Resolve o caso de uso responsável pela busca dos logs com filtros e paginação.
   const useCase = container.resolve('listLogsWithFiltersUseCase');
 
   const logs = await useCase.execute({

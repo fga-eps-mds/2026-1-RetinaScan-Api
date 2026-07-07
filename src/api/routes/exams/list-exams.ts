@@ -6,6 +6,7 @@ import { tiposPerfil } from '@/modules/users/domain';
 import { ValidationError } from '@/shared/errors';
 import type { ListExamsUseCase } from '@/modules/exam/use-cases/list-exams-usecase';
 
+// Define e valida os filtros de busca e paginação recebidos pela API.
 const querySchema = z
   .object({
     // uuid
@@ -22,6 +23,7 @@ const querySchema = z
   .strict({ message: 'Campos inválidos.' });
 
 export async function listExams(request: FastifyRequest, reply: FastifyReply) {
+  // Garante que os parâmetros recebidos estejam de acordo com as regras esperadas antes da execução.
   const result = querySchema.safeParse(request.query);
 
   if (!result.success) {
@@ -30,6 +32,7 @@ export async function listExams(request: FastifyRequest, reply: FastifyReply) {
 
   const data = result.data;
 
+  // Resolve o caso de uso pelo container de dependências para manter a separação entre controller e regra de negócio.
   const usecase: ListExamsUseCase = container.resolve('listExamsUseCase');
 
   const isMedico = request.user!.tipoPerfil === tiposPerfil.MEDICO;
@@ -37,6 +40,7 @@ export async function listExams(request: FastifyRequest, reply: FastifyReply) {
   const response = await usecase.execute({
     filters: {
       id: data.id,
+      // Médicos visualizam apenas exames vinculados ao próprio usuário.
       idUsuario: isMedico ? request.user!.id : undefined,
       cpf: data.cpf,
       nomeCompleto: data.nomeCompleto,

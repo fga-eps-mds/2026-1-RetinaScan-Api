@@ -13,6 +13,7 @@ const revokeShareParamsSchema = z.object({
 });
 
 export async function revokeExamShare(request: FastifyRequest, reply: FastifyReply) {
+  // Garante que apenas usuários autenticados possam revogar compartilhamentos.
   const userId = request.user?.id;
   if (!userId) {
     return reply.status(401).send({
@@ -22,6 +23,7 @@ export async function revokeExamShare(request: FastifyRequest, reply: FastifyRep
     });
   }
 
+  // Valida os identificadores recebidos antes de executar a operação de revogação.
   const paramsResult = revokeShareParamsSchema.safeParse(request.params);
   if (!paramsResult.success) {
     const { fieldErrors } = paramsResult.error.flatten();
@@ -34,6 +36,7 @@ export async function revokeExamShare(request: FastifyRequest, reply: FastifyRep
   }
 
   try {
+    // Instancia as dependências e delega as regras de autorização e revogação ao use case.
     const shareRepo = new DrizzleExamShareRepository();
     const examRepo = new DrizzleExamesRepository();
     const userRepo = new DrizzleUsuariosRepository();
@@ -51,6 +54,7 @@ export async function revokeExamShare(request: FastifyRequest, reply: FastifyRep
       },
     });
   } catch (error) {
+    // Mantém os códigos de erro definidos pela aplicação e evita respostas genéricas quando possível.
     if (error instanceof Error) {
       let statusCode = 500;
       if ('statusCode' in error && typeof error.statusCode === 'number') {

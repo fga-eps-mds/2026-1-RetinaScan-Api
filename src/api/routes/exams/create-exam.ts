@@ -6,6 +6,7 @@ import { Sexo } from '@/modules/exam';
 import { LateralidadeOlho } from '@/modules/exam/imagem';
 import { cpf } from 'cpf-cnpj-validator';
 
+// Define as regras de validação das informações de saúde associadas ao exame.
 const comorbidadesSchema = z
   .object({
     diabetes: z.boolean().default(false),
@@ -50,6 +51,7 @@ const comorbidadesSchema = z
     }
   });
 
+// Valida as imagens vinculadas ao exame, garantindo quantidade e unicidade dos arquivos.
 const imagensSchema = z
   .array(
     z.object({
@@ -66,6 +68,7 @@ const imagensSchema = z
     message: 'uploadId duplicado.',
   });
 
+// Schema principal de entrada para criação de um exame.
 const bodySchema = z
   .object({
     nomeCompleto: z.string().trim().min(1, 'nomeCompleto é obrigatório.'),
@@ -86,6 +89,7 @@ export async function createExam(request: FastifyRequest, reply: FastifyReply) {
     throw new ValidationError(result.error.issues, true);
   }
 
+  // Resolve e executa o caso de uso responsável pela criação do exame.
   const usecase = container.resolve('createExamUseCase');
 
   const response = await usecase.execute({

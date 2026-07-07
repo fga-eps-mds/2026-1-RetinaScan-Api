@@ -1,5 +1,6 @@
 import type { FastifySchema } from 'fastify';
 
+// Documentação da rota responsável por listar médicos disponíveis para compartilhamento.
 export const listAvailableDoctorsSchema: FastifySchema = {
   tags: ['Usuários'],
   summary: 'Lista médicos disponíveis para compartilhamento',

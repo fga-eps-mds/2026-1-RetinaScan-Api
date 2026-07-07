@@ -6,6 +6,7 @@ import {
   unauthorizedResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável pela criação de usuários por administradores.
 export const createUserByAdminSchema: FastifySchema = {
   tags: ['Usuários'],
   summary: 'Cria um usuário (admin)',

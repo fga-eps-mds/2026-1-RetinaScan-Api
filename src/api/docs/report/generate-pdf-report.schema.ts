@@ -6,6 +6,7 @@ import {
   internalErrorResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável por gerar e disponibilizar o laudo do exame em PDF.
 export const generatePdfReportSchema: FastifySchema = {
   summary: 'Gera e baixa o laudo do exame em PDF',
   description:

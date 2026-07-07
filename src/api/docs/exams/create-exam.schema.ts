@@ -7,6 +7,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Schema reutilizável para validar as comorbidades informadas no exame.
 const comorbidadesSchema = {
   type: 'object',
   additionalProperties: false,
@@ -28,6 +29,7 @@ const comorbidadesSchema = {
   },
 } as const;
 
+// Define o formato esperado para a criação de um exame.
 const createExamBody = {
   type: 'object',
   additionalProperties: false,
@@ -66,6 +68,7 @@ const createExamBody = {
   },
 } as const;
 
+// Estrutura da resposta retornada quando um exame é criado com sucesso.
 const createExamResponse = {
   type: 'object',
   properties: {
@@ -85,6 +88,7 @@ const createExamResponse = {
   },
 } as const;
 
+// Documentação da rota utilizada pelo Fastify/Swagger.
 export const createExamSchema: FastifySchema = {
   tags: ['Exames'],
   summary: 'Cria um exame',
