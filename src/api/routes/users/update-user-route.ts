@@ -4,6 +4,7 @@ import { fromNodeHeaders } from 'better-auth/node';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { ValidationError } from '@/shared/errors';
 
+// Define os campos permitidos para atualização do usuário e suas validações.
 const bodySchema = z
   .object({
     nomeCompleto: z.string().min(3, 'Nome inválido.').optional(),
@@ -13,6 +14,7 @@ const bodySchema = z
     novaSenha: z.string().min(6, 'Nova senha deve ter no mínimo 6 caracteres.').optional(),
   })
   .strict({ message: 'Campos inválidos.' })
+  // Garante que a alteração de senha sempre informe a senha atual e a nova senha.
   .refine(({ senhaAtual, novaSenha }) => Boolean(senhaAtual) === Boolean(novaSenha), {
     message: 'senhaAtual e novaSenha devem ser enviadas juntas.',
     path: ['senhaAtual'],
@@ -21,12 +23,14 @@ const bodySchema = z
 export async function updateUserRoute(request: FastifyRequest, reply: FastifyReply) {
   const result = bodySchema.safeParse(request.body);
 
+  // Interrompe a atualização caso os dados recebidos sejam inválidos.
   if (!result.success) {
     throw new ValidationError(result.error.issues, true);
   }
 
   const { senhaAtual, novaSenha, ...data } = result.data;
 
+  // Obtém o caso de uso responsável pela atualização dos dados do usuário.
   const usecase = container.resolve('updateUserUsecase');
 
   const response = await usecase.execute({
