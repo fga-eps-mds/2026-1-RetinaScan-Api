@@ -26,7 +26,7 @@ export async function enviarConvitesEmLoteRoute(
   const result = bodySchema.safeParse(request.body);
   if (!result.success) throw new ValidationError(result.error.issues, true);
 
-   // Resolve o caso de uso responsável pelo envio dos convites.
+  // Resolve o caso de uso responsável pelo envio dos convites.
   const usecase = container.resolve('enviarConvitesEmLoteUsecase');
   const output = await usecase.execute({
     convites: result.data.convites,

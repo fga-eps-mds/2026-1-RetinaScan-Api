@@ -35,7 +35,7 @@ export async function releaseReportLock(request: FastifyRequest, reply: FastifyR
     userId: request.user!.id,
     sessionId,
   });
-  
+
   // Retorna sucesso sem conteúdo após a liberação do lock.
   return reply.status(204).send();
 }

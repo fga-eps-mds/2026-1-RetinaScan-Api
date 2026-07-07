@@ -14,7 +14,7 @@ export async function authenticationMiddleware(request: FastifyRequest, _reply: 
   }
 
   const user = session.user;
-  
+
   // Disponibiliza no contexto da requisição apenas os dados necessários para autorização e uso nas rotas.
   request.user = {
     id: user.id,
