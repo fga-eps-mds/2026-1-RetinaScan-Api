@@ -31,6 +31,7 @@ const paramsSchema = z.object({
 type WebhookBody = z.infer<typeof bodySchema>;
 type WebhookResultItem = z.infer<typeof resultItemSchema>;
 
+// Converte o formato recebido pelo webhook para o modelo esperado pelo caso de uso.
 function toUseCaseResult(item: WebhookResultItem): RegisterExamAiResultItem {
   return {
     filename: item.filename,
@@ -42,6 +43,7 @@ function toUseCaseResult(item: WebhookResultItem): RegisterExamAiResultItem {
   };
 }
 
+// Monta o payload interno, isolando o caso de uso do formato externo enviado pela IA.
 function toUseCaseInput(examId: string, body: WebhookBody): RegisterExamAiResultUseCaseInput {
   return {
     examId,
@@ -55,16 +57,19 @@ export async function registerExamWebhook(
   request: FastifyRequest<{ Params: { examId: string } }>,
   reply: FastifyReply,
 ) {
+  // Valida o identificador do exame recebido na URL.
   const paramsResult = paramsSchema.safeParse(request.params);
   if (!paramsResult.success) {
     throw new ValidationError(paramsResult.error.issues, true);
   }
 
+  // Valida os resultados enviados pelo serviço de IA antes de persistir os dados.
   const bodyResult = bodySchema.safeParse(request.body);
   if (!bodyResult.success) {
     throw new ValidationError(bodyResult.error.issues, true);
   }
 
+  // Executa a persistência dos resultados através do caso de uso responsável pelo fluxo da IA.
   const usecase = container.resolve('registerExamAiResultUseCase');
   await usecase.execute(toUseCaseInput(paramsResult.data.examId, bodyResult.data));
 
