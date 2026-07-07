@@ -1,8 +1,15 @@
 import { db } from '@/infra/database/drizzle/connection';
 import { examComorbidity } from '@/infra/database/drizzle/schema';
 import type { Comorbidade } from '@/modules/exam/exam';
+import { NodeCryptoCryptographyService } from '@/infra/shared/node-cryptography-service';
 
 type ComorbidadeData = Comorbidade;
+
+const cryptographyService = new NodeCryptoCryptographyService();
+
+function encrypt(text: string): string {
+  return cryptographyService.encrypt({ text }).encryptedText;
+}
 
 export class ComorbidadeBuilder {
   private readonly data: ComorbidadeData;
@@ -53,7 +60,9 @@ export class ComorbidadeBuilder {
       uveite: this.data.uveite,
       catarata: this.data.catarata,
       outrasComorbidades: this.data.outrasComorbidades,
-      outrasComorbidadesDescricao: this.data.outrasComorbidadesDescricao ?? null,
+      outrasComorbidadesDescricao: this.data.outrasComorbidadesDescricao
+        ? encrypt(this.data.outrasComorbidadesDescricao)
+        : null,
       qualidadeTecnicaDificuldade: this.data.qualidadeTecnicaDificuldade,
     });
     return this.data;

@@ -80,25 +80,6 @@ export type GetExamDetailsUseCaseOutput = {
   laudoEspecialista: SpecialistReport | null;
 };
 
-function toComorbidadesDto(comorbidade: Comorbidade): GetExamDetailsComorbidadesDto {
-  return {
-    diabetes: comorbidade.diabetes,
-    diabetesAnos: comorbidade.diabetesAnos ?? null,
-    diabetesUsoInsulina: comorbidade.diabetesUsoInsulina,
-    diabetesControlado: comorbidade.diabetesControlado,
-    hipertensao: comorbidade.hipertensao,
-    hipertensaoControlada: comorbidade.hipertensaoControlada,
-    altaMiopia: comorbidade.altaMiopia,
-    glaucoma: comorbidade.glaucoma,
-    usoHidroxicloroquina: comorbidade.usoHidroxicloroquina,
-    uveite: comorbidade.uveite,
-    catarata: comorbidade.catarata,
-    outrasComorbidades: comorbidade.outrasComorbidades,
-    outrasComorbidadesDescricao: comorbidade.outrasComorbidadesDescricao ?? null,
-    qualidadeTecnicaDificuldade: comorbidade.qualidadeTecnicaDificuldade,
-  };
-}
-
 function toResultadoDto(resultado: ResultadoIa): GetExamDetailsResultadoIaDto {
   return {
     id: resultado.id,
@@ -223,11 +204,32 @@ export class GetExamDetailsUseCase {
       dtNascimento: this.decrypt(exame.dtNascimento),
       dtHora: exame.dtHora,
       olho: exame.olho ?? null,
-      comorbidades: comorbidade ? toComorbidadesDto(comorbidade) : null,
+      comorbidades: comorbidade ? this.toComorbidadesDto(comorbidade) : null,
       descricao: exame.descricao ? this.decrypt(exame.descricao) : null,
       medico,
       imagens,
       laudoEspecialista,
+    };
+  }
+
+  private toComorbidadesDto(comorbidade: Comorbidade): GetExamDetailsComorbidadesDto {
+    return {
+      diabetes: comorbidade.diabetes,
+      diabetesAnos: comorbidade.diabetesAnos ?? null,
+      diabetesUsoInsulina: comorbidade.diabetesUsoInsulina,
+      diabetesControlado: comorbidade.diabetesControlado,
+      hipertensao: comorbidade.hipertensao,
+      hipertensaoControlada: comorbidade.hipertensaoControlada,
+      altaMiopia: comorbidade.altaMiopia,
+      glaucoma: comorbidade.glaucoma,
+      usoHidroxicloroquina: comorbidade.usoHidroxicloroquina,
+      uveite: comorbidade.uveite,
+      catarata: comorbidade.catarata,
+      outrasComorbidades: comorbidade.outrasComorbidades,
+      outrasComorbidadesDescricao: comorbidade.outrasComorbidadesDescricao
+        ? this.decrypt(comorbidade.outrasComorbidadesDescricao)
+        : null,
+      qualidadeTecnicaDificuldade: comorbidade.qualidadeTecnicaDificuldade,
     };
   }
 
