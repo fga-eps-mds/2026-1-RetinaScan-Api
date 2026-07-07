@@ -15,6 +15,7 @@ import { generatePdfReport } from './report/generate-pdf-report';
 import { generatePdfReportSchema } from '../docs/report/generate-pdf-report.schema';
 
 // Registra as rotas relacionadas ao fluxo de criação, edição e consulta de laudos de especialistas.
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function reportRoutes(app: FastifyInstance): Promise<void> {
   app.route({
     method: 'GET',
