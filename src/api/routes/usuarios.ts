@@ -85,7 +85,6 @@ export async function usuarioRoutes(app: FastifyInstance): Promise<void> {
   // Fluxo de solicitação e aprovação de alterações sensíveis de CPF/CRM.
   // As operações são auditadas para rastreabilidade das mudanças.
   app.route({
-  app.route({
     method: 'PUT',
     url: '/usuarios',
     schema: updateUserSchema,
