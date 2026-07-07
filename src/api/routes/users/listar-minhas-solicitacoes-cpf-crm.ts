@@ -3,6 +3,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import z from 'zod';
 import { ValidationError } from '@/shared/errors';
 
+// Define os filtros opcionais aceitos para consulta das solicitações do usuário.
 const querySchema = z
   .object({
     status: z.enum(['PENDENTE', 'APROVADA', 'REJEITADA']).optional(),
@@ -17,10 +18,12 @@ export async function listarMinhasSolicitacoesCpfCrmRoute(
 ) {
   const result = querySchema.safeParse(request.query);
 
+  // Interrompe a execução caso os parâmetros recebidos não sejam válidos.
   if (!result.success) {
     throw new ValidationError(result.error.issues, true);
   }
 
+  // Obtém o caso de uso através do container de dependências.
   const usecase = container.resolve('listarSolicitacoesCpfCrmUsecase');
 
   const response = await usecase.execute({
