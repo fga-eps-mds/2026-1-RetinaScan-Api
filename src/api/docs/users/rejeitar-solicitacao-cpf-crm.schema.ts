@@ -7,6 +7,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável por rejeitar solicitações de alteração de CPF/CRM.
 export const rejeitarSolicitacaoCpfCrmSchema: FastifySchema = {
   tags: ['Usuários'],
   summary: 'Rejeita solicitação de alteração de CPF/CRM',

@@ -6,6 +6,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável por listar as solicitações de alteração de CPF/CRM do usuário autenticado.
 export const listarMinhasSolicitacoesCpfCrmSchema: FastifySchema = {
   tags: ['Usuários'],
   summary: 'Lista minhas solicitações de alteração',

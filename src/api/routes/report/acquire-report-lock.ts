@@ -4,20 +4,24 @@ import { container } from '@/infra/container';
 import { ValidationError } from '@/shared/errors';
 import { env } from '@/env';
 
+// Valida o exame que terá o relatório bloqueado para edição.
 const paramsSchema = z.object({
   examId: z.string().uuid({ message: 'examId inválido.' }),
 });
 
+// Valida a identificação da sessão de edição do usuário.
 const bodySchema = z.object({
   sessionId: z.string().uuid({ message: 'sessionId inválido.' }),
 });
 
 export async function acquireReportLock(request: FastifyRequest, reply: FastifyReply) {
+  // Valida os parâmetros da requisição antes de tentar adquirir o bloqueio.
   const parsedParams = paramsSchema.safeParse(request.params);
   if (!parsedParams.success) {
     throw new ValidationError(parsedParams.error.issues, true);
   }
 
+  // Valida os dados da sessão de edição enviados pelo cliente.
   const parsedBody = bodySchema.safeParse(request.body);
   if (!parsedBody.success) {
     throw new ValidationError(parsedBody.error.issues, true);
@@ -26,6 +30,7 @@ export async function acquireReportLock(request: FastifyRequest, reply: FastifyR
   const { examId } = parsedParams.data;
   const { sessionId } = parsedBody.data;
 
+  // Resolve o serviço responsável pelo controle de presença e bloqueio de edição.
   const service = container.resolve('reportEditingPresenceService');
 
   const result = await service.acquire({
@@ -36,6 +41,7 @@ export async function acquireReportLock(request: FastifyRequest, reply: FastifyR
     ttlSeconds: env.SPECIALIST_REPORT_EDITING_TTL_SECONDS,
   });
 
+  // Retorna o editor atual quando o bloqueio não puder ser adquirido.
   if (result.acquired) {
     return reply.status(200).send({
       acquired: true,

@@ -6,6 +6,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Documentação da rota responsável por retornar métricas agregadas dos exames.
 export const getExamMetricsSchema: FastifySchema = {
   tags: ['Exames'],
   summary: 'Métricas agregadas de exames',
@@ -32,6 +33,7 @@ export const getExamMetricsSchema: FastifySchema = {
       type: 'object',
       additionalProperties: true,
       description: 'Métricas agregadas de exames.',
+      // Exemplo da estrutura retornada pela API para documentação no Swagger.
       example: {
         volume: {
           total: 1280,

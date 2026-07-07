@@ -2,6 +2,7 @@ import { auth } from '@/lib/auth';
 import type { FastifyRequest, FastifyReply, FastifyPluginAsync } from 'fastify';
 import { recoverByCrmHandler } from './auth/recover-by-crm';
 
+// Registra as rotas relacionadas à autenticação e integra o handler do provedor de autenticação com o Fastify.
 // eslint-disable-next-line @typescript-eslint/require-await
 export const authRoutes: FastifyPluginAsync = async (app) => {
   app.route({
@@ -16,6 +17,7 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
         if (value) headers.append(key, String(value));
       }
 
+      // Converte a requisição do Fastify para o formato esperado pelo handler de autenticação.
       const req = new Request(url.toString(), {
         method: request.method,
         headers,
@@ -35,5 +37,6 @@ export const authRoutes: FastifyPluginAsync = async (app) => {
     },
   });
 
+  // Rota customizada para recuperação de acesso utilizando CRM.
   app.post('/auth/recover-by-crm', recoverByCrmHandler);
 };

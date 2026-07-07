@@ -4,8 +4,10 @@ import { ValidationError } from '@/shared/errors/validation-error';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import z from 'zod';
 
+// Valida os parâmetros obrigatórios da rota.
 const paramsSchema = z.object({ id: z.string().min(1) });
 
+// Valida as regras de decisão da inscrição, exigindo motivo apenas em rejeições.
 const bodySchema = z.discriminatedUnion('decisao', [
   z.object({ decisao: z.literal('APROVADA') }),
   z.object({
@@ -24,6 +26,7 @@ export async function avaliarInscricaoRoute(
   const bodyResult = bodySchema.safeParse(request.body);
   if (!bodyResult.success) throw new ValidationError(bodyResult.error.issues, true);
 
+  // Resolve o caso de uso responsável pela avaliação da inscrição.
   const usecase: AvaliarInscricaoUsecase = container.resolve('avaliarInscricaoUsecase');
 
   await usecase.execute({

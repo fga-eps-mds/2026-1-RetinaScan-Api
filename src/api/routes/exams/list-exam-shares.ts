@@ -11,6 +11,7 @@ const listExamSharesParamsSchema = z.object({
 });
 
 export async function listExamShares(request: FastifyRequest, reply: FastifyReply) {
+  // Valida os parâmetros recebidos antes de executar a busca dos compartilhamentos.
   const paramsResult = listExamSharesParamsSchema.safeParse(request.params);
 
   if (!paramsResult.success) {
@@ -24,6 +25,7 @@ export async function listExamShares(request: FastifyRequest, reply: FastifyRepl
   }
 
   try {
+    // Instancia as dependências necessárias e executa a regra de negócio através do use case.
     const shareRepo = new DrizzleExamShareRepository();
     const userRepo = new DrizzleUsuariosRepository();
     const useCase = new ListExamSharesUseCase(shareRepo, userRepo);
@@ -34,6 +36,7 @@ export async function listExamShares(request: FastifyRequest, reply: FastifyRepl
       data: result,
     });
   } catch {
+    // Evita expor detalhes internos da aplicação em erros inesperados.
     return reply.status(500).send({
       statusCode: 500,
       error: 'Internal Server Error',

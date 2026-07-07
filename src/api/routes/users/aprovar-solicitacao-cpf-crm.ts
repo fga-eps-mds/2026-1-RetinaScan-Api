@@ -3,6 +3,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import z from 'zod';
 import { ValidationError } from '@/shared/errors';
 
+// Validação do identificador da solicitação de CPF/CRM que será processada.
 const paramsSchema = z
   .object({
     id: z.string().min(1, 'Id da solicitação obrigatório.'),
@@ -16,6 +17,7 @@ export async function aprovarSolicitacaoCpfCrmRoute(request: FastifyRequest, rep
     throw new ValidationError(result.error.issues, true);
   }
 
+  // Resolve o caso de uso responsável pela aprovação da solicitação.
   const usecase = container.resolve('aprovarSolicitacaoCpfCrmUsecase');
 
   const response = await usecase.execute({
@@ -23,5 +25,6 @@ export async function aprovarSolicitacaoCpfCrmRoute(request: FastifyRequest, rep
     idAdmin: request.user!.id,
   });
 
+  // Retorna a solicitação aprovada após a execução da operação.
   return reply.status(200).send(response);
 }

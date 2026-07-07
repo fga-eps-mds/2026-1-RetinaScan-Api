@@ -10,16 +10,19 @@ import {
   deleteNotificationSchema,
 } from '../docs/notification';
 
+// Define os filtros opcionais disponíveis para consulta das notificações.
 export type ListNotificationsQuery = {
   status?: 'todas' | 'nao-lidas' | 'lidas';
   tipo?: string;
   limit?: string | number;
 };
 
+// Define os parâmetros utilizados nas rotas que operam sobre uma notificação específica.
 type NotificationParams = {
   id: string;
 };
 
+// Registra as rotas de gerenciamento de notificações do usuário autenticado.
 // eslint-disable-next-line @typescript-eslint/require-await
 export default async function notificationRoutes(app: FastifyInstance): Promise<void> {
   app.get<{

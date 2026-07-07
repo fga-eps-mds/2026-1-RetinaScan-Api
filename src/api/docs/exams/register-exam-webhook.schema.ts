@@ -5,6 +5,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Estrutura de cada resultado de inferência retornado pelo serviço de IA.
 const resultItem = {
   type: 'object',
   required: [
@@ -28,6 +29,7 @@ const resultItem = {
   },
 } as const;
 
+// Documentação do webhook utilizado para registrar os resultados da IA.
 export const registerExamWebhookSchema: FastifySchema = {
   tags: ['Exames'],
   summary: 'Webhook de resultado da IA',

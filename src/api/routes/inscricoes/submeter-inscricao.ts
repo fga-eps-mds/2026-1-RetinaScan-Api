@@ -3,6 +3,7 @@ import { ValidationError } from '@/shared/errors/validation-error';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import z from 'zod';
 
+// Define os dados obrigatórios para submissão de uma nova inscrição.
 const bodySchema = z
   .object({
     token: z.string().min(1, 'Token é obrigatório'),
@@ -18,9 +19,11 @@ export async function submeterInscricaoRoute(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
+  // Valida os dados enviados antes de iniciar o processamento da inscrição.
   const result = bodySchema.safeParse(request.body);
   if (!result.success) throw new ValidationError(result.error.issues, true);
 
+  // Executa o caso de uso responsável pela criação da inscrição.
   const usecase = container.resolve('submeterInscricaoUsecase');
   await usecase.execute(result.data);
 

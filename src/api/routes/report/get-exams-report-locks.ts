@@ -3,6 +3,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { container } from '@/infra/container';
 import { ValidationError } from '@/shared/errors';
 
+// Valida a lista de exames recebida e garante que os IDs estejam no formato esperado.
 const querySchema = z.object({
   examIds: z
     .string()
@@ -38,11 +39,13 @@ export async function getExamEditingLocks(request: FastifyRequest, reply: Fastif
 
   const { examIds } = parsed.data;
 
+  // Busca as presenças de edição dos exames informados.
   const service = container.resolve('reportEditingPresenceService');
   const presences = await service.getMany(examIds);
 
   const locks: ExamEditingLocksResponse['locks'] = {};
 
+  // Monta o mapa de bloqueios associando cada exame ao usuário que está editando, quando existir.
   for (let i = 0; i < examIds.length; i++) {
     const presence = presences[i];
     locks[examIds[i]] = {

@@ -1,3 +1,4 @@
+// Estrutura base reutilizada pelas respostas de erro da API.
 export const errorResponse = {
   type: 'object',
   properties: {
@@ -7,6 +8,7 @@ export const errorResponse = {
   required: ['error', 'message'],
 } as const;
 
+// Estrutura de resposta utilizada para erros de validação de entrada.
 export const validationErrorResponse = {
   type: 'object',
   properties: {
@@ -51,6 +53,7 @@ export const internalErrorResponse = {
   examples: [{ error: 'InternalServerError', message: 'An unexpected error occurred' }],
 } as const;
 
+// Estrutura de erro mantida por compatibilidade com endpoints legados.
 export const legacyErrorResponse = {
   type: 'object',
   properties: {

@@ -7,6 +7,7 @@ import {
   validationErrorResponse,
 } from '../shared/error-responses';
 
+// Parâmetros compartilhados pelas rotas de criação e atualização do laudo do especialista.
 const specialistReportParams = {
   type: 'object',
   additionalProperties: false,
@@ -20,6 +21,7 @@ const specialistReportParams = {
   },
 } as const;
 
+// Estrutura do corpo da requisição para cadastro e atualização do laudo.
 const specialistReportBody = {
   type: 'object',
   additionalProperties: false,
@@ -38,6 +40,7 @@ const specialistReportBody = {
   },
 } as const;
 
+// Estrutura da resposta retornada após criar ou atualizar um laudo.
 const specialistReportResponse = {
   type: 'object',
   properties: {
@@ -62,6 +65,7 @@ const specialistReportResponse = {
   },
 } as const;
 
+// Documentação da rota responsável pela criação de um laudo de especialista.
 export const createSpecialistReportSchema: FastifySchema = {
   tags: ['Laudos de Especialista'],
   summary: 'Cria laudo do especialista',
@@ -88,6 +92,7 @@ export const createSpecialistReportSchema: FastifySchema = {
   },
 };
 
+// Documentação da rota responsável pela atualização de um laudo de especialista.
 export const updateSpecialistReportSchema: FastifySchema = {
   tags: ['Laudos de Especialista'],
   summary: 'Atualiza laudo do especialista',
