@@ -7,6 +7,7 @@ import { listarInscricoesRoute } from './inscricoes/listar-inscricoes';
 import { avaliarInscricaoRoute } from './inscricoes/avaliar-inscricao';
 
 // Registra as rotas relacionadas ao fluxo de inscrições e avaliação de candidatos.
+// eslint-disable-next-line @typescript-eslint/require-await
 export async function inscricoesRoutes(app: FastifyInstance): Promise<void> {
   app.route({
     method: 'POST',
