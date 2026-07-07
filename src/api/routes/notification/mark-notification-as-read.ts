@@ -3,6 +3,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { container } from '@/infra/container';
 import { ValidationError } from '@/shared/errors';
 
+// Define o formato esperado para identificar a notificação a ser atualizada.
 const paramsSchema = z
   .object({
     id: z.string().uuid(),
@@ -15,12 +16,14 @@ export async function markNotificationAsRead(
   request: FastifyRequest<{ Params: Params }>,
   reply: FastifyReply,
 ) {
+  // Valida o identificador recebido antes de alterar o estado da notificação.
   const result = paramsSchema.safeParse(request.params);
 
   if (!result.success) {
     throw new ValidationError(result.error.issues, true);
   }
 
+  // Resolve o caso de uso responsável por marcar a notificação como lida.
   const useCase = container.resolve('markNotificationAsReadUseCase');
 
   await useCase.execute({
