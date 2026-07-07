@@ -3,7 +3,7 @@ import { SearchDoctorsUseCase } from '@/modules/users/use-cases/search-users-cre
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import z from 'zod';
 
-// Validação dos parâmetros
+// Define os filtros de pesquisa e parâmetros de paginação aceitos pela rota.
 const searchSchema = z.object({
   nome: z.string().optional(),
   crm: z.string().optional(),
@@ -16,6 +16,7 @@ const searchSchema = z.object({
 export async function searchMedicosByAdmin(request: FastifyRequest, reply: FastifyReply) {
   const queryResult = searchSchema.safeParse(request.query);
 
+  // Impede a execução da busca quando os parâmetros recebidos são inválidos.
   if (!queryResult.success) {
     const { fieldErrors } = queryResult.error.flatten();
     return reply.status(400).send({
@@ -30,6 +31,7 @@ export async function searchMedicosByAdmin(request: FastifyRequest, reply: Fasti
     const { nome, crm, email, page, pageSize, tipoPerfil } = queryResult.data;
     const adminId = request.user?.id;
 
+    // Garante que apenas usuários autenticados possam realizar a pesquisa administrativa.
     if (!adminId) {
       return reply.status(401).send({
         statusCode: 401,
@@ -38,6 +40,7 @@ export async function searchMedicosByAdmin(request: FastifyRequest, reply: Fasti
       });
     }
 
+    // Cria as dependências necessárias para executar a busca dos médicos.
     const usuariosRepository = new DrizzleUsuariosRepository();
     const useCase = new SearchDoctorsUseCase(usuariosRepository);
 
