@@ -5,12 +5,14 @@ import { UnauthorizedError, ValidationError } from '@/shared/errors';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import z from 'zod';
 
+// Validação dos parâmetros obrigatórios da rota.
 const paramsSchema = z
   .object({
     examId: z.string().uuid('examId inválido.'),
   })
   .strict({ message: 'Parâmetros inválidos.' });
 
+// Validação do conteúdo enviado para criação do relatório do especialista.
 const bodySchema = z
   .object({
     texto: z.string().trim().min(1, 'texto é obrigatório.'),
@@ -25,6 +27,7 @@ export async function createSpecialistReport(request: FastifyRequest, reply: Fas
     headers: request.headers,
   });
 
+  // Garante que apenas usuários com perfil de especialista possam criar relatórios.
   if (user?.user.tipoPerfil !== tiposPerfil.ESPECIALISTA) {
     throw new UnauthorizedError('Acesso negado. Perfil de especialista é necessário.');
   }
@@ -39,6 +42,7 @@ export async function createSpecialistReport(request: FastifyRequest, reply: Fas
     throw new ValidationError(bodyResult.error.errors, true);
   }
 
+  // Resolve o caso de uso responsável pela criação do relatório.
   const useCase = container.resolve('createSpecialistReportUseCase');
 
   const response = await useCase.execute({
